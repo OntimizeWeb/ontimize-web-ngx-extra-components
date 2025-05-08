@@ -1,0 +1,1 @@
+export * from './o-extra-componentss-translate.pipe';
