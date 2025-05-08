@@ -1,6 +1,4 @@
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
-import { OntimizeWebModule } from 'ontimize-web-ngx';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { OExtraComponentsTranslatePipe } from '../util/o-extra-components-translate.pipe';
@@ -14,8 +12,6 @@ export const OEXTRACOMPONENTS_DECLARATION_MODULES: any = [
 ];
 export const OEXTRACOMPONENTS_IMPORTS_MODULES: any = [
   CommonModule,
-  OntimizeWebModule,
-  NgxExtendedPdfViewerModule,
   NgxSkeletonLoaderModule,
   FlexLayoutModule,
   DragDropModule

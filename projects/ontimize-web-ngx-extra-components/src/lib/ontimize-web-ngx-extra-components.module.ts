@@ -7,4 +7,4 @@ import { OEXTRACOMPONENTS_DECLARATION_MODULES, OEXTRACOMPONENTS_IMPORTS_MODULES 
     providers: []
 })
 
-export class OReportModule { }
+export class OExtraComponentstModule { }
