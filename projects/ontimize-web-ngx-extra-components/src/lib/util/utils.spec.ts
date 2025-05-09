@@ -31,13 +31,13 @@ describe('Utils', () => {
   });
 
   describe('setFullscreenDialog', () => {
-    it('should set dialog to fullscreen when fullscreen is false', () => {
-      Utils.setFullscreenDialog(false, dialogRefSpy);
+    it('should set dialog to fullscreen when calling setFullscreenDialogSize', () => {
+      Utils.setFullscreenDialogSize(dialogRefSpy);
       expect(dialogRefSpy.updateSize).toHaveBeenCalledWith('100%', '100%');
     });
 
-    it('should set dialog to default size when fullscreen is true', () => {
-      Utils.setFullscreenDialog(true, dialogRefSpy);
+    it('should set dialog to default size when calling setDefaultDialogSize', () => {
+      Utils.setDefaultDialogSize(dialogRefSpy);
       expect(dialogRefSpy.updateSize).toHaveBeenCalledWith(
         Constants.DEFAULT_WIDTH_DIALOG, 
         Constants.DEFAULT_HEIGHT_DIALOG
