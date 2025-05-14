@@ -1,8 +1,8 @@
 
 <h1 align="center">
   <div style="display:inline-block;vertical-align: middle;">
-    <a name="logo" href="https://ontimizeweb.github.io/docs/v15/report/">
-      Ontimize Web Report
+    <a name="logo" href="https://ontimizeweb.github.io/docs/v15/extra-components/">
+      Ontimize Web Extra Components
     </a>
   </div>
 </h1>
@@ -15,11 +15,11 @@
 
 ## 📜 Introduction
 
-The module Ontimize Web Report is a set of reporting tools for web applications based in [OntimizeWeb](https://github.com/OntimizeWeb/ontimize-web-ngx), allowing stored and on-demand reporting to be generated.
+The module Ontimize Web Extra Components is a set of advanced and non common components for web applications based in [OntimizeWeb](https://github.com/OntimizeWeb/ontimize-web-ngx).
 
 ### 📖 Documentation
 
-Check out our [documentation site](https://ontimizeweb.github.io/docs/v15/report/) to know more details.
+Check out our [documentation site](https://ontimizeweb.github.io/docs/v15/extra-components/) to know more details.
 
 ## 💡 Ideas
 
@@ -38,7 +38,7 @@ Follow the next steps:
 ```bash
 npm install
 ```
-  - cd projects/ontimize-web-ngx-report
+  - cd projects/ontimize-web-ngx-extra-components
 ```bash
 npm install
 ```
