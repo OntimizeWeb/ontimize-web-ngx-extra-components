@@ -2,7 +2,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { OSkeletonComponent } from './o-skeleton.component';
-import { OExtraComponentstModule } from '../../ontimize-web-ngx-extra-components.module';
+import { OExtraComponentsModule } from '../../ontimize-web-ngx-extra-components.module';
 
 describe('OSkeletonComponent', () => {
   let component: OSkeletonComponent;
@@ -11,11 +11,11 @@ describe('OSkeletonComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        OExtraComponentstModule,
+        OExtraComponentsModule,
         NoopAnimationsModule
       ],
       providers: [
-        
+
       ]
     })
     .compileComponents();
