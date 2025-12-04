@@ -135,8 +135,14 @@
               "projects/data-view-app-test/src/favicon.ico",
               "projects/data-view-app-test/src/assets"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules"
+              ]
+            },
             "styles": [
-              "projects/data-view-app-test/src/styles.scss"
+              "projects/data-view-app-test/src/styles.scss",
+              "node_modules/ontimize-web-ngx/ontimize.scss"
             ],
             "scripts": []
           }

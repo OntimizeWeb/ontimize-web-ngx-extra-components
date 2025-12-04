@@ -1,35 +1,34 @@
+import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Pipe, PipeTransform } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { OntimizeWebModule, APP_CONFIG, Config } from 'ontimize-web-ngx';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 import { OSkeletonComponent } from './o-skeleton.component';
-import { OExtraComponentsModule } from '../../ontimize-web-ngx-extra-components.module';
-
-const TEST_CONFIG: Config = {
-  apiEndpoint: '',
-  uuid: 'test-app',
-  title: 'test',
-  locale: 'en',
-  applicationLocales: ['en']
-};
+@Pipe({ name: 'oExtraComponentsTranslate' })
+class MockExtraComponentsTranslatePipe implements PipeTransform {
+  transform(value: any): any {
+    return value;
+  }
+}
 
 describe('OSkeletonComponent', () => {
   let component: OSkeletonComponent;
   let fixture: ComponentFixture<OSkeletonComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
-        OExtraComponentsModule,
+        CommonModule,
         NoopAnimationsModule,
-        OntimizeWebModule
+        NgxSkeletonLoaderModule
       ],
-      providers: [
-        { provide: APP_CONFIG, useValue: TEST_CONFIG }
+      declarations: [
+        OSkeletonComponent,
+        MockExtraComponentsTranslatePipe
       ]
-    })
-    .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OSkeletonComponent);
