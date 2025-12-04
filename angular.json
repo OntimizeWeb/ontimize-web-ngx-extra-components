@@ -39,6 +39,118 @@
           }
         }
       }
+    },
+    "data-view-app-test": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/data-view-app-test",
+      "sourceRoot": "projects/data-view-app-test/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/data-view-app-test",
+            "index": "projects/data-view-app-test/src/index.html",
+            "main": "projects/data-view-app-test/src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules"
+              ]
+            },
+            "tsConfig": "projects/data-view-app-test/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/data-view-app-test/src/favicon.ico",
+              "projects/data-view-app-test/src/assets"
+            ],
+            "styles": [
+              "projects/data-view-app-test/src/styles.scss",
+              "node_modules/ontimize-web-ngx/ontimize.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "data-view-app-test:build:production"
+            },
+            "development": {
+              "browserTarget": "data-view-app-test:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "data-view-app-test:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "projects/data-view-app-test/tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/data-view-app-test/src/favicon.ico",
+              "projects/data-view-app-test/src/assets"
+            ],
+            "styles": [
+              "projects/data-view-app-test/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/data-view-app-test/**/*.ts",
+              "projects/data-view-app-test/**/*.html"
+            ]
+          }
+        }
+      }
     }
   },
   "cli": {

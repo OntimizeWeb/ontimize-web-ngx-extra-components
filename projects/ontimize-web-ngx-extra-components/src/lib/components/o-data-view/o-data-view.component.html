@@ -1,0 +1,21 @@
+<o-button-toggle-group fxLayoutAlign="end" attr="toggleGroup" layout="row" multiple="no" value="table" layout-padding (onChange)="changeView($event)">
+  <o-button-toggle attr="toggle1" value="table" icon="table_chart"></o-button-toggle>
+  <o-button-toggle attr="toggle2" value="grid" icon="dashboard"></o-button-toggle>
+  <o-button-toggle attr="toggle3" value="list" icon="list"></o-button-toggle>
+</o-button-toggle-group>
+
+<div class="o-data-view-content">
+
+  <o-table *ngIf="currentView === 'table'" attr="dataViewTable" [service]="service" [entity]="entity" [columns]="columns"
+    [visible-columns]="visibleColumns || columns" [keys]="keys" [query-rows]="queryRows" [pageable]="pageable">
+  </o-table>
+
+  <o-grid *ngIf="currentView === 'grid'" attr="dataViewGrid" [service]="service" [entity]="entity" [columns]="columns" [keys]="keys" [query-rows]="queryRows"
+    [pageable]="pageable">
+  </o-grid>
+
+  <o-list *ngIf="currentView === 'list'" attr="dataViewList" [service]="service" [entity]="entity" [columns]="columns" [keys]="keys" [query-rows]="queryRows"
+    [pageable]="pageable">
+  </o-list>
+
+</div>
