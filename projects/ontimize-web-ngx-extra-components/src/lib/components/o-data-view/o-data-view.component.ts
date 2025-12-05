@@ -1,4 +1,5 @@
-import { Component, Input } from "@angular/core";
+import { Component, Input, ViewChild } from "@angular/core";
+import { OListComponent } from "ontimize-web-ngx";
 
 @Component({
   selector: 'o-data-view',
@@ -10,18 +11,40 @@ import { Component, Input } from "@angular/core";
 })
 export class ODataViewComponent {
 
-  @Input() service!: string;
-  @Input() entity!: string;
-  @Input() columns!: string;
+  @ViewChild('list') list: OListComponent;
+
+  @Input() service?: string;
+  @Input() serviceType?: string;
+  @Input() entity?: string;
+  @Input() columns?: string;
   @Input() visibleColumns?: string;
-  @Input() keys!: string;
+  @Input() keys?: string;
   @Input() queryRows: number = 10;
   @Input() pageable: 'yes' | 'no' = 'no';
 
+  @Input() listItemType = 'text';
+  @Input() listTitleAttr = '';
+  @Input() listPrimaryAttr = '';
+  @Input() listSecondaryAttr = '';
+  @Input() listAvatarAttr = '';
+
+  @Input() gridCols?: number;
+  @Input() gridItemHeight?: string;
+  @Input() gridGutterSize?: string;
+  @Input() gridTitleAttr = '';
+  @Input() gridSubtitleAttr = '';
+  @Input() gridImageAttr = '';
+  @Input() gridFooterAttr = '';
+
   protected currentView = 'table';
 
-  changeView($event): void{
+  changeView($event): void {
     this.currentView = $event.value;
+
   }
 
- }
+  showData() {
+    console.log("datos list" + this.list.dataArray);
+  }
+
+}

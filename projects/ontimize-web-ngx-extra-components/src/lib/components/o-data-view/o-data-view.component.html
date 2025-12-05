@@ -6,16 +6,26 @@
 
 <div class="o-data-view-content">
 
-  <o-table *ngIf="currentView === 'table'" attr="dataViewTable" [service]="service" [entity]="entity" [columns]="columns"
+  <o-table *ngIf="currentView === 'table'" attr="dataViewTable" [service]="service" [service-type]="serviceType" [entity]="entity" [columns]="columns"
     [visible-columns]="visibleColumns || columns" [keys]="keys" [query-rows]="queryRows" [pageable]="pageable">
   </o-table>
 
-  <o-grid *ngIf="currentView === 'grid'" attr="dataViewGrid" [service]="service" [entity]="entity" [columns]="columns" [keys]="keys" [query-rows]="queryRows"
-    [pageable]="pageable">
+  <o-grid #grid *ngIf="currentView === 'grid'" attr="dataViewGrid" [service]="service" [service-type]="serviceType" [entity]="entity"
+    [columns]="columns" [keys]="keys" [query-rows]="queryRows" [pageable]="pageable">
+    <o-grid-item *ngFor="let row of grid.dataArray">
+      <o-column layout-padding>
+        {{ row | json }}
+      </o-column>
+    </o-grid-item>
   </o-grid>
 
-  <o-list *ngIf="currentView === 'list'" attr="dataViewList" [service]="service" [entity]="entity" [columns]="columns" [keys]="keys" [query-rows]="queryRows"
-    [pageable]="pageable">
+  <o-list #list *ngIf="currentView === 'list'" attr="dataViewList" [service]="service" [service-type]="serviceType" [entity]="entity"
+    [columns]="columns" [keys]="keys" [query-rows]="queryRows" [pageable]="pageable" (onDataLoaded)="showData()">
+    <o-list-item *ngFor="let row of list.dataArray">
+      <o-row layout-padding>
+        {{ row | json }}
+      </o-row>
+    </o-list-item>
   </o-list>
 
 </div>

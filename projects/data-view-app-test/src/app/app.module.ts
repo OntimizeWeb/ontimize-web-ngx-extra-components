@@ -5,10 +5,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { OExtraComponentsModule } from 'ontimize-web-ngx-extra-components';
-import { APP_CONFIG, ONTIMIZE_MODULES, ONTIMIZE_PROVIDERS, OntimizeWebModule } from 'ontimize-web-ngx';
+import { APP_CONFIG, ONTIMIZE_PROVIDERS, OntimizeWebModule } from 'ontimize-web-ngx';
 import { CONFIG } from './app.config';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
+import { CompaniesService } from '../services/companies.service';
 @NgModule({
   declarations: [
     AppComponent
@@ -23,7 +23,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   ],
   providers: [
     { provide: APP_CONFIG, useValue: CONFIG },
-    ...ONTIMIZE_PROVIDERS
+    ...ONTIMIZE_PROVIDERS,
+    // {provide: 'companies', useValue: CompaniesService}
+    CompaniesService
   ],
   bootstrap: [AppComponent]
 })

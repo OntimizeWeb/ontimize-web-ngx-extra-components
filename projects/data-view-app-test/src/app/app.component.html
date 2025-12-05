@@ -1,3 +1,5 @@
 <o-app-layout>
-  <o-data-view fxFlex="100"></o-data-view>
+  <o-data-view service="companies" entity="companies" keys="id" columns="id;name;sector;country;employees;annualRevenue;rating;foundedYear"
+    visibleColumns="name;sector;country;employees;annualRevenue;rating;foundedYear" fxFlex="100" listItemType="card" listTitleAttr="name"
+    listPrimaryAttr="sector" listSecondaryAttr="country"></o-data-view>
 </o-app-layout>
