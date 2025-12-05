@@ -54,6 +54,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "moment",
+              "google-libphonenumber"
+            ],
             "outputPath": "dist/data-view-app-test",
             "index": "projects/data-view-app-test/src/index.html",
             "main": "projects/data-view-app-test/src/main.ts",
@@ -69,7 +73,12 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "projects/data-view-app-test/src/favicon.ico",
-              "projects/data-view-app-test/src/assets"
+              "projects/data-view-app-test/src/assets",
+              {
+                "glob": "**/*",
+                "input": "node_modules/ontimize-web-ngx/assets",
+                "output": "assets"
+              }
             ],
             "styles": [
               "projects/data-view-app-test/src/styles.scss",
