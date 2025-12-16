@@ -1,31 +1,87 @@
-<o-button-toggle-group fxLayoutAlign="end" attr="toggleGroup" layout="row" multiple="no" value="table" layout-padding (onChange)="changeView($event)">
-  <o-button-toggle attr="toggle1" value="table" icon="table_chart"></o-button-toggle>
-  <o-button-toggle attr="toggle2" value="grid" icon="dashboard"></o-button-toggle>
+<o-button-toggle-group fxLayoutAlign="end" attr="toggleGroup" layout="row" multiple="no" [value]="currentView" layout-padding
+  (onChange)="changeView($event)">
+  <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
+  <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
   <o-button-toggle attr="toggle3" value="list" icon="list"></o-button-toggle>
 </o-button-toggle-group>
 
 <div class="o-data-view-content">
 
-  <o-table *ngIf="currentView === 'table'" attr="dataViewTable" [service]="service" [service-type]="serviceType" [entity]="entity" [columns]="columns"
-    [visible-columns]="visibleColumns || columns" [keys]="keys" [query-rows]="queryRows" [pageable]="pageable">
+  <o-table *ngIf="currentView === 'table'" [attr]="config.attr" [title]="config.title" [service]="config.service" [service-type]="config.serviceType"
+    [entity]="config.entity" [columns]="config.columns" [visible-columns]="tableCfg.visibleColumns || config.columns" [keys]="config.keys"
+    [configure-service-args]="config.configureServiceArgs" [query-method]="config.queryMethod" [paginated-query-method]="config.paginatedQueryMethod"
+    [query-rows]="config.queryRows" [pageable]="config.pageable" [query-on-init]="config.queryOnInit" [query-on-bind]="config.queryOnBind"
+    [query-with-null-parent-keys]="config.queryWithNullParentKeys" [query-fallback-function]="config.queryFallbackFunction"
+    [parent-keys]="config.parentKeys" [insert-method]="config.insertMethod" [update-method]="config.updateMethod"
+    [delete-method]="config.deleteMethod" [store-state]="config.storeState" [controls]="config.controls" [detail-form-route]="config.detailFormRoute"
+    [detail-mode]="config.detailMode" [recursive-detail]="config.recursiveDetail" [recursive-edit]="config.recursiveEdit"
+    [recursive-insert]="config.recursiveInsert" [edit-form-route]="config.editFormRoute" [insert-form-route]="config.insertFormRoute"
+    [filter-case-sensitive]="config.filterCaseSensitive" [row-height]="config.rowHeight" [quick-filter]="config.quickFilter"
+    [quick-filter-appearance]="config.quickFilterAppearance" [quick-filter-placeholder]="config.quickFilterPlaceholder"
+    [page-size-options]="config.pageSizeOptions" [pagination-controls]="config.paginationControls" [enabled]="tableCfg.enabled"
+    [visible]="config.visible" [auto-adjust]="tableCfg.autoAdjust" [auto-align-titles]="tableCfg.autoAlignTitles"
+    [collapse-grouped-columns]="tableCfg.collapseGroupedColumns" [columns-visibility-button]="tableCfg.columnsVisibilityButton"
+    [default-visible-columns]="tableCfg.defaultVisibleColumns" [delete-button]="tableCfg.deleteButton"
+    [detail-mode]="tableCfg.detailMode || config.detailMode" [edition-mode]="tableCfg.editionMode" [export-button]="tableCfg.exportButton"
+    [export-service-type]="tableCfg.exportServiceType" [filter-column-active-by-default]="tableCfg.filterColumnActiveByDefault"
+    [fixed-header]="tableCfg.fixedHeader" [groupable]="tableCfg.groupable" [grouped-columns]="tableCfg.groupedColumns"
+    [horizontal-scroll]="tableCfg.horizontalScroll" [keep-selected-items]="tableCfg.keepSelectedItems" [multiple-sort]="tableCfg.multipleSort"
+    [non-hidable-columns]="tableCfg.nonHidableColumns" [orderable]="tableCfg.orderable" [pagination-controls]="tableCfg.paginationControls"
+    [quick-filter-function]="tableCfg.quickFilterFunction" [refresh-button]="tableCfg.refreshButton" [resizable]="tableCfg.resizable"
+    [row-class]="tableCfg.rowClass" [select-all-checkbox]="tableCfg.selectAllCheckbox"
+    [select-all-checkbox-visible]="tableCfg.selectAllCheckboxVisible" [selection-mode]="tableCfg.selectionMode"
+    [show-buttons-text]="tableCfg.showButtonsText" [show-configuration-option]="tableCfg.showConfigurationOption"
+    [show-expandable-icon-function]="tableCfg.showExpandableIconFunction" [show-filter-option]="tableCfg.showFilterOption"
+    [show-paginator-first-last-buttons]="tableCfg.showPaginatorFirstLastButtons" [show-report-on-demand-option]="tableCfg.showReportOnDemandOption"
+    [show-reset-width-option]="tableCfg.showResetWidthOption" [show-title]="tableCfg.showTitle" [sort-columns]="tableCfg.sortColumns"
+    [virtual-scroll]="tableCfg.virtualScroll" [visible-export-dialog-buttons]="tableCfg.visibleExportDialogButtons">
   </o-table>
 
-  <o-grid #grid *ngIf="currentView === 'grid'" attr="dataViewGrid" [service]="service" [service-type]="serviceType" [entity]="entity"
-    [columns]="columns" [keys]="keys" [query-rows]="queryRows" [pageable]="pageable">
-    <o-grid-item *ngFor="let row of grid.dataArray">
-      <o-column layout-padding>
-        {{ row | json }}
-      </o-column>
-    </o-grid-item>
+  <o-grid *ngIf="currentView === 'grid'" #grid [attr]="config.attr" [title]="config.title" [service]="config.service"
+    [service-type]="config.serviceType" [entity]="config.entity" [columns]="config.columns" [keys]="config.keys"
+    [configure-service-args]="config.configureServiceArgs" [query-method]="config.queryMethod" [paginated-query-method]="config.paginatedQueryMethod"
+    [query-rows]="config.queryRows" [pageable]="config.pageable" [query-on-init]="config.queryOnInit" [query-on-bind]="config.queryOnBind"
+    [query-with-null-parent-keys]="config.queryWithNullParentKeys" [query-fallback-function]="config.queryFallbackFunction"
+    [parent-keys]="config.parentKeys" [store-state]="config.storeState" [controls]="config.controls" [detail-form-route]="config.detailFormRoute"
+    [detail-mode]="config.detailMode" [recursive-detail]="config.recursiveDetail" [quick-filter]="config.quickFilter"
+    [quick-filter-placeholder]="config.quickFilterPlaceholder" [page-size-options]="config.pageSizeOptions"
+    [pagination-controls]="config.paginationControls" [enabled]="config.enabled" [visible]="config.visible" [cols]="gridCfg.cols"
+    [fixed-header]="gridCfg.fixedHeader" [grid-item-height]="gridCfg.gridItemHeight" [gutter-size]="gridCfg.gutterSize"
+    [insert-button]="gridCfg.insertButton" [insert-button-floatable]="gridCfg.insertButtonFloatable"
+    [insert-button-position]="gridCfg.insertButtonPosition" [orderable]="gridCfg.orderable" [page-size-options]="gridCfg.pageSizeOptions"
+    [pagination-controls]="gridCfg.paginationControls" [quick-filter-columns]="gridCfg.quickFilterColumns" [refresh-button]="gridCfg.refreshButton"
+    [show-buttons-text]="gridCfg.showButtonsText" [show-footer]="gridCfg.showFooter" [show-page-size]="gridCfg.showPageSize"
+    [sort-column]="gridCfg.sortColumn" [sortable-columns]="gridCfg.sortableColumns">
+
+    <ng-container *ngFor="let row of grid.dataArray; let i = index">
+      <ng-container *ngIf="gridItemTpl?.template" [ngTemplateOutlet]="gridItemTpl.template"
+        [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
+      </ng-container>
+    </ng-container>
+
   </o-grid>
 
-  <o-list #list *ngIf="currentView === 'list'" attr="dataViewList" [service]="service" [service-type]="serviceType" [entity]="entity"
-    [columns]="columns" [keys]="keys" [query-rows]="queryRows" [pageable]="pageable" (onDataLoaded)="showData()">
-    <o-list-item *ngFor="let row of list.dataArray">
-      <o-row layout-padding>
-        {{ row | json }}
-      </o-row>
-    </o-list-item>
+  <o-list *ngIf="currentView === 'list'" #olist [attr]="config.attr" [title]="config.title" [service]="config.service"
+    [service-type]="config.serviceType" [entity]="config.entity" [columns]="config.columns" [keys]="config.keys"
+    [configure-service-args]="config.configureServiceArgs" [query-method]="config.queryMethod" [paginated-query-method]="config.paginatedQueryMethod"
+    [query-rows]="config.queryRows" [pageable]="config.pageable" [query-on-init]="config.queryOnInit" [query-on-bind]="config.queryOnBind"
+    [query-with-null-parent-keys]="config.queryWithNullParentKeys" [query-fallback-function]="config.queryFallbackFunction"
+    [parent-keys]="config.parentKeys" [store-state]="config.storeState" [controls]="config.controls" [detail-form-route]="config.detailFormRoute"
+    [detail-mode]="config.detailMode" [recursive-detail]="config.recursiveDetail" [quick-filter]="config.quickFilter"
+    [quick-filter-appearance]="config.quickFilterAppearance" [quick-filter-placeholder]="config.quickFilterPlaceholder"
+    [page-size-options]="config.pageSizeOptions" [pagination-controls]="config.paginationControls" [enabled]="config.enabled"
+    [visible]="config.visible" [delete-button]="listCfg.deleteButton" [dense]="listCfg.dense"
+    [insert-button-floatable]="listCfg.insertButtonFloatable" [insert-button-position]="listCfg.insertButtonPosition"
+    [keys-sql-types]="listCfg.keysSqlTypes" [pagination-controls]="listCfg.paginationControls" [quick-filter-columns]="listCfg.quickFilterColumns"
+    [refresh-button]="listCfg.refreshButton" [selectable]="listCfg.selectable" [show-buttons-text]="listCfg.showButtonsText"
+    [sort-columns]="listCfg.sortColumns">
+
+    <ng-container *ngFor="let row of olist.dataArray; let i = index">
+      <ng-container *ngIf="listItemTpl?.template" [ngTemplateOutlet]="listItemTpl.template"
+        [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
+      </ng-container>
+    </ng-container>
+
   </o-list>
 
 </div>

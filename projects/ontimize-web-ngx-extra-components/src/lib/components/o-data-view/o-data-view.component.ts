@@ -1,5 +1,8 @@
-import { Component, Input, ViewChild } from "@angular/core";
-import { OListComponent } from "ontimize-web-ngx";
+import { Component, ContentChild, Input, OnInit, ViewChild } from "@angular/core";
+import { OGridComponent, OListComponent, OTableComponent } from "ontimize-web-ngx";
+import { ODataViewConfig, ODataViewMode } from "./o-data-view.types";
+import { ODataViewGridItemDirective } from "./o-data-view-grid-item.directive";
+import { ODataViewListItemDirective } from "./o-data-view-list-item.directive";
 
 @Component({
   selector: 'o-data-view',
@@ -9,42 +12,27 @@ import { OListComponent } from "ontimize-web-ngx";
     '[class.o-data-view]': 'true'
   }
 })
-export class ODataViewComponent {
 
-  @ViewChild('list') list: OListComponent;
+export class ODataViewComponent implements OnInit {
 
-  @Input() service?: string;
-  @Input() serviceType?: string;
-  @Input() entity?: string;
-  @Input() columns?: string;
-  @Input() visibleColumns?: string;
-  @Input() keys?: string;
-  @Input() queryRows: number = 10;
-  @Input() pageable: 'yes' | 'no' = 'no';
+  @Input() config!: ODataViewConfig;
 
-  @Input() listItemType = 'text';
-  @Input() listTitleAttr = '';
-  @Input() listPrimaryAttr = '';
-  @Input() listSecondaryAttr = '';
-  @Input() listAvatarAttr = '';
+  @ContentChild(ODataViewGridItemDirective)
+  gridItemTpl?: ODataViewGridItemDirective;
 
-  @Input() gridCols?: number;
-  @Input() gridItemHeight?: string;
-  @Input() gridGutterSize?: string;
-  @Input() gridTitleAttr = '';
-  @Input() gridSubtitleAttr = '';
-  @Input() gridImageAttr = '';
-  @Input() gridFooterAttr = '';
+  @ContentChild(ODataViewListItemDirective)
+  listItemTpl?: ODataViewListItemDirective;
 
-  protected currentView = 'table';
+  currentView: ODataViewMode = 'table';
+
+  ngOnInit(): void {
+    if (this.config?.defaultView) {
+      this.currentView = this.config.defaultView;
+    }
+  }
 
   changeView($event): void {
     this.currentView = $event.value;
-
-  }
-
-  showData() {
-    console.log("datos list" + this.list.dataArray);
   }
 
 }

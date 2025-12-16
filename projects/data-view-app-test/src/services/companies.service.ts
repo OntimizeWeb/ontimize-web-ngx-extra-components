@@ -1,11 +1,8 @@
 import { Injectable, Injector } from '@angular/core';
 import {
-  Expression,
-  FilterExpressionUtils,
   Observable,
   OntimizeEEService,
   OntimizeServiceResponse,
-  Util
 } from 'ontimize-web-ngx';
 import { of } from 'rxjs';
 
@@ -133,6 +130,10 @@ export class CompaniesService extends OntimizeEEService {
 
   constructor(protected injector: Injector) {
     super(injector);
+  }
+
+  public getData(): any[]{
+    return this.companies.data;
   }
 
   public getCountries(): Observable<any> {

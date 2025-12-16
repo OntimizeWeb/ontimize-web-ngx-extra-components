@@ -1,0 +1,127 @@
+import { OConfigureServiceArgs, QuickFilterFunction } from "ontimize-web-ngx";
+
+export type ODataViewMode = 'table' | 'grid' | 'list';
+export type ODataViewListItemType = 'text' | 'avatar' | 'card' | 'card-image';
+
+export interface ODataViewConfig {
+  defaultView?: ODataViewMode;
+  attr?: string;
+  columns?: string;
+  configureServiceArgs?: OConfigureServiceArgs;
+  deleteMethod?: string; //en OGrid no
+  entity?: string;
+  insertMethod?: string; //en OGrid no
+  keys?: string;
+  pageable?: 'no' | 'false' | 'yes' | 'true';
+  paginatedQueryMethod?: string;
+  parentKeys?: string;
+  queryFallbackFunction?: Function;
+  queryMethod?: string;
+  queryOnBind?: 'no' | 'false' | 'yes' | 'true';
+  queryOnInit?: 'no' | 'false' | 'yes' | 'true';
+  queryRows?: number;
+  queryWithNullParentKeys?: 'no' | 'false' | 'yes' | 'true';
+  service?: string;
+  serviceType?: string;
+  staticData?: [];
+  storeState?: 'no' | 'false' | 'yes' | 'true';
+  updateMethod?: string; //en OGrid no
+  controls?: string;
+  detailButtonInRow?: string; //en OGrid no
+  detailButtonInRowIcon?: string; //en OGrid no
+  detailFormRoute?: string;
+  detailMode?: string;
+  editButtonInRow?: string; //en OGrid no
+  editButtonInRowIcon?: string; //en OGrid no
+  editFormRoute?: string; //en OGrid no
+  enabled?: string;
+  filterCaseSensitive?: string; //aparece solo en OTable from OServiceComponent //en OGrid no
+  insertButton?: string;//en OGrid no
+  insertFormRoute?: string;//en OGrid no
+  pageSizeOptions?: string;
+  paginationControls?: string;
+  quickFilter?: string;
+  quickFilterAppearance?: string; //aparece solo en OList from OServiceComponent
+  quickFilterPlaceholder?: string;
+  recursiveDetail?: string;
+  recursiveEdit?: string;//en OGrid no
+  recursiveInsert?: string;//en OGrid no
+  rowHeight?: string;//en OGrid no
+  title?: string;
+  visible?: string;
+  tableCfg: {
+    autoAdjust?: 'no' | 'false' | 'yes' | 'true';
+    autoAlignTitles?: 'no' | 'false' | 'yes' | 'true';
+    collapseGroupedColumns?: 'no' | 'false' | 'yes' | 'true';
+    columnsVisibilityButton?: 'no' | 'false' | 'yes' | 'true';
+    defaultVisibleColumns?: string;
+    deleteButton?: 'no' | 'false' | 'yes' | 'true';
+    detailMode?: 'none' | 'click' | 'dblclick';
+    disableSelectionFunction?: (item: any) => boolean;
+    editionMode?: 'none' | 'click' | 'dblclick';
+    enabled?: 'no' | 'false' | 'yes' | 'true';
+    exportButton?: 'no' | 'false' | 'yes' | 'true';
+    exportServiceType?: string;
+    filterColumnActiveByDefault?: 'no' | 'false' | 'yes' | 'true';
+    fixedHeader?: 'no' | 'false' | 'yes' | 'true';
+    groupable?: 'no' | 'false' | 'yes' | 'true';
+    groupedColumns?: string;
+    horizontalScroll?: 'no' | 'false' | 'yes' | 'true';
+    keepSelectedItems?: 'no' | 'false' | 'yes' | 'true';
+    multipleSort?: 'no' | 'false' | 'yes' | 'true';
+    nonHidableColumns?: string;
+    orderable?: 'no' | 'false' | 'yes' | 'true';
+    paginationControls?: 'no' | 'false' | 'yes' | 'true';
+    quickFilterFunction?: QuickFilterFunction;
+    refreshButton?: 'no' | 'false' | 'yes' | 'true';
+    resizable?: 'no' | 'false' | 'yes' | 'true';
+    rowClass?: (rowData: any, rowIndex: number) => string | string[];
+    selectAllCheckbox?: 'no' | 'false' | 'yes' | 'true';
+    selectAllCheckboxVisible?: 'no' | 'false' | 'yes' | 'true';
+    selectionMode?: 'none' | 'single' | 'multiple';
+    showButtonsText?: 'no' | 'false' | 'yes' | 'true';
+    showConfigurationOption?: 'no' | 'false' | 'yes' | 'true';
+    showExpandableIconFunction?: Function;
+    showFilterOption?: 'no' | 'false' | 'yes' | 'true';
+    showPaginatorFirstLastButtons?: 'no' | 'false' | 'yes' | 'true';
+    showReportOnDemandOption?: 'no' | 'false' | 'yes' | 'true';
+    showResetWidthOption?: 'no' | 'false' | 'yes' | 'true';
+    showTitle?: 'no' | 'false' | 'yes' | 'true';
+    sortColumns?: string;
+    virtualScroll?: 'no' | 'false' | 'yes' | 'true';
+    visibleColumns?: string;
+    visibleExportDialogButtons?: string;
+  };
+  gridCfg: {
+    cols?: number;
+    fixedHeader?: 'no' | 'false' | 'yes' | 'true';
+    gridItemHeight?: string | number;
+    gutterSize?: string;
+    insertButton?: 'no' | 'false' | 'yes' | 'true';
+    insertButtonFloatable?: 'no' | 'false' | 'yes' | 'true';
+    insertButtonPosition?: 'botton' | 'top';
+    orderable?: 'no' | 'false' | 'yes' | 'true';
+    pageSizeOptions?: [];
+    paginationControls?: 'no' | 'false' | 'yes' | 'true';
+    quickFilterColumns?: string;
+    refreshButton?: 'no' | 'false' | 'yes' | 'true';
+    showButtonsText?: 'no' | 'false' | 'yes' | 'true';
+    showFooter?: 'no' | 'false' | 'yes' | 'true';
+    showPageSize?: 'no' | 'false' | 'yes' | 'true';
+    sortColumn?: string;
+    sortableColumns?: string;
+  };
+  listCfg: {
+    deleteButton?: 'no' | 'false' | 'yes' | 'true';
+    dense?: 'no' | 'false' | 'yes' | 'true';
+    insertButtonFloatable?: 'no' | 'false' | 'yes' | 'true';
+    insertButtonPosition?: 'botton' | 'top';
+    keysSqlTypes?: string;
+    paginationControls?: 'no' | 'false' | 'yes' | 'true';
+    quickFilterColumns?: string;
+    refreshButton?: 'no' | 'false' | 'yes' | 'true';
+    selectable?: 'no' | 'false' | 'yes' | 'true';
+    showButtonsText?: 'no' | 'false' | 'yes' | 'true';
+    sortColumns?: string;
+  }
+}

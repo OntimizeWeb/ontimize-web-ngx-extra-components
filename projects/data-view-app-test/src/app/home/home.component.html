@@ -1,4 +1,19 @@
 <o-app-layout>
-  <o-data-view service="companies" entity="companies" keys="id" columns="id;name;sector;country;employees;annualRevenue;rating;foundedYear"
-    visibleColumns="name;sector;country;employees;annualRevenue;rating;foundedYear" fxFlex="100"></o-data-view>
+  <o-data-view [config]="config">
+
+    <ng-template oDataViewGridItem let-row>
+      <o-grid-item>
+        <o-column layout-padding>
+          <h3>{{ row.name }}</h3>
+          <div>{{ row.country }} · {{ row.sector }}</div>
+        </o-column>
+      </o-grid-item>
+    </ng-template>
+
+    <ng-template oDataViewListItem let-row>
+      <o-list-item-text title="row.name" primary-text="row.country" secondary-text="row.sector">
+      </o-list-item-text>
+    </ng-template>
+
+  </o-data-view>
 </o-app-layout>
