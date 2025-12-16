@@ -1,16 +1,13 @@
 import { OConfigureServiceArgs, QuickFilterFunction } from "ontimize-web-ngx";
 
 export type ODataViewMode = 'table' | 'grid' | 'list';
-export type ODataViewListItemType = 'text' | 'avatar' | 'card' | 'card-image';
 
 export interface ODataViewConfig {
   defaultView?: ODataViewMode;
   attr?: string;
   columns?: string;
   configureServiceArgs?: OConfigureServiceArgs;
-  deleteMethod?: string; //en OGrid no
   entity?: string;
-  insertMethod?: string; //en OGrid no
   keys?: string;
   pageable?: 'no' | 'false' | 'yes' | 'true';
   paginatedQueryMethod?: string;
@@ -23,33 +20,34 @@ export interface ODataViewConfig {
   queryWithNullParentKeys?: 'no' | 'false' | 'yes' | 'true';
   service?: string;
   serviceType?: string;
-  staticData?: [];
+  staticData?: any[];
   storeState?: 'no' | 'false' | 'yes' | 'true';
-  updateMethod?: string; //en OGrid no
   controls?: string;
-  detailButtonInRow?: string; //en OGrid no
-  detailButtonInRowIcon?: string; //en OGrid no
   detailFormRoute?: string;
   detailMode?: string;
-  editButtonInRow?: string; //en OGrid no
-  editButtonInRowIcon?: string; //en OGrid no
-  editFormRoute?: string; //en OGrid no
   enabled?: string;
-  filterCaseSensitive?: string; //aparece solo en OTable from OServiceComponent //en OGrid no
-  insertButton?: string;//en OGrid no
-  insertFormRoute?: string;//en OGrid no
   pageSizeOptions?: string;
   paginationControls?: string;
   quickFilter?: string;
-  quickFilterAppearance?: string; //aparece solo en OList from OServiceComponent
   quickFilterPlaceholder?: string;
   recursiveDetail?: string;
-  recursiveEdit?: string;//en OGrid no
-  recursiveInsert?: string;//en OGrid no
-  rowHeight?: string;//en OGrid no
   title?: string;
   visible?: string;
-  tableCfg: {
+  tableCfg?: {
+    deleteMethod?: string;
+    insertMethod?: string;
+    updateMethod?: string;
+    detailButtonInRow?: string;
+    detailButtonInRowIcon?: string;
+    editButtonInRow?: string;
+    editButtonInRowIcon?: string;
+    editFormRoute?: string;
+    filterCaseSensitive?: string;
+    insertButton?: string;
+    insertFormRoute?: string;
+    recursiveEdit?: string;
+    recursiveInsert?: string;
+    rowHeight?: string;
     autoAdjust?: 'no' | 'false' | 'yes' | 'true';
     autoAlignTitles?: 'no' | 'false' | 'yes' | 'true';
     collapseGroupedColumns?: 'no' | 'false' | 'yes' | 'true';
@@ -92,7 +90,7 @@ export interface ODataViewConfig {
     visibleColumns?: string;
     visibleExportDialogButtons?: string;
   };
-  gridCfg: {
+  gridCfg?: {
     cols?: number;
     fixedHeader?: 'no' | 'false' | 'yes' | 'true';
     gridItemHeight?: string | number;
@@ -101,7 +99,7 @@ export interface ODataViewConfig {
     insertButtonFloatable?: 'no' | 'false' | 'yes' | 'true';
     insertButtonPosition?: 'botton' | 'top';
     orderable?: 'no' | 'false' | 'yes' | 'true';
-    pageSizeOptions?: [];
+    pageSizeOptions?: any[];
     paginationControls?: 'no' | 'false' | 'yes' | 'true';
     quickFilterColumns?: string;
     refreshButton?: 'no' | 'false' | 'yes' | 'true';
@@ -111,9 +109,22 @@ export interface ODataViewConfig {
     sortColumn?: string;
     sortableColumns?: string;
   };
-  listCfg: {
+  listCfg?: {
+    deleteMethod?: string;
+    insertMethod?: string;
+    updateMethod?: string;
+    detailButtonInRow?: string;
+    detailButtonInRowIcon?: string;
+    editButtonInRow?: string;
+    editButtonInRowIcon?: string;
+    editFormRoute?: string;
+    insertButton?: string;
+    insertFormRoute?: string;
+    quickFilterAppearance?: string;
+    recursiveEdit?: string;
+    recursiveInsert?: string;
+    rowHeight?: string;
     deleteButton?: 'no' | 'false' | 'yes' | 'true';
-    dense?: 'no' | 'false' | 'yes' | 'true';
     insertButtonFloatable?: 'no' | 'false' | 'yes' | 'true';
     insertButtonPosition?: 'botton' | 'top';
     keysSqlTypes?: string;
