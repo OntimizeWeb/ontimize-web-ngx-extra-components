@@ -1,13 +1,13 @@
 <o-app-layout>
   <o-data-view [config]="config">
 
-    <ng-template oDataViewGridItem let-row>
-      {{ row.name }}
+    <ng-template oDataViewGridItem let-item>
+      <div>{{ item.name }}</div>
     </ng-template>
 
-      <ng-template oDataViewListItem let-row>
-        <o-list-item-text [title]="row.name"></o-list-item-text>
-      </ng-template>
+    <ng-template oDataViewListItem let-row>
+      <o-list-item-text [title]="row.name"></o-list-item-text>
+    </ng-template>
 
   </o-data-view>
 </o-app-layout>

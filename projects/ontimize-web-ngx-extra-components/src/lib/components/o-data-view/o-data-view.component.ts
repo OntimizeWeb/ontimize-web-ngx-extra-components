@@ -1,23 +1,39 @@
-import { AfterContentInit, ChangeDetectorRef, Component, ContentChild, Input, OnInit, ViewChild } from "@angular/core";
-import { OGridComponent, OListComponent, OTableComponent } from "ontimize-web-ngx";
-import { ODataViewConfig, ODataViewMode } from "./o-data-view.types";
-import { ODataViewGridItemDirective } from "./o-data-view-grid-item.directive";
-import { ODataViewListItemDirective } from "./o-data-view-list-item.directive";
+import {
+  ChangeDetectorRef,
+  Component,
+  ComponentRef,
+  ContentChild,
+  EmbeddedViewRef,
+  Injector,
+  Input,
+  OnDestroy,
+  TemplateRef,
+  ViewChild,
+  ViewContainerRef
+} from '@angular/core';
+import { Subscription } from 'rxjs';
+import { OGridComponent, OListComponent, OTableComponent } from 'ontimize-web-ngx';
+
+import { ODataViewConfig, ODataViewMode } from './o-data-view.types';
+import { ODataViewGridItemDirective } from './o-data-view-grid-item.directive';
+import { ODataViewListItemDirective } from './o-data-view-list-item.directive';
 
 @Component({
   selector: 'o-data-view',
   templateUrl: './o-data-view.component.html',
   styleUrls: ['./o-data-view.component.scss'],
-  host: {
-    '[class.o-data-view]': 'true'
-  }
+  host: { '[class.o-data-view]': 'true' }
 })
+export class ODataViewComponent implements OnDestroy {
 
-export class ODataViewComponent implements OnInit, AfterContentInit {
+  @ViewChild('tableHost', { read: ViewContainerRef, static: false })
+  private tableHost!: ViewContainerRef;
 
-  @Input() config!: ODataViewConfig;
+  @ViewChild('listHost', { read: ViewContainerRef, static: false })
+  private listHost!: ViewContainerRef;
 
-  @ViewChild('table') table: OTableComponent;
+  @ViewChild('listContentTpl', { static: true })
+  private listContentTpl!: TemplateRef<any>;
 
   @ContentChild(ODataViewGridItemDirective)
   gridItemTpl?: ODataViewGridItemDirective;
@@ -26,315 +42,245 @@ export class ODataViewComponent implements OnInit, AfterContentInit {
   listItemTpl?: ODataViewListItemDirective;
 
   currentView: ODataViewMode = 'table';
-  inputs: Record<string, any> = {};
+  gridData: any[] = [];
+  listData: any[] = [];
 
-  contentReady = false;
+  private tableRef?: ComponentRef<OTableComponent>;
+  private listRef?: ComponentRef<OListComponent>;
+  private listProjectedView?: EmbeddedViewRef<any>;
+  private subs = new Subscription();
 
-  constructor(private cdr: ChangeDetectorRef) { }
+  private _config: ODataViewConfig = {};
+  @Input()
+  set config(v: ODataViewConfig) {
+    this._config = v ?? {};
+    this.currentView = this._config.defaultView ?? 'table';
 
-  ngAfterContentInit(): void {
-    this.contentReady = true;
-    this.cdr.detectChanges(); // evita el NG0100
-    console.log('gridItemTplDir', this.gridItemTpl);
-    console.log('grid template', this.gridItemTpl?.template);
+    if (this._config.staticData) {
+      this.gridData = this._config.staticData;
+      this.listData = this._config.staticData;
+    }
+
+    this.ensureCurrentView();
+  }
+  get config(): ODataViewConfig {
+    return this._config;
   }
 
-  ngOnInit(): void {
-    if (this.config?.defaultView) {
-      this.currentView = this.config.defaultView;
+  constructor(
+    private injector: Injector,
+    private cdr: ChangeDetectorRef
+  ) { }
+
+  changeView(e: any): void {
+    const next: ODataViewMode = (e?.value ?? e) as ODataViewMode;
+    if (!next || next === this.currentView) return;
+    this.currentView = next;
+    this.ensureCurrentView();
+  }
+
+  private ensureCurrentView(): void {
+    this.cdr.detectChanges();
+    if (this.currentView === 'table') this.ensureTable();
+    if (this.currentView === 'list') this.ensureList();
+  }
+
+  handleGridDataLoaded(data: any[]): void {
+    if (Array.isArray(data)) {
+      this.gridData = data;
+      this.cdr.detectChanges();
     }
   }
 
-  ngAfterViewInit(): void {
-    console.log(this.table.columns);
-    console.log(this.table.visibleColumns);
-    console.log(this.table.dataArray);
+  private ensureTable(): void {
+    if (!this.tableHost) return;
+    this.tableHost.clear();
+    this.tableRef = this.tableHost.createComponent(OTableComponent, { injector: this.injector });
+    this.applyTableInputs(this._config);
+    this.cdr.detectChanges();
   }
 
-  changeView($event): void {
-    this.currentView = $event.value;
+  private ensureList(): void {
+    if (!this.listHost || !this.listItemTpl?.template) return;
+    this.listHost.clear();
+    const nodes = this.buildProjectedNodesForList();
+    this.listRef = this.listHost.createComponent(OListComponent, {
+      injector: this.injector,
+      projectableNodes: [nodes]
+    });
+    this.applyListInputs(this._config);
+    this.hookListData();
+    this.cdr.detectChanges();
   }
 
-  showData() {
-    console.log(this.table.dataArray);
+  private buildProjectedNodesForList(): any[] {
+    this.listProjectedView?.destroy();
+    this.listProjectedView = this.listContentTpl.createEmbeddedView({ $implicit: this });
+    this.listProjectedView.detectChanges();
+    return this.listProjectedView.rootNodes ?? [];
   }
 
-
-  private assignIfDefined(target: any, key: string, value: any): void {
-    if (value !== undefined) {
-      target[key] = value;
+  private hookListData(): void {
+    const inst: any = this.listRef?.instance;
+    if (!inst) return;
+    const emitter = inst.onDataLoaded;
+    if (emitter?.subscribe) {
+      this.subs.add(emitter.subscribe((data: any[]) => {
+        this.listData = data;
+        this.cdr.detectChanges();
+      }));
     }
   }
 
-  private buildTableInputs(cfg: ODataViewConfig): Record<string, any> {
-    const inputs: any = {};
+  private getSupportedInputs(ref: ComponentRef<any>): Set<string> {
+    const inputs = (ref.componentType as any)?.ɵcmp?.inputs ?? {};
+    return new Set(Object.keys(inputs));
+  }
 
-    const isStatic = Array.isArray(cfg.staticData) && cfg.staticData.length > 0;
-
-    // ======== ORDEN EXACTO como en ODataViewConfig (parte común) ========
-    // defaultView -> NO se pasa al o-table (solo lo usa tu o-data-view)
-    this.assignIfDefined(inputs, 'attr', cfg.attr);
-    this.assignIfDefined(inputs, 'columns', cfg.columns);
-    this.assignIfDefined(inputs, 'configureServiceArgs', cfg.configureServiceArgs);
-
-    // entity: solo si NO es static
-    if (!isStatic) this.assignIfDefined(inputs, 'entity', cfg.entity);
-
-    this.assignIfDefined(inputs, 'keys', cfg.keys);
-    this.assignIfDefined(inputs, 'pageable', cfg.pageable);
-    this.assignIfDefined(inputs, 'paginatedQueryMethod', cfg.paginatedQueryMethod);
-    this.assignIfDefined(inputs, 'parentKeys', cfg.parentKeys);
-    this.assignIfDefined(inputs, 'queryFallbackFunction', cfg.queryFallbackFunction);
-    this.assignIfDefined(inputs, 'queryMethod', cfg.queryMethod);
-    this.assignIfDefined(inputs, 'queryOnBind', cfg.queryOnBind);
-    this.assignIfDefined(inputs, 'queryOnInit', cfg.queryOnInit);
-    this.assignIfDefined(inputs, 'queryRows', cfg.queryRows);
-    this.assignIfDefined(inputs, 'queryWithNullParentKeys', cfg.queryWithNullParentKeys);
-
-    // service/serviceType: solo si NO es static
-    if (!isStatic) {
-      this.assignIfDefined(inputs, 'service', cfg.service);
-      this.assignIfDefined(inputs, 'serviceType', cfg.serviceType);
+  private setIfDefined(ref: ComponentRef<any>, inputKebab: string, value: any): void {
+    if (value !== undefined && this.getSupportedInputs(ref).has(inputKebab)) {
+      ref.setInput(inputKebab, value);
     }
+  }
+  private applyCommonInputs(ref: ComponentRef<any>, cfg: ODataViewConfig): void {
+    this.setIfDefined(ref, 'attr', cfg.attr);
+    this.setIfDefined(ref, 'columns', cfg.columns);
+    this.setIfDefined(ref, 'configure-service-args', cfg.configureServiceArgs);
+    this.setIfDefined(ref, 'entity', cfg.entity);
+    this.setIfDefined(ref, 'keys', cfg.keys);
+    this.setIfDefined(ref, 'pageable', cfg.pageable);
+    this.setIfDefined(ref, 'paginated-query-method', cfg.paginatedQueryMethod);
+    this.setIfDefined(ref, 'parent-keys', cfg.parentKeys);
+    this.setIfDefined(ref, 'query-fallback-function', cfg.queryFallbackFunction);
+    this.setIfDefined(ref, 'query-method', cfg.queryMethod);
+    this.setIfDefined(ref, 'query-on-bind', cfg.queryOnBind);
+    this.setIfDefined(ref, 'query-on-init', cfg.queryOnInit);
+    this.setIfDefined(ref, 'query-rows', cfg.queryRows);
+    this.setIfDefined(ref, 'query-with-null-parent-keys', cfg.queryWithNullParentKeys);
+    this.setIfDefined(ref, 'service', cfg.service);
+    this.setIfDefined(ref, 'service-type', cfg.serviceType);
+    this.setIfDefined(ref, 'static-data', cfg.staticData);
+    this.setIfDefined(ref, 'store-state', cfg.storeState);
+    this.setIfDefined(ref, 'controls', cfg.controls);
+    this.setIfDefined(ref, 'detail-form-route', cfg.detailFormRoute);
+    this.setIfDefined(ref, 'detail-mode', cfg.detailMode);
+    this.setIfDefined(ref, 'enabled', cfg.enabled);
+    this.setIfDefined(ref, 'page-size-options', cfg.pageSizeOptions);
+    this.setIfDefined(ref, 'pagination-controls', cfg.paginationControls);
+    this.setIfDefined(ref, 'quick-filter', cfg.quickFilter);
+    this.setIfDefined(ref, 'quick-filter-placeholder', cfg.quickFilterPlaceholder);
+    this.setIfDefined(ref, 'recursive-detail', cfg.recursiveDetail);
+    this.setIfDefined(ref, 'title', cfg.title);
+    this.setIfDefined(ref, 'visible', cfg.visible);
+  }
 
-    // staticData: SOLO si es static
-    if (isStatic) {
-      this.assignIfDefined(inputs, 'staticData', cfg.staticData);
-    }
+  private applyTableInputs(cfg: ODataViewConfig): void {
+    if (!this.tableRef) return;
+    const ref = this.tableRef;
 
-    this.assignIfDefined(inputs, 'storeState', cfg.storeState);
-    this.assignIfDefined(inputs, 'controls', cfg.controls);
-    this.assignIfDefined(inputs, 'detailFormRoute', cfg.detailFormRoute);
-    this.assignIfDefined(inputs, 'detailMode', cfg.detailMode);
-    this.assignIfDefined(inputs, 'enabled', cfg.enabled);
-    this.assignIfDefined(inputs, 'pageSizeOptions', cfg.pageSizeOptions);
-    this.assignIfDefined(inputs, 'paginationControls', cfg.paginationControls);
-    this.assignIfDefined(inputs, 'quickFilter', cfg.quickFilter);
-    // quickFilterAppearance (solo OList) -> NO aquí
-    this.assignIfDefined(inputs, 'quickFilterPlaceholder', cfg.quickFilterPlaceholder);
-    this.assignIfDefined(inputs, 'recursiveDetail', cfg.recursiveDetail);
-    // recursiveEdit/recursiveInsert/rowHeight -> los tienes en tableCfg/listCfg, no comunes
-    this.assignIfDefined(inputs, 'title', cfg.title);
-    this.assignIfDefined(inputs, 'visible', cfg.visible);
+    this.applyCommonInputs(ref, cfg);
 
-    // ======== ORDEN como en tableCfg ========
     const t = cfg.tableCfg;
-    if (t) {
-      this.assignIfDefined(inputs, 'deleteMethod', t.deleteMethod);
-      this.assignIfDefined(inputs, 'insertMethod', t.insertMethod);
-      this.assignIfDefined(inputs, 'updateMethod', t.updateMethod);
-      this.assignIfDefined(inputs, 'detailButtonInRow', t.detailButtonInRow);
-      this.assignIfDefined(inputs, 'detailButtonInRowIcon', t.detailButtonInRowIcon);
-      this.assignIfDefined(inputs, 'editButtonInRow', t.editButtonInRow);
-      this.assignIfDefined(inputs, 'editButtonInRowIcon', t.editButtonInRowIcon);
-      this.assignIfDefined(inputs, 'editFormRoute', t.editFormRoute);
-      this.assignIfDefined(inputs, 'filterCaseSensitive', t.filterCaseSensitive);
-      this.assignIfDefined(inputs, 'insertButton', t.insertButton);
-      this.assignIfDefined(inputs, 'insertFormRoute', t.insertFormRoute);
-      this.assignIfDefined(inputs, 'recursiveEdit', t.recursiveEdit);
-      this.assignIfDefined(inputs, 'recursiveInsert', t.recursiveInsert);
-      this.assignIfDefined(inputs, 'rowHeight', t.rowHeight);
+    this.setIfDefined(ref, 'delete-method', t?.deleteMethod);
+    this.setIfDefined(ref, 'insert-method', t?.insertMethod);
+    this.setIfDefined(ref, 'update-method', t?.updateMethod);
+    this.setIfDefined(ref, 'detail-button-in-row', t?.detailButtonInRow);
+    this.setIfDefined(ref, 'detail-button-in-row-icon', t?.detailButtonInRowIcon);
+    this.setIfDefined(ref, 'edit-button-in-row', t?.editButtonInRow);
+    this.setIfDefined(ref, 'edit-button-in-row-icon', t?.editButtonInRowIcon);
+    this.setIfDefined(ref, 'edit-form-route', t?.editFormRoute);
+    this.setIfDefined(ref, 'filter-case-sensitive', t?.filterCaseSensitive);
+    this.setIfDefined(ref, 'insert-button', t?.insertButton);
+    this.setIfDefined(ref, 'insert-form-route', t?.insertFormRoute);
+    this.setIfDefined(ref, 'recursive-edit', t?.recursiveEdit);
+    this.setIfDefined(ref, 'recursive-insert', t?.recursiveInsert);
+    this.setIfDefined(ref, 'row-height', t?.rowHeight);
+    this.setIfDefined(ref, 'auto-adjust', t?.autoAdjust);
+    this.setIfDefined(ref, 'auto-align-titles', t?.autoAlignTitles);
+    this.setIfDefined(ref, 'collapse-grouped-columns', t?.collapseGroupedColumns);
+    this.setIfDefined(ref, 'columns-visibility-button', t?.columnsVisibilityButton);
+    this.setIfDefined(ref, 'default-visible-columns', t?.defaultVisibleColumns);
+    this.setIfDefined(ref, 'delete-button', t?.deleteButton);
+    this.setIfDefined(ref, 'detail-mode', t?.detailMode);
+    this.setIfDefined(ref, 'disable-selection-function', t?.disableSelectionFunction);
+    this.setIfDefined(ref, 'edition-mode', t?.editionMode);
+    this.setIfDefined(ref, 'enabled', t?.enabled);
+    this.setIfDefined(ref, 'export-button', t?.exportButton);
+    this.setIfDefined(ref, 'export-service-type', t?.exportServiceType);
+    this.setIfDefined(ref, 'filter-column-active-by-default', t?.filterColumnActiveByDefault);
+    this.setIfDefined(ref, 'fixed-header', t?.fixedHeader);
+    this.setIfDefined(ref, 'groupable', t?.groupable);
+    this.setIfDefined(ref, 'grouped-columns', t?.groupedColumns);
+    this.setIfDefined(ref, 'horizontal-scroll', t?.horizontalScroll);
+    this.setIfDefined(ref, 'keep-selected-items', t?.keepSelectedItems);
+    this.setIfDefined(ref, 'multiple-sort', t?.multipleSort);
+    this.setIfDefined(ref, 'non-hidable-columns', t?.nonHidableColumns);
+    this.setIfDefined(ref, 'orderable', t?.orderable);
+    this.setIfDefined(ref, 'pagination-controls', t?.paginationControls);
+    this.setIfDefined(ref, 'quick-filter-function', t?.quickFilterFunction);
+    this.setIfDefined(ref, 'refresh-button', t?.refreshButton);
+    this.setIfDefined(ref, 'resizable', t?.resizable);
+    this.setIfDefined(ref, 'row-class', t?.rowClass);
+    this.setIfDefined(ref, 'select-all-checkbox', t?.selectAllCheckbox);
+    this.setIfDefined(ref, 'select-all-checkbox-visible', t?.selectAllCheckboxVisible);
+    this.setIfDefined(ref, 'selection-mode', t?.selectionMode);
+    this.setIfDefined(ref, 'show-buttons-text', t?.showButtonsText);
+    this.setIfDefined(ref, 'show-configuration-option', t?.showConfigurationOption);
+    this.setIfDefined(ref, 'show-expandable-icon-function', t?.showExpandableIconFunction);
+    this.setIfDefined(ref, 'show-filter-option', t?.showFilterOption);
+    this.setIfDefined(ref, 'show-paginator-first-last-buttons', t?.showPaginatorFirstLastButtons);
+    this.setIfDefined(ref, 'show-report-on-demand-option', t?.showReportOnDemandOption);
+    this.setIfDefined(ref, 'show-reset-width-option', t?.showResetWidthOption);
+    this.setIfDefined(ref, 'show-title', t?.showTitle);
+    this.setIfDefined(ref, 'sort-columns', t?.sortColumns);
+    this.setIfDefined(ref, 'virtual-scroll', t?.virtualScroll);
+    this.setIfDefined(ref, 'visible-columns', t?.visibleColumns);
+    this.setIfDefined(ref, 'visible-export-dialog-buttons', t?.visibleExportDialogButtons);
 
-      this.assignIfDefined(inputs, 'autoAdjust', t.autoAdjust);
-      this.assignIfDefined(inputs, 'autoAlignTitles', t.autoAlignTitles);
-      this.assignIfDefined(inputs, 'collapseGroupedColumns', t.collapseGroupedColumns);
-      this.assignIfDefined(inputs, 'columnsVisibilityButton', t.columnsVisibilityButton);
-      this.assignIfDefined(inputs, 'defaultVisibleColumns', t.defaultVisibleColumns);
-      this.assignIfDefined(inputs, 'deleteButton', t.deleteButton);
-      this.assignIfDefined(inputs, 'detailMode', t.detailMode);
-      this.assignIfDefined(inputs, 'disableSelectionFunction', t.disableSelectionFunction);
-      this.assignIfDefined(inputs, 'editionMode', t.editionMode);
-      this.assignIfDefined(inputs, 'enabled', t.enabled);
-      this.assignIfDefined(inputs, 'exportButton', t.exportButton);
-      this.assignIfDefined(inputs, 'exportServiceType', t.exportServiceType);
-      this.assignIfDefined(inputs, 'filterColumnActiveByDefault', t.filterColumnActiveByDefault);
-      this.assignIfDefined(inputs, 'fixedHeader', t.fixedHeader);
-      this.assignIfDefined(inputs, 'groupable', t.groupable);
-      this.assignIfDefined(inputs, 'groupedColumns', t.groupedColumns);
-      this.assignIfDefined(inputs, 'horizontalScroll', t.horizontalScroll);
-      this.assignIfDefined(inputs, 'keepSelectedItems', t.keepSelectedItems);
-      this.assignIfDefined(inputs, 'multipleSort', t.multipleSort);
-      this.assignIfDefined(inputs, 'nonHidableColumns', t.nonHidableColumns);
-      this.assignIfDefined(inputs, 'orderable', t.orderable);
-      this.assignIfDefined(inputs, 'paginationControls', t.paginationControls);
-      this.assignIfDefined(inputs, 'quickFilterFunction', t.quickFilterFunction);
-      this.assignIfDefined(inputs, 'refreshButton', t.refreshButton);
-      this.assignIfDefined(inputs, 'resizable', t.resizable);
-      this.assignIfDefined(inputs, 'rowClass', t.rowClass);
-      this.assignIfDefined(inputs, 'selectAllCheckbox', t.selectAllCheckbox);
-      this.assignIfDefined(inputs, 'selectAllCheckboxVisible', t.selectAllCheckboxVisible);
-      this.assignIfDefined(inputs, 'selectionMode', t.selectionMode);
-      this.assignIfDefined(inputs, 'showButtonsText', t.showButtonsText);
-      this.assignIfDefined(inputs, 'showConfigurationOption', t.showConfigurationOption);
-      this.assignIfDefined(inputs, 'showExpandableIconFunction', t.showExpandableIconFunction);
-      this.assignIfDefined(inputs, 'showFilterOption', t.showFilterOption);
-      this.assignIfDefined(inputs, 'showPaginatorFirstLastButtons', t.showPaginatorFirstLastButtons);
-      this.assignIfDefined(inputs, 'showReportOnDemandOption', t.showReportOnDemandOption);
-      this.assignIfDefined(inputs, 'showResetWidthOption', t.showResetWidthOption);
-      this.assignIfDefined(inputs, 'showTitle', t.showTitle);
-      this.assignIfDefined(inputs, 'sortColumns', t.sortColumns);
-      this.assignIfDefined(inputs, 'virtualScroll', t.virtualScroll);
-      this.assignIfDefined(inputs, 'visibleColumns', t.visibleColumns);
-      this.assignIfDefined(inputs, 'visibleExportDialogButtons', t.visibleExportDialogButtons);
-    }
-
-    return inputs;
+    this.cdr.detectChanges();
   }
 
 
 
-  private get common(): Record<string, any> {
-    const c = this.config || {};
-    return {
-      attr: c.attr,
-      title: c.title,
-      service: c.service,
-      serviceType: c.serviceType,
-      entity: c.entity,
-      columns: c.columns,
-      keys: c.keys,
-      configureServiceArgs: c.configureServiceArgs,
-      queryMethod: c.queryMethod,
-      paginatedQueryMethod: c.paginatedQueryMethod,
-      queryRows: c.queryRows,
-      pageable: c.pageable,
-      queryOnInit: c.queryOnInit,
-      queryOnBind: c.queryOnBind,
-      queryWithNullParentKeys: c.queryWithNullParentKeys,
-      queryFallbackFunction: c.queryFallbackFunction,
-      parentKeys: c.parentKeys,
-      storeState: c.storeState,
-      staticData: c.staticData,
-      controls: c.controls,
-      detailFormRoute: c.detailFormRoute,
-      detailMode: c.detailMode,
-      recursiveDetail: c.recursiveDetail,
-      enabled: c.enabled,
-      visible: c.visible,
-      pageSizeOptions: c.pageSizeOptions,
-      paginationControls: c.paginationControls,
-      quickFilter: c.quickFilter,
-      quickFilterPlaceholder: c.quickFilterPlaceholder
-    };
+  private applyListInputs(cfg: ODataViewConfig): void {
+    if (!this.listRef) return;
+    const ref = this.listRef;
+
+    this.applyCommonInputs(ref, cfg);
+
+    const l = cfg.listCfg;
+    this.setIfDefined(ref, 'delete-method', l?.deleteMethod);
+    this.setIfDefined(ref, 'insert-method', l?.insertMethod);
+    this.setIfDefined(ref, 'update-method', l?.updateMethod);
+    this.setIfDefined(ref, 'detail-button-in-row', l?.detailButtonInRow);
+    this.setIfDefined(ref, 'detail-button-in-row-icon', l?.detailButtonInRowIcon);
+    this.setIfDefined(ref, 'edit-button-in-row', l?.editButtonInRow);
+    this.setIfDefined(ref, 'edit-button-in-row-icon', l?.editButtonInRowIcon);
+    this.setIfDefined(ref, 'edit-form-route', l?.editFormRoute);
+    this.setIfDefined(ref, 'insert-button', l?.insertButton);
+    this.setIfDefined(ref, 'insert-form-route', l?.insertFormRoute);
+    this.setIfDefined(ref, 'quick-filter-appearance', l?.quickFilterAppearance);
+    this.setIfDefined(ref, 'recursive-edit', l?.recursiveEdit);
+    this.setIfDefined(ref, 'recursive-insert', l?.recursiveInsert);
+    this.setIfDefined(ref, 'row-height', l?.rowHeight);
+    this.setIfDefined(ref, 'delete-button', l?.deleteButton);
+    this.setIfDefined(ref, 'insert-button-floatable', l?.insertButtonFloatable);
+    this.setIfDefined(ref, 'insert-button-position', l?.insertButtonPosition);
+    this.setIfDefined(ref, 'keys-sql-types', l?.keysSqlTypes);
+    this.setIfDefined(ref, 'pagination-controls', l?.paginationControls);
+    this.setIfDefined(ref, 'quick-filter-columns', l?.quickFilterColumns);
+    this.setIfDefined(ref, 'refresh-button', l?.refreshButton);
+    this.setIfDefined(ref, 'selectable', l?.selectable);
+    this.setIfDefined(ref, 'show-buttons-text', l?.showButtonsText);
+    this.setIfDefined(ref, 'sort-columns', l?.sortColumns);
+
+    this.cdr.detectChanges();
   }
 
-  get tableInputs(): Record<string, any> {
-    const c = this.config || {};
-    const t = c.tableCfg || {};
-
-    return {
-      ...this.common,
-      deleteMethod: t.deleteMethod,
-      insertMethod: t.insertMethod,
-      updateMethod: t.updateMethod,
-      detailButtonInRow: t.detailButtonInRow,
-      detailButtonInRowIcon: t.detailButtonInRowIcon,
-      editButtonInRow: t.editButtonInRow,
-      editButtonInRowIcon: t.editButtonInRowIcon,
-      editFormRoute: t.editFormRoute,
-      insertButton: t.insertButton,
-      insertFormRoute: t.insertFormRoute,
-      filterCaseSensitive: t.filterCaseSensitive,
-      recursiveEdit: t.recursiveEdit,
-      recursiveInsert: t.recursiveInsert,
-      rowHeight: t.rowHeight,
-      autoAdjust: t.autoAdjust,
-      autoAlignTitles: t.autoAlignTitles,
-      collapseGroupedColumns: t.collapseGroupedColumns,
-      columnsVisibilityButton: t.columnsVisibilityButton,
-      defaultVisibleColumns: t.defaultVisibleColumns,
-      deleteButton: t.deleteButton,
-      detailMode: t.detailMode ?? c.detailMode,
-      disableSelectionFunction: t.disableSelectionFunction,
-      editionMode: t.editionMode,
-      enabled: t.enabled ?? c.enabled,
-      exportButton: t.exportButton,
-      exportServiceType: t.exportServiceType,
-      filterColumnActiveByDefault: t.filterColumnActiveByDefault,
-      fixedHeader: t.fixedHeader,
-      groupable: t.groupable,
-      groupedColumns: t.groupedColumns,
-      horizontalScroll: t.horizontalScroll,
-      keepSelectedItems: t.keepSelectedItems,
-      multipleSort: t.multipleSort,
-      nonHidableColumns: t.nonHidableColumns,
-      orderable: t.orderable,
-      paginationControls: t.paginationControls,
-      quickFilterFunction: t.quickFilterFunction,
-      refreshButton: t.refreshButton,
-      resizable: t.resizable,
-      rowClass: t.rowClass,
-      selectAllCheckbox: t.selectAllCheckbox,
-      selectAllCheckboxVisible: t.selectAllCheckboxVisible,
-      selectionMode: t.selectionMode,
-      showButtonsText: t.showButtonsText,
-      showConfigurationOption: t.showConfigurationOption,
-      showExpandableIconFunction: t.showExpandableIconFunction,
-      showFilterOption: t.showFilterOption,
-      showPaginatorFirstLastButtons: t.showPaginatorFirstLastButtons,
-      showReportOnDemandOption: t.showReportOnDemandOption,
-      showResetWidthOption: t.showResetWidthOption,
-      showTitle: t.showTitle,
-      sortColumns: t.sortColumns,
-      virtualScroll: t.virtualScroll,
-      visibleColumns: t.visibleColumns,
-      visibleExportDialogButtons: t.visibleExportDialogButtons
-    };
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+    this.tableRef?.destroy();
+    this.listRef?.destroy();
+    this.listProjectedView?.destroy();
   }
-
-  get gridInputs(): Record<string, any> {
-    const g = this.config?.gridCfg || {};
-    return {
-      ...this.common,
-      cols: g.cols,
-      fixedHeader: g.fixedHeader,
-      gridItemHeight: g.gridItemHeight,
-      gutterSize: g.gutterSize,
-      insertButton: g.insertButton,
-      insertButtonFloatable: g.insertButtonFloatable,
-      insertButtonPosition: g.insertButtonPosition,
-      orderable: g.orderable,
-      pageSizeOptions: g.pageSizeOptions,
-      paginationControls: g.paginationControls,
-      quickFilterColumns: g.quickFilterColumns,
-      refreshButton: g.refreshButton,
-      showButtonsText: g.showButtonsText,
-      showFooter: g.showFooter,
-      showPageSize: g.showPageSize,
-      sortColumn: g.sortColumn,
-      sortableColumns: g.sortableColumns
-    };
-  }
-
-  get listInputs(): Record<string, any> {
-    const l = this.config?.listCfg || {};
-    return {
-      ...this.common,
-      deleteMethod: l.deleteMethod,
-      insertMethod: l.insertMethod,
-      updateMethod: l.updateMethod,
-      detailButtonInRow: l.detailButtonInRow,
-      detailButtonInRowIcon: l.detailButtonInRowIcon,
-      editButtonInRow: l.editButtonInRow,
-      editButtonInRowIcon: l.editButtonInRowIcon,
-      editFormRoute: l.editFormRoute,
-      insertButton: l.insertButton,
-      insertFormRoute: l.insertFormRoute,
-      quickFilterAppearance: l.quickFilterAppearance,
-      recursiveEdit: l.recursiveEdit,
-      recursiveInsert: l.recursiveInsert,
-      rowHeight: l.rowHeight,
-      deleteButton: l.deleteButton,
-      insertButtonFloatable: l.insertButtonFloatable,
-      insertButtonPosition: l.insertButtonPosition,
-      keysSqlTypes: l.keysSqlTypes,
-      paginationControls: l.paginationControls,
-      quickFilterColumns: l.quickFilterColumns,
-      refreshButton: l.refreshButton,
-      selectable: l.selectable,
-      showButtonsText: l.showButtonsText,
-      sortColumns: l.sortColumns
-    };
-  }
-
 }

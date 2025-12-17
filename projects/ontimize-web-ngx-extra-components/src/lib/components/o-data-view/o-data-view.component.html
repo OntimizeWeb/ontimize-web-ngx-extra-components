@@ -1,35 +1,36 @@
 <o-button-toggle-group fxLayoutAlign="end" attr="toggleGroup" layout="row" multiple="no" [value]="currentView" layout-padding
   (onChange)="changeView($event)">
+
   <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
   <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
   <o-button-toggle attr="toggle3" value="list" icon="list"></o-button-toggle>
 </o-button-toggle-group>
 
-<div class="o-data-view-content">
+<div class="o-data-view-container">
+  <div *ngIf="currentView === 'table'" #tableHost class="view-host"></div>
 
-  <o-table *ngIf="currentView === 'table'" #table [static-data]="config.staticData" [keys]="config.keys" [columns]="config.columns">
-  </o-table>
+  <div *ngIf="currentView === 'list'" #listHost class="view-host"></div>
 
-  <o-grid *ngIf="currentView === 'grid'" #grid [static-data]="config.staticData" [keys]="config.keys" [columns]="config.columns">
+  <div *ngIf="currentView === 'grid'" class="view-host">
+    <o-grid [attr]="config.attr || 'grid-view'" [title]="config.title" [service]="config.service" [entity]="config.entity" [columns]="config.columns"
+      [query-on-init]="config.queryOnInit" [query-on-bind]="config.queryOnBind" [static-data]="gridData" [cols]="config.gridCfg?.cols || 4"
+      [grid-item-height]="config.gridCfg?.gridItemHeight || '1:1'" [gutter-size]="config.gridCfg?.gutterSize || '16px'"
+      (onDataLoaded)="handleGridDataLoaded($event)">
 
-    <ng-container *ngIf="gridItemTpl?.template as tpl">
-      <o-grid-item *ngFor="let row of grid.dataArray; let i = index">
-        <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
+      <o-grid-item *ngFor="let item of gridData">
+        <ng-container *ngTemplateOutlet="gridItemTpl?.template; context: { $implicit: item }">
         </ng-container>
       </o-grid-item>
-    </ng-container>
 
-  </o-grid>
+    </o-grid>
+  </div>
+</div>
 
-  <o-list *ngIf="currentView === 'list'" #list [static-data]="config.staticData" [keys]="config.keys" [columns]="config.columns">
-
-    <ng-container *ngIf="listItemTpl?.template">
-      <ng-container *ngFor="let row of list.dataArray; let i = index">
-        <ng-container [ngTemplateOutlet]="listItemTpl!.template" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
-        </ng-container>
+<ng-template #listContentTpl>
+  <ng-container *ngIf="listItemTpl?.template as tpl">
+    <ng-container *ngFor="let row of listData; let i = index">
+      <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
       </ng-container>
     </ng-container>
-
-  </o-list>
-
-</div>
+  </ng-container>
+</ng-template>
