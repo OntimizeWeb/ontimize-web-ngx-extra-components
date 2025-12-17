@@ -12,9 +12,9 @@
 
   <o-grid *ngIf="currentView === 'grid'" #grid [static-data]="config.staticData" [keys]="config.keys" [columns]="config.columns">
 
-    <ng-container *ngIf="contentReady && gridItemTpl?.template">
-      <o-grid-item *ngFor="let row of (grid?.dataArray || []); let i = index">
-        <ng-container [ngTemplateOutlet]="gridItemTpl.template" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
+    <ng-container *ngIf="gridItemTpl?.template as tpl">
+      <o-grid-item *ngFor="let row of grid.dataArray; let i = index">
+        <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
         </ng-container>
       </o-grid-item>
     </ng-container>
@@ -24,7 +24,7 @@
   <o-list *ngIf="currentView === 'list'" #list [static-data]="config.staticData" [keys]="config.keys" [columns]="config.columns">
 
     <ng-container *ngIf="listItemTpl?.template">
-      <ng-container *ngFor="let row of (list?.dataArray || []); let i = index">
+      <ng-container *ngFor="let row of list.dataArray; let i = index">
         <ng-container [ngTemplateOutlet]="listItemTpl!.template" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
         </ng-container>
       </ng-container>

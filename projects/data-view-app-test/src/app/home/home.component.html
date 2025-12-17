@@ -5,10 +5,9 @@
       {{ row.name }}
     </ng-template>
 
-    <ng-template oDataViewListItem let-row>
-      <o-list-item-text [title]="row.name" [primary-text]="row.country" [secondary-text]="row.sector">
-      </o-list-item-text>
-    </ng-template>
+      <ng-template oDataViewListItem let-row>
+        <o-list-item-text [title]="row.name"></o-list-item-text>
+      </ng-template>
 
   </o-data-view>
 </o-app-layout>
