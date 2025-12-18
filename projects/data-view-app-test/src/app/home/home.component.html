@@ -1,12 +1,35 @@
 <o-app-layout>
-  <o-data-view default-view="list" attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price">
+  <o-data-view default-view="list" attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;score;image">
 
     <ng-template oDataViewGridItem let-item>
-      <div>{{ item.name }}</div>
+      <div class="card-bg">
+        <img [src]="item.image">
+        <div class="card-content" fxLayout="column" fxFlexFill fxLayoutGap="16px">
+          <span fxLayout="row wrap" fxLayoutAlign="center center" fxFlex="60%" class="grid-card-title">{{item.name}}</span>
+          <span fxLayout="row" fxLayoutAlign="center start" fxFlex="10%" class="grid-card-text">{{item.location | uppercase}}</span>
+          <div fxLayout="row" fxLayoutAlign="space-between" fxFlex class="card-content-last-row">
+            <div fxLayout="column">
+              <div fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="4px">
+                <span class="grid-card-text">{{item.score}}</span>
+                <mat-icon>star</mat-icon>
+              </div>
+            </div>
+            <span fxLayout="column" class="grid-card-text">{{item.price | currency:'EUR'}}</span>
+          </div>
+        </div>
+      </div>
     </ng-template>
 
     <ng-template oDataViewListItem let-row>
-      <o-list-item-text [title]="row.name"></o-list-item-text>
+      <mat-card>
+        <mat-card-header>
+          <div mat-card-avatar>
+            <img src="{{ row.image }}" fxFill />
+          </div>
+          <mat-card-title>{{ row.name }}</mat-card-title>
+          <mat-card-subtitle>{{ row.location }}</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
     </ng-template>
 
   </o-data-view>
