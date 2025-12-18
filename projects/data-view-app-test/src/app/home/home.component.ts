@@ -1,6 +1,5 @@
 import { Component, Injector, OnInit } from '@angular/core';
 import { CompaniesService } from '../../services/companies.service';
-import { ODataViewConfig } from '../../../../ontimize-web-ngx-extra-components/src/lib/components/o-data-view/o-data-view.types';
 
 @Component({
   selector: 'app-home',
@@ -9,7 +8,7 @@ import { ODataViewConfig } from '../../../../ontimize-web-ngx-extra-components/s
 })
 export class HomeComponent implements OnInit {
 
-  config: ODataViewConfig = {
+  config = {
     defaultView: 'table',
     staticData: [
       {

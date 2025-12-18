@@ -3,6 +3,7 @@ import { OntimizeWebModule } from 'ontimize-web-ngx';
 
 import { HomeComponent } from './home.component';
 import { OExtraComponentsModule } from 'ontimize-web-ngx-extra-components';
+import { PacksService } from '../../services/packs.service';
 
 
 @NgModule({
@@ -12,6 +13,10 @@ import { OExtraComponentsModule } from 'ontimize-web-ngx-extra-components';
   ],
   declarations: [
     HomeComponent
-  ]
+  ],
+  providers: [{
+    provide: 'packs',
+    useValue: PacksService
+  }]
 })
 export class HomeModule { }

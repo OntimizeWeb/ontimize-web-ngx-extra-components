@@ -9,14 +9,14 @@
 <div class="o-data-view-container">
 
   <o-table #table *ngIf="currentView === 'table'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
-    [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
+    [pageable]="r_pageable" [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
     [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit" [query-rows]="r_queryRows"
     [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType" [static-data]="r_staticData"
     [store-state]="r_storeState">
   </o-table>
 
   <o-grid #grid *ngIf="currentView === 'grid'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
-    [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
+    [pageable]="r_pageable" [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
     [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit" [query-rows]="r_queryRows"
     [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType" [static-data]="r_staticData"
     [store-state]="r_storeState">
@@ -31,7 +31,7 @@
   </o-grid>
 
   <o-list #list *ngIf="currentView === 'list'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
-    [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
+    [pageable]="r_pageable" [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
     [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit" [query-rows]="r_queryRows"
     [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType" [static-data]="r_staticData"
     [store-state]="r_storeState">

@@ -1,5 +1,5 @@
 <o-app-layout>
-  <o-data-view defaultView="grid" attr="dataView" [static-data]="config.staticData" title="My title" keys="id" columns="id;name;sector;country">
+  <o-data-view default-view="list" attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price">
 
     <ng-template oDataViewGridItem let-item>
       <div>{{ item.name }}</div>

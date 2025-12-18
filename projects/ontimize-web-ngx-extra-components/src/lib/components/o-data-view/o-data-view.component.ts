@@ -2,6 +2,7 @@ import { Component, ContentChild, Input, OnChanges, SimpleChanges } from '@angul
 import { OConfigureServiceArgs } from 'ontimize-web-ngx';
 import { ODataViewGridItemDirective } from './o-data-view-grid-item.directive';
 import { ODataViewListItemDirective } from './o-data-view-list-item.directive';
+import { ODataViewMode } from './o-data-view.types';
 
 @Component({
   selector: 'o-data-view',
@@ -15,9 +16,10 @@ export class ODataViewComponent implements OnChanges {
   @ContentChild(ODataViewListItemDirective)
   listItemTpl?: ODataViewListItemDirective;
 
-  protected currentView = 'table';
+  @Input('default-view') defaultView?: ODataViewMode;
 
-  // ===== Inputs comunes =====
+  protected currentView: ODataViewMode = 'table';
+
   @Input() attr?: string;
   @Input() columns?: string;
   @Input('configure-service-args') configureServiceArgs?: OConfigureServiceArgs;
@@ -38,7 +40,6 @@ export class ODataViewComponent implements OnChanges {
   @Input('store-state') storeState?: string;
 
 
-  // ===== Resueltos =====
   r_attr?: string;
   r_columns?: string;
   r_configureServiceArgs?: OConfigureServiceArgs;
@@ -63,7 +64,10 @@ export class ODataViewComponent implements OnChanges {
     this.currentView = $event.value;
   }
 
-  ngOnChanges(_: SimpleChanges): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['defaultView']) {
+      this.currentView = this.defaultView ?? 'table';
+    }
     this.resolveCommonInputs();
   }
 
@@ -85,7 +89,7 @@ export class ODataViewComponent implements OnChanges {
     this.r_queryOnBind = this.setDefaultValue(this.queryOnBind, 'yes');
     this.r_queryWithNullParentKeys = this.setDefaultValue(this.queryWithNullParentKeys, 'no');
     this.r_storeState = this.setDefaultValue(this.storeState, 'yes');
-    const queryRows_string = this.setDefaultValue(this.queryRows.toString(), '10');
+    const queryRows_string = this.setDefaultValue(this.queryRows?.toString(), '10');
     this.r_queryRows = Number(queryRows_string);
   }
 
