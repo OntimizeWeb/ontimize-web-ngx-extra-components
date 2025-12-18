@@ -7,30 +7,42 @@
 </o-button-toggle-group>
 
 <div class="o-data-view-container">
-  <div *ngIf="currentView === 'table'" #tableHost class="view-host"></div>
 
-  <div *ngIf="currentView === 'list'" #listHost class="view-host"></div>
+  <o-table #table *ngIf="currentView === 'table'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
+    [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
+    [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit" [query-rows]="r_queryRows"
+    [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType" [static-data]="r_staticData"
+    [store-state]="r_storeState">
+  </o-table>
 
-  <div *ngIf="currentView === 'grid'" class="view-host">
-    <o-grid [attr]="config.attr || 'grid-view'" [title]="config.title" [service]="config.service" [entity]="config.entity" [columns]="config.columns"
-      [query-on-init]="config.queryOnInit" [query-on-bind]="config.queryOnBind" [static-data]="gridData" [cols]="config.gridCfg?.cols || 4"
-      [grid-item-height]="config.gridCfg?.gridItemHeight || '1:1'" [gutter-size]="config.gridCfg?.gutterSize || '16px'"
-      (onDataLoaded)="handleGridDataLoaded($event)">
+  <o-grid #grid *ngIf="currentView === 'grid'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
+    [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
+    [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit" [query-rows]="r_queryRows"
+    [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType" [static-data]="r_staticData"
+    [store-state]="r_storeState">
 
-      <o-grid-item *ngFor="let item of gridData">
-        <ng-container *ngTemplateOutlet="gridItemTpl?.template; context: { $implicit: item }">
+    <ng-container *ngIf="gridItemTpl?.template as tpl">
+      <o-grid-item *ngFor="let row of grid.dataArray; let i = index">
+        <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
         </ng-container>
       </o-grid-item>
+    </ng-container>
 
-    </o-grid>
-  </div>
-</div>
+  </o-grid>
 
-<ng-template #listContentTpl>
-  <ng-container *ngIf="listItemTpl?.template as tpl">
-    <ng-container *ngFor="let row of listData; let i = index">
-      <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
+  <o-list #list *ngIf="currentView === 'list'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
+    [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys" [query-fallback-function]="r_queryFallbackFunction"
+    [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit" [query-rows]="r_queryRows"
+    [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType" [static-data]="r_staticData"
+    [store-state]="r_storeState">
+
+    <ng-container *ngIf="listItemTpl?.template">
+      <ng-container *ngFor="let row of list.dataArray; let i = index">
+        <ng-container [ngTemplateOutlet]="listItemTpl!.template" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
+        </ng-container>
       </ng-container>
     </ng-container>
-  </ng-container>
-</ng-template>
+
+  </o-list>
+
+</div>
