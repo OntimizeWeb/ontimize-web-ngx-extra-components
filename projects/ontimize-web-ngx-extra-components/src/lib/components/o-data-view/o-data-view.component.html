@@ -13,6 +13,10 @@
     [query-fallback-function]="r_queryFallbackFunction" [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit"
     [query-rows]="r_queryRows" [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType"
     [static-data]="r_staticData" [store-state]="r_storeState">
+
+    <ng-container *ngIf="tableTpl" [ngTemplateOutlet]="tableTpl.templateRef">
+    </ng-container>
+
   </o-table>
 
   <o-grid #grid *ngIf="currentView === 'grid'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs"
@@ -34,10 +38,10 @@
     [query-rows]="r_queryRows" [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType"
     [static-data]="r_staticData" [store-state]="r_storeState">
 
-    <ng-container *ngFor="let row of list.dataArray; let i = index">
-      <ng-container [ngTemplateOutlet]="listItemTpl!.template" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
+    <!-- <ng-container *ngFor="let row of list.dataArray; let i = index">
+      <ng-container [ngTemplateOutlet]="listItemTpl?.template" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
       </ng-container>
-    </ng-container>
+    </ng-container> -->
 
   </o-list>
 

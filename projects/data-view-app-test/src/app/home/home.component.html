@@ -1,5 +1,16 @@
 <o-app-layout>
-  <o-data-view default-view="list" attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;score;image">
+  <o-data-view default-view="list" attr="dataView" [query-method]="undefined" service-type="packs" entity="packs" keys="id"
+    columns="id;name;location;price;score;image" query-rows="8">
+
+    <ng-template oDataViewTableColumns>
+      <o-table-column attr="image" orderable="no" searchable="no" width="32px">
+        <o-table-cell-renderer-image image-type="base64" empty-image="assets/images/no-image.png" avatar="yes">
+        </o-table-cell-renderer-image>
+      </o-table-column>
+      <o-table-column attr="price" title="Price" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
+        currency-symbol-position="right"></o-table-column>
+    </ng-template>
+
 
     <ng-template oDataViewGridItem let-item>
       <div class="card-bg">
@@ -20,17 +31,9 @@
       </div>
     </ng-template>
 
-    <ng-template oDataViewListItem let-row>
-      <mat-card>
-        <mat-card-header>
-          <div mat-card-avatar>
-            <img src="{{ row.image }}" fxFill />
-          </div>
-          <mat-card-title>{{ row.name }}</mat-card-title>
-          <mat-card-subtitle>{{ row.location }}</mat-card-subtitle>
-        </mat-card-header>
-      </mat-card>
-    </ng-template>
+    <!-- <ng-template oDataViewListItem let-row>
+      <o-list-item-card [title]="row.name"></o-list-item-card>
+    </ng-template> -->
 
   </o-data-view>
 </o-app-layout>

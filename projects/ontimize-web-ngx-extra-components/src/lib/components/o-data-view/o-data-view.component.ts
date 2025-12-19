@@ -2,7 +2,8 @@ import { Component, ContentChild, Input, OnChanges, SimpleChanges } from '@angul
 import { OConfigureServiceArgs } from 'ontimize-web-ngx';
 import { ODataViewGridItemDirective } from './o-data-view-grid-item.directive';
 import { ODataViewListItemDirective } from './o-data-view-list-item.directive';
-import { ODataViewMode } from './o-data-view.types';
+import { GridConfig, ListConfig, ODataViewMode, TableConfig } from './o-data-view.types';
+import { ODataViewTableColumnsDirective } from './o-data-view-table-columns.directive';
 
 @Component({
   selector: 'o-data-view',
@@ -15,6 +16,9 @@ export class ODataViewComponent implements OnChanges {
 
   @ContentChild(ODataViewListItemDirective)
   listItemTpl?: ODataViewListItemDirective;
+
+  @ContentChild(ODataViewTableColumnsDirective)
+  tableTpl?: ODataViewTableColumnsDirective;
 
   @Input('default-view') defaultView?: ODataViewMode;
 
@@ -38,6 +42,10 @@ export class ODataViewComponent implements OnChanges {
   @Input('service-type') serviceType?: string;
   @Input('static-data') staticData?: any[];
   @Input('store-state') storeState?: string;
+
+  @Input('table-config') tableConfig?: TableConfig;
+  @Input('grid-config') gridConfig?: GridConfig;
+  @Input('list-config') listConfig?: ListConfig;
 
 
   r_attr?: string;
@@ -93,7 +101,7 @@ export class ODataViewComponent implements OnChanges {
     this.r_queryRows = Number(queryRows_string);
   }
 
-  private setDefaultValue(v: string | undefined | null | '' , def: string | undefined): string | undefined {
+  private setDefaultValue(v: string | undefined | null | '', def: string | undefined): string | undefined {
     if (v === undefined || v === null || v === '') return def;
     return v;
   }
