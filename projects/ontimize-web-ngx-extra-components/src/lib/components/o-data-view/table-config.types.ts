@@ -1,25 +1,25 @@
 import { QuickFilterFunction } from "ontimize-web-ngx";
 
 export interface TableConfig {
-  controls?: string;
+  controls?: 'no' | 'false' | 'yes' | 'true';
   detailFormRoute?: string;
   pageSizeOptions?: any[];
-  quickFilter?: string;
+  quickFilter?: 'no' | 'false' | 'yes' | 'true';
   quickFilterPlaceholder?: string;
-  recursiveDetail?: string;
+  recursiveDetail?: 'no' | 'false' | 'yes' | 'true';
   title?: string;
-  visible?: string;
-  detailButtonInRow?: string;
+  visible?: 'no' | 'false' | 'yes' | 'true';
+  detailButtonInRow?: 'no' | 'false' | 'yes' | 'true';
   detailButtonInRowIcon?: string;
-  editButtonInRow?: string;
+  editButtonInRow?: 'no' | 'false' | 'yes' | 'true';
   editButtonInRowIcon?: string;
   editFormRoute?: string;
-  filterCaseSensitive?: string;
-  insertButton?: string;
+  filterCaseSensitive?: 'no' | 'false' | 'yes' | 'true';
+  insertButton?: 'no' | 'false' | 'yes' | 'true';
   insertFormRoute?: string;
-  recursiveEdit?: string;
-  recursiveInsert?: string;
-  rowHeight?: string;
+  recursiveEdit?: 'no' | 'false' | 'yes' | 'true';
+  recursiveInsert?: 'no' | 'false' | 'yes' | 'true';
+  rowHeight?: 'small' | 'medium' | 'large';
   autoAdjust?: 'no' | 'false' | 'yes' | 'true';
   autoAlignTitles?: 'no' | 'false' | 'yes' | 'true';
   collapseGroupedColumns?: 'no' | 'false' | 'yes' | 'true';

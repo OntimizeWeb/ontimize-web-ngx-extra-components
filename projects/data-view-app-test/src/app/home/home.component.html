@@ -1,6 +1,6 @@
 <o-app-layout>
   <o-data-view default-view="grid" attr="dataView" service-type="packs" entity="packs" keys="id"
-    columns="id;name;location;price;score;image" query-rows="8" [table-config]="config.tableCfg">
+    columns="id;name;location;price;score;image" query-rows="8" [table-config]="config.tableCfg" [grid-config]="config.gridCfg">
 
     <ng-template oDataViewTableColumns>
       <o-table-column attr="image" orderable="no" searchable="no" width="32px">
@@ -30,10 +30,6 @@
         </div>
       </div>
     </ng-template>
-
-    <!-- <ng-template oDataViewListItem let-row>
-      <o-list-item-card [title]="row.name"></o-list-item-card>
-    </ng-template> -->
 
   </o-data-view>
 </o-app-layout>

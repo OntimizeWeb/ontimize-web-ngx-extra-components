@@ -1,13 +1,11 @@
 import { Component, ContentChild, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FilterExpression, OConfigureServiceArgs } from 'ontimize-web-ngx';
 import { ODataViewGridItemDirective } from './o-data-view-grid-item.directive';
-import { ODataViewListItemDirective } from './o-data-view-list-item.directive';
 import { TableConfig } from './table-config.types';
 import { GridConfig } from './grid-config.types';
-import { ListConfig } from './list-config.types';
 import { ODataViewTableColumnsDirective } from './o-data-view-table-columns.directive';
 
-export type ODataViewMode = 'table' | 'grid' | 'list';
+export type ODataViewMode = 'table' | 'grid';
 @Component({
   selector: 'o-data-view',
   templateUrl: './o-data-view.component.html'
@@ -17,9 +15,6 @@ export class ODataViewComponent implements OnChanges {
 
   @ContentChild(ODataViewGridItemDirective)
   gridItemTpl?: ODataViewGridItemDirective;
-
-  @ContentChild(ODataViewListItemDirective)
-  listItemTpl?: ODataViewListItemDirective;
 
   @ContentChild(ODataViewTableColumnsDirective)
   tableTpl?: ODataViewTableColumnsDirective;
@@ -52,7 +47,6 @@ export class ODataViewComponent implements OnChanges {
 
   @Input('table-config') tableConfig?: TableConfig;
   @Input('grid-config') gridConfig?: GridConfig;
-  @Input('list-config') listConfig?: ListConfig;
 
 
   r_attr?: string;
@@ -137,6 +131,34 @@ export class ODataViewComponent implements OnChanges {
   r_table_rowClass?: (rowData: any, rowIndex: number) => string | string[];
   r_table_showExpandableIconFunction?: Function;
 
+  r_grid_controls?: string;
+  r_grid_detailFormRoute?: string;
+  r_grid_detailMode?: string;
+  r_grid_enabled?: string;
+  r_grid_quickFilter?: string;
+  r_grid_quickFilterPlaceholder?: string;
+  r_grid_quickFilterAppearance?: string;
+  r_grid_recursiveDetail?: string;
+  r_grid_title?: string;
+  r_grid_visible?: string;
+  r_grid_cols?: number;
+  r_grid_fixedHeader?: string;
+  r_grid_gridItemHeight?: string | number;
+  r_grid_gutterSize?: string;
+  r_grid_insertButton?: string;
+  r_grid_insertButtonFloatable?: string;
+  r_grid_insertButtonPosition?: string;
+  r_grid_orderable?: string;
+  r_grid_pageSizeOptions?: any[];
+  r_grid_paginationControls?: string;
+  r_grid_quickFilterColumns?: string;
+  r_grid_refreshButton?: string;
+  r_grid_showButtonsText?: string;
+  r_grid_showFooter?: string;
+  r_grid_showPageSize?: string;
+  r_grid_sortColumn?: string;
+  r_grid_sortableColumns?: string;
+
 
   changeView($event): void {
     this.currentView = $event.value;
@@ -148,6 +170,7 @@ export class ODataViewComponent implements OnChanges {
     }
     this.resolveCommonInputs();
     this.resolveTableInputs();
+    this.resolveGridInputs();
   }
 
   private resolveCommonInputs(): void {
@@ -168,8 +191,7 @@ export class ODataViewComponent implements OnChanges {
     this.r_queryOnBind = this.setDefaultValue(this.queryOnBind, 'yes');
     this.r_queryWithNullParentKeys = this.setDefaultValue(this.queryWithNullParentKeys, 'no');
     this.r_storeState = this.setDefaultValue(this.storeState, 'yes');
-    const queryRows_string = this.setDefaultValue(this.queryRows?.toString(), '10');
-    this.r_queryRows = Number(queryRows_string);
+    this.r_queryRows = this.setDefaultNumber(this.queryRows, 10);
     this.r_deleteMethod = this.setDefaultValue(this.deleteMethod, 'delete');
     this.r_insertMethod = this.setDefaultValue(this.insertMethod, 'insert');
     this.r_updateMethod = this.setDefaultValue(this.updateMethod, 'update');
@@ -190,7 +212,7 @@ export class ODataViewComponent implements OnChanges {
     this.r_table_filterCaseSensitive = this.setDefaultValue(cfg.filterCaseSensitive, 'no');
     this.r_table_insertButton = this.setDefaultValue(cfg.insertButton, 'yes');
     this.r_table_insertFormRoute = this.setDefaultValue(cfg.insertFormRoute, 'new');
-    this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [10,25,50,100]);
+    this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [10, 25, 50, 100]);
     this.r_table_paginationControls = this.setDefaultValue(cfg.paginationControls, 'yes');
     this.r_table_quickFilter = this.setDefaultValue(cfg.quickFilter, 'yes');
     this.r_table_quickFilterPlaceholder = this.setDefaultValue(cfg.quickFilterPlaceholder, undefined);
@@ -240,14 +262,56 @@ export class ODataViewComponent implements OnChanges {
     this.r_table_showExpandableIconFunction = cfg.showExpandableIconFunction;
   }
 
+  private resolveGridInputs(): void {
+    const cfg = this.gridConfig ?? {};
+
+    this.r_grid_controls = this.setDefaultValue(cfg.controls, 'yes');
+    this.r_grid_detailFormRoute = this.setDefaultValue(cfg.detailFormRoute, 'detail');
+    this.r_grid_detailMode = this.setDefaultValue(cfg.detailMode, 'click');
+    this.r_grid_enabled = this.setDefaultValue(cfg.enabled, 'yes');
+    this.r_grid_quickFilter = this.setDefaultValue(cfg.quickFilter, 'yes');
+    this.r_grid_quickFilterAppearance = this.setDefaultValue(cfg.quickFilterAppearance, 'outline');
+    this.r_grid_quickFilterPlaceholder = this.setDefaultValue(cfg.quickFilterPlaceholder, undefined);
+    this.r_grid_recursiveDetail = this.setDefaultValue(cfg.recursiveDetail, 'no');
+    this.r_grid_title = this.setDefaultValue(cfg.title, undefined);
+    this.r_grid_visible = this.setDefaultValue(cfg.visible, 'yes');
+    this.r_grid_cols = cfg.cols;
+    this.r_grid_fixedHeader = this.setDefaultValue(cfg.fixedHeader, 'no');
+    this.r_grid_gridItemHeight = this.setDefaultValueAny<string | number>(cfg?.gridItemHeight, '1:1');
+    this.r_grid_gutterSize = this.setDefaultValue(cfg.gutterSize, '1px');
+    this.r_grid_insertButton = this.setDefaultValue(cfg.insertButton, 'false');
+    this.r_grid_insertButtonFloatable = this.setDefaultValue(cfg.insertButtonFloatable, 'yes');
+    this.r_grid_insertButtonPosition = this.setDefaultValue(cfg.insertButtonPosition, 'bottom');
+    this.r_grid_orderable = this.setDefaultValue(cfg.orderable, 'no');
+    this.r_grid_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [8, 16, 24, 32, 64]);
+    this.r_grid_paginationControls = this.setDefaultValue(cfg.paginationControls, 'no');
+    this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.r_columns);
+    this.r_grid_refreshButton = this.setDefaultValue(cfg.refreshButton, 'yes');
+    this.r_grid_showButtonsText = this.setDefaultValue(cfg.showButtonsText, 'no');
+    this.r_grid_showFooter = this.setDefaultValue(cfg.showFooter, 'true');
+    this.r_grid_showPageSize = this.setDefaultValue(cfg.showPageSize, 'no');
+    this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, undefined);
+    this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, undefined);
+  }
 
   private setDefaultValue(v: string | undefined | null | '', def: string | undefined): string | undefined {
     if (v === undefined || v === null || v === '') return def;
     return v;
   }
 
+  private setDefaultValueAny<T>(v: T | undefined | null, def: T | undefined): T | undefined {
+    if (v === undefined || v === null) return def;
+    if (typeof v === 'string' && v === '') return def as T | undefined;
+    return v;
+  }
+
+  private setDefaultNumber(v: number | undefined | null, def: number | undefined): number | undefined {
+    if (v === undefined || v === null) return def;
+    return v;
+  }
+
   private setDefaultArray(v: any[], def: any[] | undefined): any[] | undefined {
-    if (v === undefined || v === null ) return def;
+    if (v === undefined || v === null) return def;
     return v;
   }
 

@@ -5,10 +5,9 @@ export * from './lib/ontimize-web-ngx-extra-components.module';
 export * from './lib/components/o-data-view/o-data-view.component';
 
 export * from './lib/components/o-data-view/o-data-view-grid-item.directive';
-export * from './lib/components/o-data-view/o-data-view-list-item.directive';
+export * from './lib/components/o-data-view/o-data-view-table-columns.directive';
 export * from './lib/components/o-data-view/table-config.types';
 export * from './lib/components/o-data-view/grid-config.types';
-export * from './lib/components/o-data-view/list-config.types';
 // export * from './lib/components/index';
 // export * from './lib/services/index';
 // export * from './lib/types/index';

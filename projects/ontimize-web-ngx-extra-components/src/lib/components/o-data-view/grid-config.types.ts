@@ -1,13 +1,14 @@
 export interface GridConfig {
-  controls?: string;
-  detailFormRoute?: string;
-  detailMode?: string;
-  enabled?: string;
-  quickFilter?: string;
+  controls?: 'no' | 'false' | 'yes' | 'true';
+  detailFormRoute?: 'no' | 'false' | 'yes' | 'true';
+  detailMode?: 'none' | 'click' | 'dbclick';
+  enabled?: 'no' | 'false' | 'yes' | 'true';
+  quickFilter?: 'no' | 'false' | 'yes' | 'true';
   quickFilterPlaceholder?: string;
-  recursiveDetail?: string;
+  quickFilterAppearance?: 'legacy' | 'standard' | 'fill' | 'outline';
+  recursiveDetail?: 'no' | 'false' | 'yes' | 'true';
   title?: string;
-  visible?: string;
+  visible?: 'no' | 'false' | 'yes' | 'true';
   cols?: number;
   fixedHeader?: 'no' | 'false' | 'yes' | 'true';
   gridItemHeight?: string | number;
