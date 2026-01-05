@@ -1,19 +1,14 @@
 import { QuickFilterFunction } from "ontimize-web-ngx";
 
-export type ODataViewMode = 'table' | 'grid' | 'list';
-
 export interface TableConfig {
   controls?: string;
   detailFormRoute?: string;
-  pageSizeOptions?: string;
+  pageSizeOptions?: any[];
   quickFilter?: string;
   quickFilterPlaceholder?: string;
   recursiveDetail?: string;
   title?: string;
   visible?: string;
-  deleteMethod?: string;
-  insertMethod?: string;
-  updateMethod?: string;
   detailButtonInRow?: string;
   detailButtonInRowIcon?: string;
   editButtonInRow?: string;
@@ -67,67 +62,3 @@ export interface TableConfig {
   visibleColumns?: string;
   visibleExportDialogButtons?: string;
 };
-export interface GridConfig {
-  controls?: string;
-  detailFormRoute?: string;
-  detailMode?: string;
-  enabled?: string;
-  quickFilter?: string;
-  quickFilterPlaceholder?: string;
-  recursiveDetail?: string;
-  title?: string;
-  visible?: string;
-  cols?: number;
-  fixedHeader?: 'no' | 'false' | 'yes' | 'true';
-  gridItemHeight?: string | number;
-  gutterSize?: string;
-  insertButton?: 'no' | 'false' | 'yes' | 'true';
-  insertButtonFloatable?: 'no' | 'false' | 'yes' | 'true';
-  insertButtonPosition?: 'botton' | 'top';
-  orderable?: 'no' | 'false' | 'yes' | 'true';
-  pageSizeOptions?: any[];
-  paginationControls?: 'no' | 'false' | 'yes' | 'true';
-  quickFilterColumns?: string;
-  refreshButton?: 'no' | 'false' | 'yes' | 'true';
-  showButtonsText?: 'no' | 'false' | 'yes' | 'true';
-  showFooter?: 'no' | 'false' | 'yes' | 'true';
-  showPageSize?: 'no' | 'false' | 'yes' | 'true';
-  sortColumn?: string;
-  sortableColumns?: string;
-};
-export interface ListConfig {
-  controls?: string;
-  detailFormRoute?: string;
-  detailMode?: string;
-  enabled?: string;
-  pageSizeOptions?: string;
-  quickFilter?: string;
-  quickFilterPlaceholder?: string;
-  recursiveDetail?: string;
-  title?: string;
-  visible?: string;
-  deleteMethod?: string;
-  insertMethod?: string;
-  updateMethod?: string;
-  detailButtonInRow?: string;
-  detailButtonInRowIcon?: string;
-  editButtonInRow?: string;
-  editButtonInRowIcon?: string;
-  editFormRoute?: string;
-  insertButton?: string;
-  insertFormRoute?: string;
-  quickFilterAppearance?: string;
-  recursiveEdit?: string;
-  recursiveInsert?: string;
-  rowHeight?: string;
-  deleteButton?: 'no' | 'false' | 'yes' | 'true';
-  insertButtonFloatable?: 'no' | 'false' | 'yes' | 'true';
-  insertButtonPosition?: 'botton' | 'top';
-  keysSqlTypes?: string;
-  paginationControls?: 'no' | 'false' | 'yes' | 'true';
-  quickFilterColumns?: string;
-  refreshButton?: 'no' | 'false' | 'yes' | 'true';
-  selectable?: 'no' | 'false' | 'yes' | 'true';
-  showButtonsText?: 'no' | 'false' | 'yes' | 'true';
-  sortColumns?: string;
-}

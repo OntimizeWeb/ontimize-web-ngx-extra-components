@@ -9,7 +9,6 @@ import { CompaniesService } from '../../services/companies.service';
 export class HomeComponent implements OnInit {
 
   config = {
-    defaultView: 'table',
     staticData: [
       {
         id: 1,
@@ -115,7 +114,7 @@ export class HomeComponent implements OnInit {
     keys: 'id',
     queryRows: 10,
     pageable: 'no',
-    tableCfg: { visibleColumns: 'name;sector;country;rating' },
+    tableCfg: { visibleColumns: 'name;location;price' },
     gridCfg: { cols: 3, gutterSize: '8px', gridItemHeight: '1:1' },
     listCfg: {  }
   };
