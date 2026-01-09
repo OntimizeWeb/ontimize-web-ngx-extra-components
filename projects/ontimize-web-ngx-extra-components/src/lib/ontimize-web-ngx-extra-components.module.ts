@@ -1,14 +1,11 @@
 import { NgModule } from '@angular/core';
-import { OEXTRACOMPONENTS_DECLARATION_MODULES, OEXTRACOMPONENTS_IMPORTS_MODULES } from './config/o-components';
+import { OEXTRACOMPONENTS_DECLARATION_MODULES, OEXTRACOMPONENTS_EXPORT_MODULES, OEXTRACOMPONENTS_IMPORTS_MODULES } from './config/o-components';
 
-import { ODataViewComponent } from './components';
-import { ODataViewGridItemDirective } from './components/o-data-view/o-data-view-grid-item.directive';
-import { ODataViewTableColumnsDirective } from './components/o-data-view/o-data-view-table-columns.directive';
 @NgModule({
-  declarations: [...OEXTRACOMPONENTS_DECLARATION_MODULES, ODataViewComponent, ODataViewGridItemDirective, ODataViewTableColumnsDirective],
+  declarations: [...OEXTRACOMPONENTS_DECLARATION_MODULES],
   imports: [...OEXTRACOMPONENTS_IMPORTS_MODULES],
   providers: [],
-  exports: [ODataViewComponent, ODataViewGridItemDirective, ODataViewTableColumnsDirective]
+  exports: [...OEXTRACOMPONENTS_EXPORT_MODULES]
 })
 
 export class OExtraComponentsModule { }
