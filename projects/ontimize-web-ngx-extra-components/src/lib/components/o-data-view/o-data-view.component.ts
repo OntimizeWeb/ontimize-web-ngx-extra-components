@@ -1,5 +1,5 @@
-import { Component, ContentChild, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FilterExpression, OConfigureServiceArgs } from 'ontimize-web-ngx';
+import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
+import { FilterExpression, OConfigureServiceArgs, OTableColumnComponent, OTableComponent } from 'ontimize-web-ngx';
 import { ODataViewGridItemDirective } from './o-data-view-grid-item.directive';
 import { TableConfig } from './table-config.types';
 import { GridConfig } from './grid-config.types';
@@ -11,13 +11,16 @@ export type ODataViewMode = 'table' | 'grid';
   templateUrl: './o-data-view.component.html'
 })
 
-export class ODataViewComponent implements OnChanges {
+export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+
+  @ViewChild('table', { static: false }) table: OTableComponent;
 
   @ContentChild(ODataViewGridItemDirective)
   gridItemTpl?: ODataViewGridItemDirective;
 
   @ContentChild(ODataViewTableColumnsDirective)
   tableTpl?: ODataViewTableColumnsDirective;
+
 
   @Input('default-view') defaultView?: ODataViewMode;
 
@@ -159,9 +162,75 @@ export class ODataViewComponent implements OnChanges {
   r_grid_sortColumn?: string;
   r_grid_sortableColumns?: string;
 
+  private columnsView: EmbeddedViewRef<any> | null = null;
 
-  changeView($event): void {
-    this.currentView = $event.value;
+  constructor(
+    private vcr: ViewContainerRef
+  ) { }
+
+  ngOnInit(): void {
+    this.currentView = this.defaultView;
+  }
+
+  ngAfterViewInit(): void {
+    // Register columns only if they exist and we're in table view
+    if (this.tableTpl && this.table) {
+      this.registerTableColumns();
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up the created view to avoid memory leaks
+    if (this.columnsView) {
+      this.columnsView.destroy();
+      this.columnsView = null;
+    }
+  }
+
+  private registerTableColumns(): void {
+    try {
+      // Create the embedded view with the correct injector
+      this.columnsView = this.vcr.createEmbeddedView(
+        this.tableTpl.templateRef,
+        {},
+        { injector: this.table.injector }
+      );
+
+      // Detect changes to ensure nodes are fully initialized
+      this.columnsView.detectChanges();
+
+      // Filter and register only OTableColumnComponent instances
+      const columns = this.columnsView.rootNodes
+        .filter(node => node instanceof OTableColumnComponent) as OTableColumnComponent[];
+
+      if (columns.length === 0) {
+        console.warn('No columns found to register in o-data-view');
+      }
+
+      columns.forEach((column: OTableColumnComponent) => {
+        if (this.table && typeof this.table.registerColumn === 'function') {
+          this.table.registerColumn(column);
+        }
+      });
+
+      // Force change detection in the table after registering columns
+      if (this.table && typeof (this.table as any).cd?.detectChanges === 'function') {
+        (this.table as any).cd.detectChanges();
+      }
+
+    } catch (error) {
+      console.error('Error registering table columns:', error);
+    }
+  }
+
+  changeView(event: any): void {
+    const previousView = this.currentView;
+    this.currentView = event.value;
+
+    // If switching to table and columns aren't registered, register them
+    if (this.currentView === 'table' && previousView !== 'table') {
+      setTimeout(() => this.registerTableColumns(), 0);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {

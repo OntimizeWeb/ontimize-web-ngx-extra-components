@@ -7,8 +7,8 @@
 
 <div class="o-data-view-container">
 
-  <o-table #table *ngIf="currentView === 'table'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs"
-    [entity]="r_entity" [keys]="r_keys" [pageable]="r_pageable" [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys"
+  <o-table #table *ngIf="currentView === 'table'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
+    [pageable]="r_pageable" [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys"
     [query-fallback-function]="r_queryFallbackFunction" [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit"
     [query-rows]="r_queryRows" [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType"
     [static-data]="r_staticData" [store-state]="r_storeState" [delete-method]="r_deleteMethod" [insert-method]="r_insertMethod"
@@ -35,10 +35,6 @@
     [show-reset-width-option]="r_table_showResetWidthOption" [show-title]="r_table_showTitle" [sort-columns]="r_table_sortColumns"
     [virtual-scroll]="r_table_virtualScroll" [visible-columns]="r_table_visibleColumns"
     [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons">
-
-    <ng-container *ngIf="tableTpl" [ngTemplateOutlet]="tableTpl.templateRef">
-    </ng-container>
-
   </o-table>
 
   <o-grid #grid *ngIf="currentView === 'grid'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs"
