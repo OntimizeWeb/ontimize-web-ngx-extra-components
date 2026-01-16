@@ -1,0 +1,31 @@
+.button-toggle-group {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.button-toggle-floatable {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+:host ::ng-deep .toggle-toolbar {
+  height: 32px;
+  margin-right: 8px;
+
+  .mat-button-toggle-standalone,
+  .mat-button-toggle-group {
+    height: 32px;
+
+    .o-button-toggle .mat-button-toggle {
+      height: 32px;
+
+      span.mat-button-toggle-label-content {
+        line-height: 32px;
+      }
+    }
+  }
+}

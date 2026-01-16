@@ -1,14 +1,13 @@
-<o-button-toggle-group fxLayoutAlign="end" attr="toggleGroup" layout="row" multiple="no" [value]="currentView" layout-padding
+<o-button-toggle-group #toggleGroup *ngIf="!showToggleOnToolbar && !showToggleFloatable && !showToggleButton" class="button-toggle-group" attr="toggleGroup" multiple="no" [value]="currentView"
   (onChange)="changeView($event)">
-
   <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
   <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
 </o-button-toggle-group>
 
 <div class="o-data-view-container">
 
-  <o-table #table *ngIf="currentView === 'table'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs" [entity]="r_entity" [keys]="r_keys"
-    [pageable]="r_pageable" [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys"
+  <o-table #table *ngIf="currentView === 'table'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs"
+    [entity]="r_entity" [keys]="r_keys" [pageable]="r_pageable" [paginated-query-method]="r_paginatedQueryMethod" [parent-keys]="r_parentKeys"
     [query-fallback-function]="r_queryFallbackFunction" [query-method]="r_queryMethod" [query-on-bind]="r_queryOnBind" [query-on-init]="r_queryOnInit"
     [query-rows]="r_queryRows" [query-with-null-parent-keys]="r_queryWithNullParentKeys" [service]="r_service" [service-type]="r_serviceType"
     [static-data]="r_staticData" [store-state]="r_storeState" [delete-method]="r_deleteMethod" [insert-method]="r_insertMethod"
@@ -35,6 +34,13 @@
     [show-reset-width-option]="r_table_showResetWidthOption" [show-title]="r_table_showTitle" [sort-columns]="r_table_sortColumns"
     [virtual-scroll]="r_table_virtualScroll" [visible-columns]="r_table_visibleColumns"
     [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons">
+
+    <o-button-toggle-group #toggleGroup *ngIf="showToggleOnToolbar" class="toggle-toolbar" attr="toggleGroup" o-table-toolbar position="end" multiple="no"
+      [value]="currentView" (onChange)="changeView($event)">
+      <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
+      <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
+    </o-button-toggle-group>
+
   </o-table>
 
   <o-grid #grid *ngIf="currentView === 'grid'" [attr]="r_attr" [columns]="r_columns" [configure-service-args]="r_configureServiceArgs"
@@ -52,11 +58,23 @@
     [show-buttons-text]="r_grid_showButtonsText" [show-footer]="r_grid_showFooter" [show-page-size]="r_grid_showPageSize"
     [sort-column]="r_grid_sortColumn" [sortable-columns]="r_grid_sortableColumns">
 
+    <o-button-toggle-group #toggleGroup *ngIf="showToggleOnToolbar" class="toggle-toolbar" attr="toggleGroup" o-grid-toolbar position="end" multiple="no"
+      [value]="currentView" (onChange)="changeView($event)">
+      <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
+      <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
+    </o-button-toggle-group>
+
     <o-grid-item *ngFor="let row of grid.dataArray; let i = index">
       <ng-container [ngTemplateOutlet]="gridItemTpl?.template" [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i }">
       </ng-container>
     </o-grid-item>
 
   </o-grid>
+
+  <o-button-toggle-group #toggleGroup *ngIf="showToggleFloatable" class="button-toggle-floatable" attr="toggleGroup" multiple="no" [value]="currentView"
+    (onChange)="changeView($event)">
+    <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
+    <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
+  </o-button-toggle-group>
 
 </div>

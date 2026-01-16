@@ -1,5 +1,9 @@
 <o-app-layout>
-  <o-data-view default-view="grid" attr="dataView" service-type="packs" entity="packs" keys="id"
+
+  <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
+  <button mat-button (click)="dv.changeView('table')">Vista tabla</button>
+
+  <o-data-view #dv toggle-button="false" attr="dataView" service-type="packs" entity="packs" keys="id"
     columns="id;name;location;price;score;image" query-rows="8" [table-config]="config.tableCfg" [grid-config]="config.gridCfg">
 
     <ng-template oDataViewTableColumns>

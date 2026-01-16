@@ -1,19 +1,21 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { FilterExpression, OConfigureServiceArgs, OTableColumnComponent, OTableComponent } from 'ontimize-web-ngx';
-import { ODataViewGridItemDirective } from './o-data-view-grid-item.directive';
-import { TableConfig } from './table-config.types';
-import { GridConfig } from './grid-config.types';
-import { ODataViewTableColumnsDirective } from './o-data-view-table-columns.directive';
+import { FilterExpression, OButtonToggleGroupComponent, OConfigureServiceArgs, OTableColumnComponent, OTableComponent } from 'ontimize-web-ngx';
+import { ODataViewGridItemDirective } from '../../directives/o-data-view-grid-item.directive';
+import { TableConfig } from '../../interfaces/table-config.interface';
+import { GridConfig } from '../../interfaces/grid-config.interface';
+import { ODataViewTableColumnsDirective } from '../../directives/o-data-view-table-columns.directive';
+import { ODataViewMode } from '../../types/data-view.types';
 
-export type ODataViewMode = 'table' | 'grid';
 @Component({
   selector: 'o-data-view',
-  templateUrl: './o-data-view.component.html'
+  templateUrl: './o-data-view.component.html',
+  styleUrls: ['./o-data-view.component.scss']
 })
 
 export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   @ViewChild('table', { static: false }) table: OTableComponent;
+  @ViewChild('toggleGroup') toggleGroup: OButtonToggleGroupComponent;
 
   @ContentChild(ODataViewGridItemDirective)
   gridItemTpl?: ODataViewGridItemDirective;
@@ -23,8 +25,14 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
 
   @Input('default-view') defaultView?: ODataViewMode;
+  @Input('toggle-on-toolbar') toggleOnToolbar?: string;
+  @Input('toggle-floatable') toggleFloatable?: string;
+  @Input('toggle-button') toggleButton?: string;
 
   protected currentView: ODataViewMode = 'table';
+  protected showToggleOnToolbar = false;
+  protected showToggleFloatable = false;
+  protected showToggleButton = true;
 
   @Input() attr?: string;
   @Input() columns?: string;
@@ -187,6 +195,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }
   }
 
+  private parseBoolean(value: any): boolean {
+    return value === true || value === 'true' || value === 'yes' || value === false || value === 'false' || value === 'no';
+  }
+
   private registerTableColumns(): void {
     try {
       // Create the embedded view with the correct injector
@@ -223,9 +235,14 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }
   }
 
-  changeView(event: any): void {
+  public changeView(value: ODataViewMode): void {
     const previousView = this.currentView;
-    this.currentView = event.value;
+
+    if (this.toggleGroup) {
+      this.currentView = this.toggleGroup.getValue();
+    } else {
+      this.currentView = value;
+    }
 
     // If switching to table and columns aren't registered, register them
     if (this.currentView === 'table' && previousView !== 'table') {
@@ -240,6 +257,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.resolveCommonInputs();
     this.resolveTableInputs();
     this.resolveGridInputs();
+    this.showToggleOnToolbar = this.parseBoolean(this.toggleOnToolbar);
+    this.showToggleFloatable = this.parseBoolean(this.toggleFloatable);
+    this.showToggleButton = this.parseBoolean(this.toggleButton);
   }
 
   private resolveCommonInputs(): void {
