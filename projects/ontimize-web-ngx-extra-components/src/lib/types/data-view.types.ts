@@ -1,0 +1,1 @@
+export type ODataViewMode = 'table' | 'grid';
