@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { FilterExpression, OButtonToggleGroupComponent, OConfigureServiceArgs, OTableColumnComponent, OTableComponent } from 'ontimize-web-ngx';
+import { FilterExpression, OButtonToggleGroupComponent, OConfigureServiceArgs, OTableColumnComponent, OTableComponent, Util } from 'ontimize-web-ngx';
 import { ODataViewGridItemDirective } from '../../directives/o-data-view-grid-item.directive';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
@@ -195,10 +195,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }
   }
 
-  private parseBoolean(value: any): boolean {
-    return value === true || value === 'true' || value === 'yes' || value === false || value === 'false' || value === 'no';
-  }
-
   private registerTableColumns(): void {
     try {
       // Create the embedded view with the correct injector
@@ -257,9 +253,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.resolveCommonInputs();
     this.resolveTableInputs();
     this.resolveGridInputs();
-    this.showToggleOnToolbar = this.parseBoolean(this.toggleOnToolbar);
-    this.showToggleFloatable = this.parseBoolean(this.toggleFloatable);
-    this.showToggleButton = this.parseBoolean(this.toggleButton);
+    this.showToggleOnToolbar = Util.parseBoolean(this.toggleOnToolbar);
+    this.showToggleFloatable = Util.parseBoolean(this.toggleFloatable);
+    this.showToggleButton = Util.parseBoolean(this.toggleButton);
   }
 
   private resolveCommonInputs(): void {
