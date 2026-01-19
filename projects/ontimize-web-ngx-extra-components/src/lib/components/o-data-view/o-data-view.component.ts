@@ -23,13 +23,11 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @ContentChild(ODataViewTableColumnsDirective)
   tableTpl?: ODataViewTableColumnsDirective;
 
-
   @Input('default-view') defaultView?: ODataViewMode;
   @Input('toggle-on-toolbar') toggleOnToolbar?: string;
   @Input('toggle-floatable') toggleFloatable?: string;
   @Input('toggle-button') toggleButton?: string;
 
-  protected currentView: ODataViewMode = 'table';
   protected showToggleOnToolbar = false;
   protected showToggleFloatable = false;
   protected showToggleButton = true;
@@ -58,7 +56,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   @Input('table-config') tableConfig?: TableConfig;
   @Input('grid-config') gridConfig?: GridConfig;
-
 
   r_attr?: string;
   r_columns?: string;
@@ -177,7 +174,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   ) { }
 
   ngOnInit(): void {
-    this.currentView = this.defaultView;
+    if (!this.defaultView) this.defaultView = 'table';
+    this.showToggleOnToolbar = Util.parseBoolean(this.toggleOnToolbar);
+    this.showToggleFloatable = Util.parseBoolean(this.toggleFloatable);
+    this.showToggleButton = Util.parseBoolean(this.toggleButton);
   }
 
   ngAfterViewInit(): void {
@@ -232,30 +232,25 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   public changeView(value: ODataViewMode): void {
-    const previousView = this.currentView;
+    const previousView = this.defaultView;
+    console.log(this.defaultView);
 
     if (this.toggleGroup) {
-      this.currentView = this.toggleGroup.getValue();
+      this.defaultView = this.toggleGroup.getValue();
     } else {
-      this.currentView = value;
+      this.defaultView = value;
     }
 
     // If switching to table and columns aren't registered, register them
-    if (this.currentView === 'table' && previousView !== 'table') {
+    if (this.defaultView === 'table' && previousView !== 'table') {
       setTimeout(() => this.registerTableColumns(), 0);
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['defaultView']) {
-      this.currentView = this.defaultView ?? 'table';
-    }
+  ngOnChanges(): void {
     this.resolveCommonInputs();
     this.resolveTableInputs();
     this.resolveGridInputs();
-    this.showToggleOnToolbar = Util.parseBoolean(this.toggleOnToolbar);
-    this.showToggleFloatable = Util.parseBoolean(this.toggleFloatable);
-    this.showToggleButton = Util.parseBoolean(this.toggleButton);
   }
 
   private resolveCommonInputs(): void {
@@ -386,7 +381,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   private setDefaultValueAny<T>(v: T | undefined | null, def: T | undefined): T | undefined {
     if (v === undefined || v === null) return def;
-    if (typeof v === 'string' && v === '') return def as T | undefined;
+    if (typeof v === 'string' && v === '') return def;
     return v;
   }
 
