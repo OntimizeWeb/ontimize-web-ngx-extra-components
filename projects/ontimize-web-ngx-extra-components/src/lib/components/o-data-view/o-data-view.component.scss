@@ -6,9 +6,8 @@
 
 .button-toggle-floatable {
   position: fixed;
-  left: 50%;
+  left: calc(50% + 72px);
   bottom: 16px;
-  transform: translateX(-50%);
   z-index: 1000;
 }
 
