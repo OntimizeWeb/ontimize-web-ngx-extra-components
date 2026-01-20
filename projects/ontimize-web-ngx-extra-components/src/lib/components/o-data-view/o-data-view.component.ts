@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { FilterExpression, OButtonToggleGroupComponent, OConfigureServiceArgs, OTableColumnComponent, OTableComponent, Util } from 'ontimize-web-ngx';
+import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
+import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OTableColumnComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { ODataViewGridItemDirective } from '../../directives/o-data-view-grid-item.directive';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
@@ -170,7 +170,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   private columnsView: EmbeddedViewRef<any> | null = null;
 
   constructor(
-    private vcr: ViewContainerRef
+    private vcr: ViewContainerRef,
+    @Optional() @Inject(O_TABLE_GLOBAL_CONFIG) private tableGlobalConfig?: OTableGlobalConfig
   ) { }
 
   ngOnInit(): void {
@@ -233,7 +234,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   public changeView(value: ODataViewMode): void {
     const previousView = this.defaultView;
-    console.log(this.defaultView);
 
     if (this.toggleGroup) {
       this.defaultView = this.toggleGroup.getValue();
@@ -279,12 +279,13 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   private resolveTableInputs(): void {
     const cfg = this.tableConfig ?? {};
+    const g = this.tableGlobalConfig;
 
     this.r_table_controls = this.setDefaultValue(cfg.controls, 'yes');
     this.r_table_detailButtonInRow = this.setDefaultValue(cfg.detailButtonInRow, 'no');
     this.r_table_detailButtonInRowIcon = this.setDefaultValue(cfg.detailButtonInRowIcon, 'search');
     this.r_table_detailFormRoute = this.setDefaultValue(cfg.detailFormRoute, 'detail');
-    this.r_table_detailMode = this.setDefaultValue(cfg.detailMode, 'click');
+    this.r_table_detailMode = this.resolveStringWithGlobal(cfg.detailMode, g?.detailMode, 'click');
     this.r_table_editButtonInRow = this.setDefaultValue(cfg.editButtonInRow, 'no');
     this.r_table_editButtonInRowIcon = this.setDefaultValue(cfg.editButtonInRowIcon, 'edit');
     this.r_table_editFormRoute = this.setDefaultValue(cfg.editFormRoute, 'edit');
@@ -299,20 +300,24 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_recursiveDetail = this.setDefaultValue(cfg.recursiveDetail, 'no');
     this.r_table_recursiveEdit = this.setDefaultValue(cfg.recursiveEdit, 'no');
     this.r_table_recursiveInsert = this.setDefaultValue(cfg.recursiveInsert, 'no');
-    this.r_table_rowHeight = this.setDefaultValue(cfg.rowHeight, 'medium');
+    this.r_table_rowHeight = this.resolveStringWithGlobal(cfg.rowHeight, g?.rowHeight, 'medium');
     this.r_table_title = this.setDefaultValue(cfg.title, undefined);
     this.r_table_visible = this.setDefaultValue(cfg.visible, 'yes');
 
-    this.r_table_autoAdjust = this.setDefaultValue(cfg.autoAdjust, 'yes');
-    this.r_table_autoAlignTitles = this.setDefaultValue(cfg.autoAlignTitles, 'yes');
+    this.r_table_autoAdjust = this.resolveYesNoWithGlobal(cfg.autoAdjust, g?.autoAdjust, 'yes');
+    this.r_table_autoAlignTitles = this.resolveYesNoWithGlobal(cfg.autoAlignTitles, g?.autoAlignTitles, 'yes');
     this.r_table_collapseGroupedColumns = this.setDefaultValue(cfg.collapseGroupedColumns, 'no');
     this.r_table_columnsVisibilityButton = this.setDefaultValue(cfg.columnsVisibilityButton, 'yes');
     this.r_table_defaultVisibleColumns = this.setDefaultValue(cfg.defaultVisibleColumns, undefined);
     this.r_table_deleteButton = this.setDefaultValue(cfg.deleteButton, 'yes');
-    this.r_table_editionMode = this.setDefaultValue(cfg.editionMode, 'none');
+    this.r_table_editionMode = this.resolveStringWithGlobal(cfg.editionMode, g?.editionMode, 'none');
     this.r_table_exportButton = this.setDefaultValue(cfg.exportButton, 'yes');
     this.r_table_exportServiceType = this.setDefaultValue(cfg.exportServiceType, 'OntimizeExportService');
-    this.r_table_filterColumnActiveByDefault = this.setDefaultValue(cfg.filterColumnActiveByDefault, 'yes');
+    this.r_table_filterColumnActiveByDefault = this.resolveYesNoWithGlobal(
+      cfg.filterColumnActiveByDefault,
+      g?.filterColumnActiveByDefault,
+      'yes'
+    );
     this.r_table_fixedHeader = this.setDefaultValue(cfg.fixedHeader, 'yes');
     this.r_table_groupable = this.setDefaultValue(cfg.groupable, 'no');
     this.r_table_groupedColumns = this.setDefaultValue(cfg.groupedColumns, undefined);
@@ -393,6 +398,35 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   private setDefaultArray(v: any[], def: any[] | undefined): any[] | undefined {
     if (v === undefined || v === null) return def;
     return v;
+  }
+
+  private resolveYesNoWithGlobal(
+    inputVal: string | undefined | null | '',
+    globalVal: boolean | undefined | null,
+    defaultVal: string
+  ): string {
+    const inputResolved = this.setDefaultValue(inputVal, undefined);
+    if (inputResolved !== undefined) return inputResolved;
+
+    if (globalVal !== undefined && globalVal !== null) {
+      return globalVal ? 'yes' : 'no';
+    }
+
+    return defaultVal;
+  }
+
+  private resolveStringWithGlobal(
+    inputVal: string | undefined | null | '',
+    globalVal: string | undefined | null,
+    defaultVal: string
+  ): string {
+    const inputResolved = this.setDefaultValue(inputVal, undefined);
+    if (inputResolved !== undefined) return inputResolved;
+
+    const globalResolved = this.setDefaultValue(globalVal as any, undefined);
+    if (globalResolved !== undefined) return globalResolved;
+
+    return defaultVal;
   }
 
 }

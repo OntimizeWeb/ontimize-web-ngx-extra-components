@@ -1,35 +1,30 @@
 <o-app-layout>
-
+  <!--
   <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
-  <button mat-button (click)="dv.changeView('table')">Vista tabla</button>
+  <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
 
-  <o-data-view #dv toggle-button="false" attr="dataView" service-type="packs" entity="packs" keys="id"
-    columns="id;name;location;price;score;image" query-rows="8" [table-config]="config.tableCfg" [grid-config]="config.gridCfg">
+  <o-data-view #dv attr="dataView" [static-data]="config.staticData" keys="id"
+    columns="id;name;sector;country;annualRevenue;rating" query-rows="8" [table-config]="config.tableCfg" [grid-config]="config.gridCfg">
 
     <ng-template oDataViewTableColumns>
-      <o-table-column attr="image" orderable="no" searchable="no" width="32px">
-        <o-table-cell-renderer-image image-type="base64" empty-image="assets/images/no-image.png" avatar="yes">
-        </o-table-cell-renderer-image>
-      </o-table-column>
-      <o-table-column attr="price" title="Price" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
+      <o-table-column attr="annualRevenue" title="Annual Revenue" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
         currency-symbol-position="right"></o-table-column>
     </ng-template>
 
 
     <ng-template oDataViewGridItem let-item>
       <div class="card-bg">
-        <img [src]="item.image">
         <div class="card-content" fxLayout="column" fxFlexFill fxLayoutGap="16px">
           <span fxLayout="row wrap" fxLayoutAlign="center center" fxFlex="60%" class="grid-card-title">{{item.name}}</span>
-          <span fxLayout="row" fxLayoutAlign="center start" fxFlex="10%" class="grid-card-text">{{item.location | uppercase}}</span>
+          <span fxLayout="row" fxLayoutAlign="center start" fxFlex="10%" class="grid-card-text">{{item.sector | uppercase}}</span>
           <div fxLayout="row" fxLayoutAlign="space-between" fxFlex class="card-content-last-row">
             <div fxLayout="column">
               <div fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="4px">
-                <span class="grid-card-text">{{item.score}}</span>
+                <span class="grid-card-text">{{item.rating}}</span>
                 <mat-icon>star</mat-icon>
               </div>
             </div>
-            <span fxLayout="column" class="grid-card-text">{{item.price | currency:'EUR'}}</span>
+            <span fxLayout="column" class="grid-card-text">{{item.annualRevenue | currency:'EUR'}}</span>
           </div>
         </div>
       </div>

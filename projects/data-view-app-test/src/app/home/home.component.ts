@@ -114,9 +114,8 @@ export class HomeComponent implements OnInit {
     keys: 'id',
     queryRows: 10,
     pageable: 'no',
-    tableCfg: { visibleColumns: 'name;location;price' },
-    gridCfg: { cols: 3, gutterSize: '8px', gridItemHeight: '1:1', quickFilterColumns: 'name;price' },
-    listCfg: {  }
+    tableCfg: { visibleColumns: 'name;sector;country;annualRevenue', rowHeight: 'large' },
+    gridCfg: { cols: 3, gutterSize: '8px', gridItemHeight: '1:1', quickFilterColumns: 'name;price' }
   };
 
   private companiesService: CompaniesService;
