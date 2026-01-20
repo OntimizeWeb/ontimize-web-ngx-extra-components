@@ -10,9 +10,7 @@ import { ODataViewGridItemDirective, ODataViewTableColumnsDirective } from '../d
 
 export const OEXTRACOMPONENTS_DECLARATION_MODULES: any = [
   OSkeletonComponent,
-  OExtraComponentsTranslatePipe,
-  ODataViewGridItemDirective,
-  ODataViewTableColumnsDirective
+  OExtraComponentsTranslatePipe
 ];
 export const OEXTRACOMPONENTS_IMPORTS_MODULES: any = [
   CommonModule,
@@ -21,4 +19,4 @@ export const OEXTRACOMPONENTS_IMPORTS_MODULES: any = [
   DragDropModule,
   OntimizeWebModule
 ]
-export const OEXTRACOMPONENTS_EXPORT_MODULES: any = [ODataViewModule, ODataViewGridItemDirective, ODataViewTableColumnsDirective];
+export const OEXTRACOMPONENTS_EXPORT_MODULES: any = [ODataViewModule];

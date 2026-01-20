@@ -197,6 +197,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   private registerTableColumns(): void {
+    if (!this.tableTpl || !this.table?.injector) {
+      return;
+    }
     try {
       // Create the embedded view with the correct injector
       this.columnsView = this.vcr.createEmbeddedView(
