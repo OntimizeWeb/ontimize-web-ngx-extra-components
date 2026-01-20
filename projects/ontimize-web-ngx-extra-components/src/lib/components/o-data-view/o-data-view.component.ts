@@ -28,9 +28,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('toggle-floatable') toggleFloatable?: string;
   @Input('toggle-button') toggleButton?: string;
 
-  protected showToggleOnToolbar = false;
-  protected showToggleFloatable = false;
-  protected showToggleButton = true;
+  protected showToggleOnToolbar: boolean = false;
+  protected showToggleFloatable: boolean = false;
+  protected showToggleButton: boolean = true;
 
   @Input() attr?: string;
   @Input() columns?: string;
@@ -175,9 +175,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   ngOnInit(): void {
     if (!this.defaultView) this.defaultView = 'table';
-    this.showToggleOnToolbar = Util.parseBoolean(this.toggleOnToolbar);
-    this.showToggleFloatable = Util.parseBoolean(this.toggleFloatable);
-    this.showToggleButton = Util.parseBoolean(this.toggleButton);
+    this.showToggleOnToolbar = Util.parseBoolean(this.toggleOnToolbar, false);
+    this.showToggleFloatable = Util.parseBoolean(this.toggleFloatable, false);
+    this.showToggleButton = Util.parseBoolean(this.toggleButton, true);
   }
 
   ngAfterViewInit(): void {
