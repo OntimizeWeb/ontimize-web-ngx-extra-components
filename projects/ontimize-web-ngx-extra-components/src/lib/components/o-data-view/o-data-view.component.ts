@@ -1,6 +1,5 @@
-import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OTableColumnComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
-import { ODataViewGridItemDirective } from '../../directives/o-data-view-grid-item.directive';
+import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef } from '@angular/core';
+import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableColumnComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective } from '../../directives/o-data-view-table-columns.directive';
@@ -15,10 +14,8 @@ import { ODataViewMode } from '../../types/data-view.types';
 export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   @ViewChild('table', { static: false }) table: OTableComponent;
+  @ViewChild('grid') grid: OGridComponent;
   @ViewChild('toggleGroup') toggleGroup: OButtonToggleGroupComponent;
-
-  @ContentChild(ODataViewGridItemDirective)
-  gridItemTpl?: ODataViewGridItemDirective;
 
   @ContentChild(ODataViewTableColumnsDirective)
   tableTpl?: ODataViewTableColumnsDirective;
@@ -170,8 +167,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   private columnsView: EmbeddedViewRef<any> | null = null;
 
   constructor(
-    private vcr: ViewContainerRef,
-    @Optional() @Inject(O_TABLE_GLOBAL_CONFIG) private tableGlobalConfig?: OTableGlobalConfig
+    private readonly vcr: ViewContainerRef,
+    @Optional() @Inject(O_TABLE_GLOBAL_CONFIG) private readonly tableGlobalConfig?: OTableGlobalConfig
   ) { }
 
   ngOnInit(): void {
@@ -274,7 +271,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_queryOnBind = this.setDefaultValue(this.queryOnBind, 'yes');
     this.r_queryWithNullParentKeys = this.setDefaultValue(this.queryWithNullParentKeys, 'no');
     this.r_storeState = this.setDefaultValue(this.storeState, 'yes');
+    console.log("query-rows por html" + this.queryRows);
     this.r_queryRows = this.setDefaultNumber(this.queryRows, 10);
+    console.log("query rows que se le pasan al componente: " + this.r_queryRows);
     this.r_deleteMethod = this.setDefaultValue(this.deleteMethod, 'delete');
     this.r_insertMethod = this.setDefaultValue(this.insertMethod, 'insert');
     this.r_updateMethod = this.setDefaultValue(this.updateMethod, 'update');
@@ -382,7 +381,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, undefined);
   }
 
-  private setDefaultValue(v: string | undefined | null | '', def: string | undefined): string | undefined {
+  private setDefaultValue(v: string | undefined | null, def: string | undefined): string | undefined {
     if (v === undefined || v === null || v === '') return def;
     return v;
   }
@@ -404,7 +403,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   private resolveYesNoWithGlobal(
-    inputVal: string | undefined | null | '',
+    inputVal: string | undefined | null,
     globalVal: boolean | undefined | null,
     defaultVal: string
   ): string {
@@ -419,7 +418,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   private resolveStringWithGlobal(
-    inputVal: string | undefined | null | '',
+    inputVal: string | undefined | null,
     globalVal: string | undefined | null,
     defaultVal: string
   ): string {

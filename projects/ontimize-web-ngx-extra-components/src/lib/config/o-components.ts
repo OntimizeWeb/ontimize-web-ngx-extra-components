@@ -6,7 +6,6 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { OSkeletonComponent } from '../components/o-skeleton/o-skeleton.component';
 import { OntimizeWebModule } from 'ontimize-web-ngx';
 import { ODataViewModule } from '../components/o-data-view/o-data-view.module';
-import { ODataViewGridItemDirective, ODataViewTableColumnsDirective } from '../directives';
 
 export const OEXTRACOMPONENTS_DECLARATION_MODULES: any = [
   OSkeletonComponent,
