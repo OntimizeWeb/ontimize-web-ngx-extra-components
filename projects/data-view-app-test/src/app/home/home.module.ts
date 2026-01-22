@@ -26,7 +26,8 @@ import { PacksService } from '../../services/packs.service';
       filterColumnActiveByDefault: false,
       detailMode: 'dblclick',
       editionMode: 'click',
-      rowHeight: 'small'
+      rowHeight: 'small',
+      selectionOnRowClick: 'no'
     }
   }
   ]

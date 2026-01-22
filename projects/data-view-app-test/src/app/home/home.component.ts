@@ -112,10 +112,9 @@ export class HomeComponent implements OnInit {
       }],
     columns: 'id;name;sector;country;employees;annualRevenue;rating;foundedYear',
     keys: 'id',
-    queryRows: 10,
     pageable: 'no',
-    tableCfg: { visibleColumns: 'name;sector;country;annualRevenue', rowHeight: 'large' },
-    gridCfg: { cols: 3, gutterSize: '8px', gridItemHeight: '1:1', quickFilterColumns: 'name;price' }
+    tableCfg: { visibleColumns: 'name;sector;country;annualRevenue', rowHeight: 'medium', selectionOnRowClick: 'no'},
+    gridCfg: { cols: 4, gutterSize: '4px', gridItemHeight: '1:1', quickFilterColumns: 'name;price', title: "grid", showTitle: "yes", paginationControls: "yes" }
   };
 
   private companiesService: CompaniesService;

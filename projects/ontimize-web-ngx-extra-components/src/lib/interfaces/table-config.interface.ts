@@ -61,4 +61,5 @@ export interface TableConfig {
   virtualScroll?: 'no' | 'false' | 'yes' | 'true';
   visibleColumns?: string;
   visibleExportDialogButtons?: string;
+  selectionOnRowClick?: 'no' | 'false' | 'yes' | 'true';
 };

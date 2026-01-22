@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input,
 import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableColumnComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
-import { ODataViewTableColumnsDirective } from '../../directives/o-data-view-table-columns.directive';
+import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
 import { ODataViewMode } from '../../types/data-view.types';
 
 @Component({
@@ -16,6 +16,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @ViewChild('table', { static: false }) table: OTableComponent;
   @ViewChild('grid') grid: OGridComponent;
   @ViewChild('toggleGroup') toggleGroup: OButtonToggleGroupComponent;
+
+  @ContentChild(ODataViewGridItemDirective)
+  gridItemTpl?: ODataViewGridItemDirective;
 
   @ContentChild(ODataViewTableColumnsDirective)
   tableTpl?: ODataViewTableColumnsDirective;
@@ -135,6 +138,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_quickFilterFunction?: (filter: string) => FilterExpression | Object;
   r_table_rowClass?: (rowData: any, rowIndex: number) => string | string[];
   r_table_showExpandableIconFunction?: Function;
+  r_table_selectionOnRowClick?: string;
 
   r_grid_controls?: string;
   r_grid_detailFormRoute?: string;
@@ -342,6 +346,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_virtualScroll = this.setDefaultValue(cfg.virtualScroll, 'yes');
     this.r_table_visibleColumns = this.setDefaultValue(cfg.visibleColumns, undefined);
     this.r_table_visibleExportDialogButtons = this.setDefaultValue(cfg.visibleExportDialogButtons, undefined);
+    this.r_table_selectionOnRowClick = this.resolveYesNoWithGlobal(cfg.selectionOnRowClick, g?.selectionOnRowClick, 'yes');
 
     this.r_table_disableSelectionFunction = cfg.disableSelectionFunction;
     this.r_table_quickFilterFunction = cfg.quickFilterFunction;
