@@ -3,8 +3,8 @@
   <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
   <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
 
-  <o-data-view #dv attr="dataView" [static-data]="config.staticData" keys="id"
-    columns="id;name;sector;country;annualRevenue;rating" query-rows="5" [table-config]="config.tableCfg" [grid-config]="config.gridCfg" query-on-init="false" [ngStyle]="{'height':'400px'}">
+  <o-data-view #dv attr="dataView" [static-data]="config.staticData" keys="id" columns="id;name;sector;country;annualRevenue;rating" query-rows="5"
+    [table-config]="config.tableCfg" [grid-config]="config.gridCfg" query-on-init="false" [ngStyle]="{'height':'400px'}">
 
     <ng-template oDataViewTableColumns>
       <o-table-column attr="annualRevenue" title="Annual Revenue" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
@@ -13,21 +13,18 @@
 
 
     <ng-template oDataViewGridItem let-item>
-      <div class="card-bg">
-        <div class="card-content" fxLayout="column" fxFlexFill fxLayoutGap="16px">
-          <span fxLayout="row wrap" fxLayoutAlign="center center" fxFlex="60%" class="grid-card-title">{{item.name}}</span>
-          <span fxLayout="row" fxLayoutAlign="center start" fxFlex="10%" class="grid-card-text">{{item.sector | uppercase}}</span>
-          <div fxLayout="row" fxLayoutAlign="space-between" fxFlex class="card-content-last-row">
-            <div fxLayout="column">
-              <div fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="4px">
-                <span class="grid-card-text">{{item.rating}}</span>
-                <mat-icon>star</mat-icon>
-              </div>
-            </div>
-            <span fxLayout="column" class="grid-card-text">{{item.annualRevenue | currency:'EUR'}}</span>
+      <mat-card class="grid-card">
+        <mat-card-header>
+          <mat-card-title>{{ item.name }}</mat-card-title>
+          <mat-card-subtitle>{{ item.sector }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div fxLayout="column" fxLayoutAlign="center">Since {{item.foundedYear}}</div>
+          <div fxLayout="column" fxLayoutAlign="end end">
+            <mat-icon>info</mat-icon>
           </div>
-        </div>
-      </div>
+        </mat-card-content>
+      </mat-card>
     </ng-template>
 
   </o-data-view>
