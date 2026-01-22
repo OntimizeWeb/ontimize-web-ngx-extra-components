@@ -214,7 +214,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
       // Filter and register only OTableColumnComponent instances
       const columns = this.columnsView.rootNodes
-        .filter(node => node instanceof OTableColumnComponent) as OTableColumnComponent[];
+        .filter((node): node is OTableColumnComponent => node instanceof OTableColumnComponent);
 
       if (columns.length === 0) {
         console.warn('No columns found to register in o-data-view');
