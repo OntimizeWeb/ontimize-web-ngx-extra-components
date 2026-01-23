@@ -11,7 +11,6 @@ export interface GridConfig {
   title?: string;
   visible?: CustomBoolean;
   cols?: number;
-  fixedHeader?: CustomBoolean;
   gridItemHeight?: string | number;
   gutterSize?: string;
   insertButtonFloatable?: CustomBoolean;

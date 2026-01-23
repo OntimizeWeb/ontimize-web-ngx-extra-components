@@ -58,6 +58,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('quick-filter-placeholder') quickFilterPlaceholder?: string;
   @Input('insert-button') insertButton?: string;
   @Input('refresh-button') refreshButton?: string;
+  @Input('fixed-header') fixedHeader?: string;
 
   @Input('table-config') tableConfig?: TableConfig;
   @Input('grid-config') gridConfig?: GridConfig;
@@ -87,7 +88,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_quickFilterPlaceholder?: string;
   r_insertButton?: string;
   r_refreshButton?: string;
-
+  r_fixedHeader?: string;
 
   r_table_controls?: string;
   r_table_detailButtonInRow?: string;
@@ -119,7 +120,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_exportButton?: string;
   r_table_exportServiceType?: string;
   r_table_filterColumnActiveByDefault?: string;
-  r_table_fixedHeader?: string;
   r_table_groupable?: string;
   r_table_groupedColumns?: string;
   r_table_horizontalScroll?: string;
@@ -156,7 +156,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_grid_title?: string;
   r_grid_visible?: string;
   r_grid_cols?: number;
-  r_grid_fixedHeader?: string;
   r_grid_gridItemHeight?: string | number;
   r_grid_gutterSize?: string;
   r_grid_insertButtonFloatable?: string;
@@ -285,8 +284,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_quickFilterPlaceholder = this.setDefaultValue(this.quickFilterPlaceholder, undefined);
     this.r_insertButton = this.setDefaultValue(this.insertButton, 'yes');
     this.r_refreshButton = this.setDefaultValue(this.refreshButton, 'yes');
-
-
+    this.r_fixedHeader = this.setDefaultValue(this.fixedHeader, 'yes');
   }
 
   private resolveTableInputs(): void {
@@ -327,7 +325,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       g?.filterColumnActiveByDefault,
       'yes'
     );
-    this.r_table_fixedHeader = this.setDefaultValue(cfg.fixedHeader, 'yes');
     this.r_table_groupable = this.setDefaultValue(cfg.groupable, 'no');
     this.r_table_groupedColumns = this.setDefaultValue(cfg.groupedColumns, undefined);
     this.r_table_horizontalScroll = this.setDefaultValue(cfg.horizontalScroll, 'no');
@@ -368,7 +365,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_title = this.setDefaultValue(cfg.title, undefined);
     this.r_grid_visible = this.setDefaultValue(cfg.visible, 'yes');
     this.r_grid_cols = cfg.cols;
-    this.r_grid_fixedHeader = this.setDefaultValue(cfg.fixedHeader, 'no');
     this.r_grid_gridItemHeight = this.setDefaultValueAny<string | number>(cfg?.gridItemHeight, '1:1');
     this.r_grid_gutterSize = this.setDefaultValue(cfg.gutterSize, '1px');
     this.r_grid_insertButtonFloatable = this.setDefaultValue(cfg.insertButtonFloatable, 'yes');

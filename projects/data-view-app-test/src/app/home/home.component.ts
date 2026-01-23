@@ -110,7 +110,7 @@ export class HomeComponent implements OnInit {
     }];
 
   tableCfg = { visibleColumns: 'name;location;price;duration;score', rowHeight: 'medium', selectionOnRowClick: 'no' };
-  gridCfg = { cols: 4, gutterSize: '2px', gridItemHeight: '175px', quickFilterColumns: 'name;price', title: "Grid example", showTitle: "yes", showPageSize: "yes", insertButtonFloatable: 'yes', fixedHeader: 'yes'};
+  gridCfg = { cols: 4, gutterSize: '2px', gridItemHeight: '175px', quickFilterColumns: 'name;price', title: "Grid example", showTitle: "yes", showPageSize: "yes", insertButtonFloatable: 'yes'};
 
   constructor() {
   }

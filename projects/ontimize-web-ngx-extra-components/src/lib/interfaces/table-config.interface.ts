@@ -32,7 +32,6 @@ export interface TableConfig {
   exportButton?: CustomBoolean;
   exportServiceType?: string;
   filterColumnActiveByDefault?: CustomBoolean;
-  fixedHeader?: CustomBoolean;
   groupable?: CustomBoolean;
   groupedColumns?: string;
   horizontalScroll?: CustomBoolean;
