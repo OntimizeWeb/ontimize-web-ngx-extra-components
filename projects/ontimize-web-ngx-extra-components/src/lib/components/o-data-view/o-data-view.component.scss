@@ -1,5 +1,6 @@
 .button-toggle-group {
   display: flex;
+  flex-direction: row;
   justify-content: flex-end;
   margin-bottom: 8px;
 }
@@ -27,4 +28,25 @@
       }
     }
   }
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.o-data-view-container {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.o-data-view-component {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
 }
