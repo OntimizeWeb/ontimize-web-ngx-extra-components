@@ -1,5 +1,4 @@
-import { Component, Injector, OnInit } from '@angular/core';
-import { CompaniesService } from '../../services/companies.service';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-home',
@@ -113,21 +112,14 @@ export class HomeComponent implements OnInit {
     columns: 'id;name;sector;country;employees;annualRevenue;rating;foundedYear',
     keys: 'id',
     pageable: 'no',
-    tableCfg: { visibleColumns: 'name;sector;country;annualRevenue', rowHeight: 'medium', selectionOnRowClick: 'no'},
-    gridCfg: { cols: 4, gutterSize: '2px', gridItemHeight: '1:1', quickFilterColumns: 'name;price', title: "Grid example", showTitle: "yes", paginationControls: "yes" }
+    tableCfg: { visibleColumns: 'name;location;price;duration;score', rowHeight: 'medium', selectionOnRowClick: 'no'},
+    gridCfg: { cols: 4, gutterSize: '2px', gridItemHeight: '1:1', quickFilterColumns: 'name;price', title: "Grid example", showTitle: "yes", paginationControls: "yes", showPageSize: "yes" }
   };
 
-  private companiesService: CompaniesService;
-
-  protected data: any[];
-
-  constructor(protected injector: Injector) {
-    this.companiesService = new CompaniesService(injector)
-    this.data = this.companiesService.getData();
+  constructor() {
   }
 
   ngOnInit(): void {
-    this.data = this.companiesService.getData();
   }
 
 }

@@ -3,11 +3,11 @@
   <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
   <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
 
-  <o-data-view #dv attr="dataView" [static-data]="config.staticData" keys="id" columns="id;name;sector;country;annualRevenue;rating" query-rows="5"
-    [table-config]="config.tableCfg" [grid-config]="config.gridCfg" query-on-init="false" quick-filter-placeholder="Search" refresh-button="no">
+  <o-data-view #dv attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;duration;score" query-rows="4"
+    [table-config]="config.tableCfg" [grid-config]="config.gridCfg" quick-filter-placeholder="Search" refresh-button="no">
 
     <ng-template oDataViewTableColumns>
-      <o-table-column attr="annualRevenue" title="Annual Revenue" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
+      <o-table-column attr="price" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
         currency-symbol-position="right"></o-table-column>
     </ng-template>
 
@@ -16,13 +16,10 @@
       <mat-card class="grid-card">
         <mat-card-header>
           <mat-card-title>{{ item.name }}</mat-card-title>
-          <mat-card-subtitle>{{ item.sector }}</mat-card-subtitle>
+          <mat-card-subtitle>{{ item.location }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <div fxLayout="column" fxLayoutAlign="center">Since {{item.foundedYear}}</div>
-          <div fxLayout="column" fxLayoutAlign="end end">
-            <mat-icon>info</mat-icon>
-          </div>
+          <div fxLayout="column" fxLayoutAlign="center">Cost: {{item.price | currency}}</div>
         </mat-card-content>
       </mat-card>
     </ng-template>

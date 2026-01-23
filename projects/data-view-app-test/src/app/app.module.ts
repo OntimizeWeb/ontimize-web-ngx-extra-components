@@ -8,7 +8,6 @@ import { OExtraComponentsModule } from 'ontimize-web-ngx-extra-components';
 import { APP_CONFIG, ONTIMIZE_PROVIDERS, OntimizeWebModule } from 'ontimize-web-ngx';
 import { CONFIG } from './app.config';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { CompaniesService } from '../services/companies.service';
 import { HomeModule } from './home/home.module';
 @NgModule({
   declarations: [
@@ -25,9 +24,7 @@ import { HomeModule } from './home/home.module';
   ],
   providers: [
     { provide: APP_CONFIG, useValue: CONFIG },
-    ...ONTIMIZE_PROVIDERS,
-    // {provide: 'companies', useValue: CompaniesService}
-    CompaniesService
+    ...ONTIMIZE_PROVIDERS
   ],
   bootstrap: [AppComponent]
 })

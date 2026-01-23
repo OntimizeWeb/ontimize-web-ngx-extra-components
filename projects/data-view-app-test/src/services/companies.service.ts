@@ -1,13 +1,13 @@
 import { Injectable, Injector } from '@angular/core';
 import {
   Observable,
-  OntimizeEEService,
+  OntimizeService,
   OntimizeServiceResponse,
 } from 'ontimize-web-ngx';
 import { of } from 'rxjs';
 
 @Injectable()
-export class CompaniesService extends OntimizeEEService {
+export class CompaniesService extends OntimizeService {
 
   private companies = {
     code: 0,

@@ -1,6 +1,6 @@
 
-import { Injectable, Injector, Output } from '@angular/core';
-import { Expression, FilterExpressionUtils, Observable, OntimizeEEService, OntimizeService, OntimizeServiceResponse, Util } from 'ontimize-web-ngx';
+import { Injectable, Injector } from '@angular/core';
+import { Expression, FilterExpressionUtils, Observable, OntimizeService, OntimizeServiceResponse, Util } from 'ontimize-web-ngx';
 import { of } from 'rxjs';
 
 @Injectable()
