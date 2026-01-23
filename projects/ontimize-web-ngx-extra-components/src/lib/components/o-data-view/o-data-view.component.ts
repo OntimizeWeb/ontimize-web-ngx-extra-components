@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableColumnComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
@@ -8,7 +8,8 @@ import { ODataViewMode } from '../../types/data-view.types';
 @Component({
   selector: 'o-data-view',
   templateUrl: './o-data-view.component.html',
-  styleUrls: ['./o-data-view.component.scss']
+  styleUrls: ['./o-data-view.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 
 export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
