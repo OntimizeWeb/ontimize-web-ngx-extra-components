@@ -17,8 +17,7 @@ export class PacksService extends OntimizeService {
       score: 4.7,
       people: 8,
       dateBegin: "2025-05-01",
-      dateEnd: "2025-10-15",
-      image: "assets/images/pirineos-aventura.jpg"
+      dateEnd: "2025-10-15"
     },
     {
       id: 2,
@@ -29,8 +28,7 @@ export class PacksService extends OntimizeService {
       score: 4.9,
       people: 6,
       dateBegin: "2025-06-01",
-      dateEnd: "2025-09-30",
-      image: "assets/images/rafting-nilo-blanco.jpg"
+      dateEnd: "2025-09-30"
     },
     {
       id: 3,
@@ -41,8 +39,7 @@ export class PacksService extends OntimizeService {
       score: 4.6,
       people: 10,
       dateBegin: "2025-03-15",
-      dateEnd: "2025-06-30",
-      image: "assets/images/desierto-sahara.jpg"
+      dateEnd: "2025-06-30"
     },
     {
       id: 4,
@@ -53,8 +50,7 @@ export class PacksService extends OntimizeService {
       score: 5.0,
       people: 4,
       dateBegin: "2025-04-01",
-      dateEnd: "2025-11-30",
-      image: "assets/images/gran-barrera-coral.jpg"
+      dateEnd: "2025-11-30"
     },
     {
       id: 5,
@@ -65,8 +61,7 @@ export class PacksService extends OntimizeService {
       score: 4.8,
       people: 6,
       dateBegin: "2025-05-15",
-      dateEnd: "2025-09-15",
-      image: "assets/images/fiordos-noruegos-kayak.jpg"
+      dateEnd: "2025-09-15"
     },
     {
       id: 6,
@@ -77,8 +72,7 @@ export class PacksService extends OntimizeService {
       score: 4.9,
       people: 12,
       dateBegin: "2025-04-01",
-      dateEnd: "2025-10-31",
-      image: "assets/images/camino-inca-trekking.jpg"
+      dateEnd: "2025-10-31"
     },
     {
       id: 7,
@@ -89,8 +83,7 @@ export class PacksService extends OntimizeService {
       score: 4.5,
       people: 5,
       dateBegin: "2025-11-01",
-      dateEnd: "2026-03-31",
-      image: "assets/images/el-chalten-escalada.jpg"
+      dateEnd: "2026-03-31"
     },
     {
       id: 8,
@@ -101,8 +94,7 @@ export class PacksService extends OntimizeService {
       score: 4.8,
       people: 8,
       dateBegin: "2025-07-01",
-      dateEnd: "2025-10-30",
-      image: "assets/images/safari-kenia.jpg"
+      dateEnd: "2025-10-30"
     },
     {
       id: 9,
@@ -113,8 +105,7 @@ export class PacksService extends OntimizeService {
       score: 4.4,
       people: 6,
       dateBegin: "2025-01-10",
-      dateEnd: "2025-06-15",
-      image: "assets/images/selva-amazonica.jpg"
+      dateEnd: "2025-06-15"
     },
     {
       id: 10,
@@ -125,8 +116,117 @@ export class PacksService extends OntimizeService {
       score: 4.9,
       people: 2,
       dateBegin: "2025-04-15",
-      dateEnd: "2025-09-30",
-      image: "assets/images/parapente-alpes-suizos.jpg"
+      dateEnd: "2025-09-30"
+    },
+    {
+      id: 11,
+      name: "Aventura de canyoning en Sierra de Guara",
+      location: "Huesca, España",
+      price: 510,
+      duration: 4,
+      score: 4.7,
+      people: 9,
+      dateBegin: "2025-04-15",
+      dateEnd: "2025-10-20"
+    },
+    {
+      id: 12,
+      name: "Ruta en bici por la Toscana",
+      location: "Florencia, Italia",
+      price: 740,
+      duration: 6,
+      score: 4.6,
+      people: 10,
+      dateBegin: "2025-03-20",
+      dateEnd: "2025-11-05"
+    },
+    {
+      id: 13,
+      name: "Auroras boreales en Laponia",
+      location: "Rovaniemi, Finlandia",
+      price: 1350,
+      duration: 5,
+      score: 4.9,
+      people: 8,
+      dateBegin: "2025-11-15",
+      dateEnd: "2026-03-20"
+    },
+    {
+      id: 14,
+      name: "Escapada de surf en Nazaré",
+      location: "Nazaré, Portugal",
+      price: 620,
+      duration: 5,
+      score: 4.5,
+      people: 7,
+      dateBegin: "2025-09-01",
+      dateEnd: "2026-02-28"
+    },
+    {
+      id: 15,
+      name: "Travesía en velero por las Islas Griegas",
+      location: "Cícladas, Grecia",
+      price: 1100,
+      duration: 7,
+      score: 4.8,
+      people: 6,
+      dateBegin: "2025-05-10",
+      dateEnd: "2025-10-10"
+    },
+    {
+      id: 16,
+      name: "Senderismo volcánico en Islandia",
+      location: "Reykjavík, Islandia",
+      price: 980,
+      duration: 6,
+      score: 4.9,
+      people: 12,
+      dateBegin: "2025-06-01",
+      dateEnd: "2025-09-25"
+    },
+    {
+      id: 17,
+      name: "Snorkel y cuevas marinas en Yucatán",
+      location: "Tulum, México",
+      price: 790,
+      duration: 5,
+      score: 4.7,
+      people: 8,
+      dateBegin: "2025-02-01",
+      dateEnd: "2025-08-31"
+    },
+    {
+      id: 18,
+      name: "Escalada en hielo en los Tatras",
+      location: "Zakopane, Polonia",
+      price: 860,
+      duration: 6,
+      score: 4.6,
+      people: 6,
+      dateBegin: "2025-12-01",
+      dateEnd: "2026-03-15"
+    },
+    {
+      id: 19,
+      name: "Campamento de glaciares en Alaska",
+      location: "Anchorage, EE. UU.",
+      price: 1750,
+      duration: 9,
+      score: 4.8,
+      people: 5,
+      dateBegin: "2025-06-15",
+      dateEnd: "2025-09-10"
+    },
+    {
+      id: 20,
+      name: "Ruta de cascadas en Costa Rica",
+      location: "La Fortuna, Costa Rica",
+      price: 830,
+      duration: 6,
+      score: 4.7,
+      people: 10,
+      dateBegin: "2025-01-20",
+      dateEnd: "2025-07-15"
     }],
     sqlTypes: {
       "id": 4,
@@ -137,11 +237,10 @@ export class PacksService extends OntimizeService {
       "score": 6,
       "people": 4,
       "dateBegin": 93,
-      "dateEnd": 93,
-      "image": 12
+      "dateEnd": 93
     },
     startRecordIndex: 0,
-    totalQueryRecordsNumber: 10
+    totalQueryRecordsNumber: 20
   };
 
   constructor(protected injector: Injector) {
@@ -199,7 +298,8 @@ export class PacksService extends OntimizeService {
 
     const total = rows.length;
     const start = Math.max(0, offset || 0);
-    const page = rows.slice(start, start + (pagesize || 10));
+    const size = pagesize ?? total;
+    const page = rows.slice(start, start + size);
 
     const data = (av?.length) ? page.map(r => Object.fromEntries(av.map(c => [c, (r as any)[c]]))) : page;
 

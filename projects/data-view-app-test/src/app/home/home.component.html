@@ -3,8 +3,8 @@
   <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
   <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
 
-  <o-data-view #dv attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;duration;score" query-rows="4"
-    [table-config]="config.tableCfg" [grid-config]="config.gridCfg" quick-filter-placeholder="Search" refresh-button="no">
+  <o-data-view #dv attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;duration;score" query-rows="20"
+    [table-config]="tableCfg" [grid-config]="gridCfg" quick-filter-placeholder="Search" refresh-button="no" toggle-on-toolbar="yes">
 
     <ng-template oDataViewTableColumns>
       <o-table-column attr="price" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
