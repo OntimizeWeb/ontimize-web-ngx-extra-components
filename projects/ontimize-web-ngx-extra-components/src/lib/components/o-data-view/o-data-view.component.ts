@@ -276,9 +276,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_queryOnBind = this.setDefaultValue(this.queryOnBind, 'yes');
     this.r_queryWithNullParentKeys = this.setDefaultValue(this.queryWithNullParentKeys, 'no');
     this.r_storeState = this.setDefaultValue(this.storeState, 'yes');
-    console.log("query-rows por html" + this.queryRows);
     this.r_queryRows = this.setDefaultNumber(this.queryRows, 10);
-    console.log("query rows que se le pasan al componente: " + this.r_queryRows);
     this.r_deleteMethod = this.setDefaultValue(this.deleteMethod, 'delete');
     this.r_insertMethod = this.setDefaultValue(this.insertMethod, 'insert');
     this.r_updateMethod = this.setDefaultValue(this.updateMethod, 'update');
