@@ -15,7 +15,6 @@ export interface TableConfig {
   editButtonInRowIcon?: string;
   editFormRoute?: string;
   filterCaseSensitive?: CustomBoolean;
-  insertButton?: CustomBoolean;
   insertFormRoute?: string;
   recursiveEdit?: CustomBoolean;
   recursiveInsert?: CustomBoolean;
@@ -43,7 +42,6 @@ export interface TableConfig {
   orderable?: CustomBoolean;
   paginationControls?: CustomBoolean;
   quickFilterFunction?: QuickFilterFunction;
-  refreshButton?: CustomBoolean;
   resizable?: CustomBoolean;
   rowClass?: (rowData: any, rowIndex: number) => string | string[];
   selectAllCheckbox?: CustomBoolean;

@@ -55,6 +55,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('update-method') updateMethod?: string;
   @Input('show-buttons-text') showButtonsText?: string;
   @Input('quick-filter-placeholder') quickFilterPlaceholder?: string;
+  @Input('insert-button') insertButton?: string;
+  @Input('refresh-button') refreshButton?: string;
 
   @Input('table-config') tableConfig?: TableConfig;
   @Input('grid-config') gridConfig?: GridConfig;
@@ -82,6 +84,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_updateMethod?: string;
   r_showButtonsText?: string;
   r_quickFilterPlaceholder?: string;
+  r_insertButton?: string;
+  r_refreshButton?: string;
+
 
   r_table_controls?: string;
   r_table_detailButtonInRow?: string;
@@ -93,8 +98,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_editFormRoute?: string;
   r_table_enabled?: string;
   r_table_filterCaseSensitive?: string;
-  r_table_insertButton?: string;
   r_table_insertFormRoute?: string;
+  r_table_deleteButton?: string;
   r_table_pageSizeOptions?: any[];
   r_table_paginationControls?: string;
   r_table_quickFilter?: string;
@@ -109,7 +114,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_collapseGroupedColumns?: string;
   r_table_columnsVisibilityButton?: string;
   r_table_defaultVisibleColumns?: string;
-  r_table_deleteButton?: string;
   r_table_editionMode?: string;
   r_table_exportButton?: string;
   r_table_exportServiceType?: string;
@@ -121,7 +125,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_keepSelectedItems?: string;
   r_table_multipleSort?: string;
   r_table_nonHidableColumns?: string;
-  r_table_refreshButton?: string;
   r_table_resizable?: string;
   r_table_selectAllCheckbox?: string;
   r_table_selectAllCheckboxVisible?: string;
@@ -155,14 +158,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_grid_fixedHeader?: string;
   r_grid_gridItemHeight?: string | number;
   r_grid_gutterSize?: string;
-  r_grid_insertButton?: string;
   r_grid_insertButtonFloatable?: string;
   r_grid_insertButtonPosition?: string;
   r_grid_orderable?: string;
   r_grid_pageSizeOptions?: any[];
   r_grid_paginationControls?: string;
   r_grid_quickFilterColumns?: string;
-  r_grid_refreshButton?: string;
   r_grid_showFooter?: string;
   r_grid_showPageSize?: string;
   r_grid_sortColumn?: string;
@@ -283,6 +284,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_updateMethod = this.setDefaultValue(this.updateMethod, 'update');
     this.r_showButtonsText = this.setDefaultValue(this.showButtonsText, 'yes');
     this.r_quickFilterPlaceholder = this.setDefaultValue(this.quickFilterPlaceholder, undefined);
+    this.r_insertButton = this.setDefaultValue(this.insertButton, 'yes');
+    this.r_refreshButton = this.setDefaultValue(this.refreshButton, 'yes');
+
 
   }
 
@@ -300,8 +304,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_editFormRoute = this.setDefaultValue(cfg.editFormRoute, 'edit');
     this.r_table_enabled = this.setDefaultValue(cfg.enabled, 'yes');
     this.r_table_filterCaseSensitive = this.setDefaultValue(cfg.filterCaseSensitive, 'no');
-    this.r_table_insertButton = this.setDefaultValue(cfg.insertButton, 'yes');
-    this.r_table_insertFormRoute = this.setDefaultValue(cfg.insertFormRoute, 'new');
     this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [10, 25, 50, 100]);
     this.r_table_paginationControls = this.setDefaultValue(cfg.paginationControls, 'yes');
     this.r_table_quickFilter = this.setDefaultValue(cfg.quickFilter, 'yes');
@@ -311,12 +313,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_rowHeight = this.resolveStringWithGlobal(cfg.rowHeight, g?.rowHeight, 'medium');
     this.r_table_title = this.setDefaultValue(cfg.title, undefined);
     this.r_table_visible = this.setDefaultValue(cfg.visible, 'yes');
-
     this.r_table_autoAdjust = this.resolveYesNoWithGlobal(cfg.autoAdjust, g?.autoAdjust, 'yes');
     this.r_table_autoAlignTitles = this.resolveYesNoWithGlobal(cfg.autoAlignTitles, g?.autoAlignTitles, 'yes');
     this.r_table_collapseGroupedColumns = this.setDefaultValue(cfg.collapseGroupedColumns, 'no');
     this.r_table_columnsVisibilityButton = this.setDefaultValue(cfg.columnsVisibilityButton, 'yes');
     this.r_table_defaultVisibleColumns = this.setDefaultValue(cfg.defaultVisibleColumns, undefined);
+    this.r_table_insertFormRoute = this.setDefaultValue(cfg.insertFormRoute, 'new');
     this.r_table_deleteButton = this.setDefaultValue(cfg.deleteButton, 'yes');
     this.r_table_editionMode = this.resolveStringWithGlobal(cfg.editionMode, g?.editionMode, 'none');
     this.r_table_exportButton = this.setDefaultValue(cfg.exportButton, 'yes');
@@ -332,7 +334,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_horizontalScroll = this.setDefaultValue(cfg.horizontalScroll, 'no');
     this.r_table_multipleSort = this.setDefaultValue(cfg.multipleSort, 'yes');
     this.r_table_nonHidableColumns = this.setDefaultValue(cfg.nonHidableColumns, undefined);
-    this.r_table_refreshButton = this.setDefaultValue(cfg.refreshButton, 'yes');
     this.r_table_resizable = this.setDefaultValue(cfg.resizable, 'yes');
     this.r_table_selectAllCheckbox = this.setDefaultValue(cfg.selectAllCheckbox, 'no');
     this.r_table_selectAllCheckboxVisible = this.setDefaultValue(cfg.selectAllCheckboxVisible, 'no');
@@ -371,14 +372,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_fixedHeader = this.setDefaultValue(cfg.fixedHeader, 'no');
     this.r_grid_gridItemHeight = this.setDefaultValueAny<string | number>(cfg?.gridItemHeight, '1:1');
     this.r_grid_gutterSize = this.setDefaultValue(cfg.gutterSize, '1px');
-    this.r_grid_insertButton = this.setDefaultValue(cfg.insertButton, 'false');
     this.r_grid_insertButtonFloatable = this.setDefaultValue(cfg.insertButtonFloatable, 'yes');
     this.r_grid_insertButtonPosition = this.setDefaultValue(cfg.insertButtonPosition, 'bottom');
     this.r_grid_orderable = this.setDefaultValue(cfg.orderable, 'no');
     this.r_grid_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [8, 16, 24, 32, 64]);
     this.r_grid_paginationControls = this.setDefaultValue(cfg.paginationControls, 'no');
     this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.r_columns);
-    this.r_grid_refreshButton = this.setDefaultValue(cfg.refreshButton, 'yes');
     this.r_grid_showFooter = this.setDefaultValue(cfg.showFooter, 'true');
     this.r_grid_showPageSize = this.setDefaultValue(cfg.showPageSize, 'no');
     this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, undefined);

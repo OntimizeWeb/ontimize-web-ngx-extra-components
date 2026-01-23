@@ -14,14 +14,12 @@ export interface GridConfig {
   fixedHeader?: CustomBoolean;
   gridItemHeight?: string | number;
   gutterSize?: string;
-  insertButton?: CustomBoolean;
   insertButtonFloatable?: CustomBoolean;
   insertButtonPosition?: 'botton' | 'top';
   orderable?: CustomBoolean;
   pageSizeOptions?: any[];
   paginationControls?: CustomBoolean;
   quickFilterColumns?: string;
-  refreshButton?: CustomBoolean;
   showFooter?: CustomBoolean;
   showPageSize?: CustomBoolean;
   sortColumn?: string;

@@ -4,7 +4,7 @@
   <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
 
   <o-data-view #dv attr="dataView" [static-data]="config.staticData" keys="id" columns="id;name;sector;country;annualRevenue;rating" query-rows="5"
-    [table-config]="config.tableCfg" [grid-config]="config.gridCfg" query-on-init="false" quick-filter-placeholder="Search">
+    [table-config]="config.tableCfg" [grid-config]="config.gridCfg" query-on-init="false" quick-filter-placeholder="Search" refresh-button="no">
 
     <ng-template oDataViewTableColumns>
       <o-table-column attr="annualRevenue" title="Annual Revenue" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€"
