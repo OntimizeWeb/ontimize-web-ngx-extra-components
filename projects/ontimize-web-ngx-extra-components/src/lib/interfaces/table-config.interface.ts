@@ -6,7 +6,6 @@ export interface TableConfig {
   detailFormRoute?: string;
   pageSizeOptions?: any[];
   quickFilter?: CustomBoolean;
-  quickFilterPlaceholder?: string;
   recursiveDetail?: CustomBoolean;
   title?: string;
   visible?: CustomBoolean;
@@ -50,7 +49,6 @@ export interface TableConfig {
   selectAllCheckbox?: CustomBoolean;
   selectAllCheckboxVisible?: CustomBoolean;
   selectionMode?: 'none' | 'single' | 'multiple';
-  showButtonsText?: CustomBoolean;
   showConfigurationOption?: CustomBoolean;
   showExpandableIconFunction?: Function;
   showFilterOption?: CustomBoolean;

@@ -6,7 +6,6 @@ export interface GridConfig {
   detailMode?: 'none' | 'click' | 'dbclick';
   enabled?: CustomBoolean;
   quickFilter?: CustomBoolean;
-  quickFilterPlaceholder?: string;
   quickFilterAppearance?: 'legacy' | 'standard' | 'fill' | 'outline';
   recursiveDetail?: CustomBoolean;
   title?: string;
@@ -23,7 +22,6 @@ export interface GridConfig {
   paginationControls?: CustomBoolean;
   quickFilterColumns?: string;
   refreshButton?: CustomBoolean;
-  showButtonsText?: CustomBoolean;
   showFooter?: CustomBoolean;
   showPageSize?: CustomBoolean;
   sortColumn?: string;

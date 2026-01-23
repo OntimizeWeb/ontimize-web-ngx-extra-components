@@ -53,6 +53,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('static-data') staticData?: any[];
   @Input('store-state') storeState?: string;
   @Input('update-method') updateMethod?: string;
+  @Input('show-buttons-text') showButtonsText?: string;
+  @Input('quick-filter-placeholder') quickFilterPlaceholder?: string;
 
   @Input('table-config') tableConfig?: TableConfig;
   @Input('grid-config') gridConfig?: GridConfig;
@@ -78,6 +80,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_staticData?: any[];
   r_storeState?: string;
   r_updateMethod?: string;
+  r_showButtonsText?: string;
+  r_quickFilterPlaceholder?: string;
 
   r_table_controls?: string;
   r_table_detailButtonInRow?: string;
@@ -94,7 +98,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_pageSizeOptions?: any[];
   r_table_paginationControls?: string;
   r_table_quickFilter?: string;
-  r_table_quickFilterPlaceholder?: string;
   r_table_recursiveDetail?: string;
   r_table_recursiveEdit?: string;
   r_table_recursiveInsert?: string;
@@ -123,7 +126,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_selectAllCheckbox?: string;
   r_table_selectAllCheckboxVisible?: string;
   r_table_selectionMode?: string;
-  r_table_showButtonsText?: string;
   r_table_showConfigurationOption?: string;
   r_table_showFilterOption?: string;
   r_table_showPaginatorFirstLastButtons?: string;
@@ -145,7 +147,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_grid_detailMode?: string;
   r_grid_enabled?: string;
   r_grid_quickFilter?: string;
-  r_grid_quickFilterPlaceholder?: string;
   r_grid_quickFilterAppearance?: string;
   r_grid_recursiveDetail?: string;
   r_grid_title?: string;
@@ -162,7 +163,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_grid_paginationControls?: string;
   r_grid_quickFilterColumns?: string;
   r_grid_refreshButton?: string;
-  r_grid_showButtonsText?: string;
   r_grid_showFooter?: string;
   r_grid_showPageSize?: string;
   r_grid_sortColumn?: string;
@@ -281,6 +281,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_deleteMethod = this.setDefaultValue(this.deleteMethod, 'delete');
     this.r_insertMethod = this.setDefaultValue(this.insertMethod, 'insert');
     this.r_updateMethod = this.setDefaultValue(this.updateMethod, 'update');
+    this.r_showButtonsText = this.setDefaultValue(this.showButtonsText, 'yes');
+    this.r_quickFilterPlaceholder = this.setDefaultValue(this.quickFilterPlaceholder, undefined);
+
   }
 
   private resolveTableInputs(): void {
@@ -302,7 +305,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [10, 25, 50, 100]);
     this.r_table_paginationControls = this.setDefaultValue(cfg.paginationControls, 'yes');
     this.r_table_quickFilter = this.setDefaultValue(cfg.quickFilter, 'yes');
-    this.r_table_quickFilterPlaceholder = this.setDefaultValue(cfg.quickFilterPlaceholder, undefined);
     this.r_table_recursiveDetail = this.setDefaultValue(cfg.recursiveDetail, 'no');
     this.r_table_recursiveEdit = this.setDefaultValue(cfg.recursiveEdit, 'no');
     this.r_table_recursiveInsert = this.setDefaultValue(cfg.recursiveInsert, 'no');
@@ -335,7 +337,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_selectAllCheckbox = this.setDefaultValue(cfg.selectAllCheckbox, 'no');
     this.r_table_selectAllCheckboxVisible = this.setDefaultValue(cfg.selectAllCheckboxVisible, 'no');
     this.r_table_selectionMode = this.setDefaultValue(cfg.selectionMode, 'multiple');
-    this.r_table_showButtonsText = this.setDefaultValue(cfg.showButtonsText, 'yes');
     this.r_table_showConfigurationOption = this.setDefaultValue(cfg.showConfigurationOption, 'yes');
     this.r_table_showFilterOption = this.setDefaultValue(cfg.showFilterOption, 'yes');
     this.r_table_showPaginatorFirstLastButtons = this.setDefaultValue(cfg.showPaginatorFirstLastButtons, 'yes');
@@ -363,7 +364,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_enabled = this.setDefaultValue(cfg.enabled, 'yes');
     this.r_grid_quickFilter = this.setDefaultValue(cfg.quickFilter, 'yes');
     this.r_grid_quickFilterAppearance = this.setDefaultValue(cfg.quickFilterAppearance, 'outline');
-    this.r_grid_quickFilterPlaceholder = this.setDefaultValue(cfg.quickFilterPlaceholder, undefined);
     this.r_grid_recursiveDetail = this.setDefaultValue(cfg.recursiveDetail, 'no');
     this.r_grid_title = this.setDefaultValue(cfg.title, undefined);
     this.r_grid_visible = this.setDefaultValue(cfg.visible, 'yes');
@@ -379,7 +379,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_paginationControls = this.setDefaultValue(cfg.paginationControls, 'no');
     this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.r_columns);
     this.r_grid_refreshButton = this.setDefaultValue(cfg.refreshButton, 'yes');
-    this.r_grid_showButtonsText = this.setDefaultValue(cfg.showButtonsText, 'no');
     this.r_grid_showFooter = this.setDefaultValue(cfg.showFooter, 'true');
     this.r_grid_showPageSize = this.setDefaultValue(cfg.showPageSize, 'no');
     this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, undefined);
