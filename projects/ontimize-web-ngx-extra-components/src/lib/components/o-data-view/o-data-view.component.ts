@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
+import { Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -59,6 +59,20 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('insert-button') insertButton?: string;
   @Input('refresh-button') refreshButton?: string;
   @Input('fixed-header') fixedHeader?: string;
+  @Input() controls?: string;
+  @Input('detail-mode') detailMode?: string;
+  @Input() title?: string;
+  @Input('quick-filter') quickFilter?: string;
+  @Input('quick-filter-appearance') quickFilterAppearance?: string;
+  @Input('quick-filter-columns') quickFilterColumns?: string;
+  @Input('recursive-detail') recursiveDetail?: string;
+  @Input('recursive-edit') recursiveEdit?: string;
+  @Input('recursive-insert') recursiveInsert?: string;
+  @Input('detail-form-route') detailFormRoute?: string;
+  @Input('page-size-options') pageSizeOptions?: any[];
+  @Input('pagination-controls') paginationControls?: string;
+  @Input('insert-form-route') insertFormRoute?: string;
+  @Input('filter-case-sensitive') filterCaseSensitive?: string;
 
   @Input('table-config') tableConfig?: TableConfig;
   @Input('grid-config') gridConfig?: GridConfig;
@@ -89,27 +103,29 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_insertButton?: string;
   r_refreshButton?: string;
   r_fixedHeader?: string;
+  r_controls?: string;
+  r_detailMode?: string;
+  r_title?: string;
+  r_quickFilter?: string;
+  r_quickFilterAppearance?: string;
+  r_quickFilterColumns?: string;
+  r_recursiveDetail?: string;
+  r_recursiveEdit?: string;
+  r_recursiveInsert?: string;
+  r_detailFormRoute?: string;
+  r_pageSizeOptions?: any[];
+  r_paginationControls?: string;
+  r_insertFormRoute?: string;
+  r_filterCaseSensitive?: string;
 
-  r_table_controls?: string;
   r_table_detailButtonInRow?: string;
   r_table_detailButtonInRowIcon?: string;
-  r_table_detailFormRoute?: string;
-  r_table_detailMode?: string;
   r_table_editButtonInRow?: string;
   r_table_editButtonInRowIcon?: string;
   r_table_editFormRoute?: string;
   r_table_enabled?: string;
-  r_table_filterCaseSensitive?: string;
-  r_table_insertFormRoute?: string;
   r_table_deleteButton?: string;
-  r_table_pageSizeOptions?: any[];
-  r_table_paginationControls?: string;
-  r_table_quickFilter?: string;
-  r_table_recursiveDetail?: string;
-  r_table_recursiveEdit?: string;
-  r_table_recursiveInsert?: string;
   r_table_rowHeight?: string;
-  r_table_title?: string;
   r_table_visible?: string;
   r_table_autoAdjust?: string;
   r_table_autoAlignTitles?: string;
@@ -134,6 +150,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_showFilterOption?: string;
   r_table_showPaginatorFirstLastButtons?: string;
   r_table_showReportOnDemandOption?: string;
+  r_table_showChartsOnDemandOption?: string;
   r_table_showResetWidthOption?: string;
   r_table_showTitle?: string;
   r_table_sortColumns?: string;
@@ -146,14 +163,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_showExpandableIconFunction?: Function;
   r_table_selectionOnRowClick?: string;
 
-  r_grid_controls?: string;
-  r_grid_detailFormRoute?: string;
-  r_grid_detailMode?: string;
   r_grid_enabled?: string;
-  r_grid_quickFilter?: string;
-  r_grid_quickFilterAppearance?: string;
-  r_grid_recursiveDetail?: string;
-  r_grid_title?: string;
   r_grid_visible?: string;
   r_grid_cols?: number;
   r_grid_gridItemHeight?: string | number;
@@ -161,9 +171,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_grid_insertButtonFloatable?: string;
   r_grid_insertButtonPosition?: string;
   r_grid_orderable?: string;
-  r_grid_pageSizeOptions?: any[];
-  r_grid_paginationControls?: string;
-  r_grid_quickFilterColumns?: string;
   r_grid_showFooter?: string;
   r_grid_showPageSize?: string;
   r_grid_sortColumn?: string;
@@ -252,9 +259,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_entity = this.setDefaultValue(this.entity, undefined);
     this.r_service = this.setDefaultValue(this.service, undefined);
     this.r_serviceType = this.setDefaultValue(this.serviceType, undefined);
-    this.r_paginatedQueryMethod = this.setDefaultValue(this.paginatedQueryMethod, 'advancedQuery');
+    this.r_paginatedQueryMethod = this.setDefaultValue(this.paginatedQueryMethod, Codes.PAGINATED_QUERY_METHOD);
     this.r_parentKeys = this.setDefaultValue(this.parentKeys, undefined);
-    this.r_queryMethod = this.setDefaultValue(this.queryMethod, 'query');
+    this.r_queryMethod = this.setDefaultValue(this.queryMethod, Codes.QUERY_METHOD);
     this.r_configureServiceArgs = this.configureServiceArgs;
     this.r_queryFallbackFunction = this.queryFallbackFunction;
     this.r_staticData = this.staticData;
@@ -263,48 +270,49 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_queryOnBind = this.setDefaultValue(this.queryOnBind, 'yes');
     this.r_queryWithNullParentKeys = this.setDefaultValue(this.queryWithNullParentKeys, 'no');
     this.r_storeState = this.setDefaultValue(this.storeState, 'yes');
-    this.r_queryRows = this.setDefaultNumber(this.queryRows, 10);
-    this.r_deleteMethod = this.setDefaultValue(this.deleteMethod, 'delete');
-    this.r_insertMethod = this.setDefaultValue(this.insertMethod, 'insert');
-    this.r_updateMethod = this.setDefaultValue(this.updateMethod, 'update');
+    this.r_queryRows = this.setDefaultNumber(this.queryRows, Codes.DEFAULT_QUERY_ROWS);
+    this.r_deleteMethod = this.setDefaultValue(this.deleteMethod, Codes.DELETE_METHOD);
+    this.r_insertMethod = this.setDefaultValue(this.insertMethod, Codes.INSERT_METHOD);
+    this.r_updateMethod = this.setDefaultValue(this.updateMethod, Codes.UPDATE_METHOD);
     this.r_showButtonsText = this.setDefaultValue(this.showButtonsText, 'yes');
     this.r_quickFilterPlaceholder = this.setDefaultValue(this.quickFilterPlaceholder, undefined);
     this.r_insertButton = this.setDefaultValue(this.insertButton, 'yes');
     this.r_refreshButton = this.setDefaultValue(this.refreshButton, 'yes');
     this.r_fixedHeader = this.setDefaultValue(this.fixedHeader, 'yes');
+    this.r_controls = this.setDefaultValue(this.controls, 'yes');
+    this.r_detailFormRoute = this.setDefaultValue(this.detailFormRoute, undefined);
+    this.r_filterCaseSensitive = this.setDefaultValue(this.filterCaseSensitive, 'no');
+    this.r_pageSizeOptions = this.setDefaultArray(this.pageSizeOptions, Codes.PAGE_SIZE_OPTIONS);
+    this.r_paginationControls = this.setDefaultValue(this.paginationControls, 'yes');
+    this.r_quickFilter = this.setDefaultValue(this.quickFilter, 'yes');
+    this.r_recursiveDetail = this.setDefaultValue(this.recursiveDetail, 'no');
+    this.r_recursiveEdit = this.setDefaultValue(this.recursiveEdit, 'no');
+    this.r_recursiveInsert = this.setDefaultValue(this.recursiveInsert, 'no');
+    this.r_insertFormRoute = this.setDefaultValue(this.insertFormRoute, Codes.DEFAULT_INSERT_ROUTE);
+    this.r_title = this.setDefaultValue(this.title, undefined);
+    this.r_quickFilterAppearance = this.setDefaultValue(this.quickFilterAppearance, 'outline');
+    this.r_quickFilterColumns = this.setDefaultValue(this.quickFilterColumns, this.r_columns);
   }
 
   private resolveTableInputs(): void {
     const cfg = this.tableConfig ?? {};
     const g = this.tableGlobalConfig;
 
-    this.r_table_controls = this.setDefaultValue(cfg.controls, 'yes');
     this.r_table_detailButtonInRow = this.setDefaultValue(cfg.detailButtonInRow, 'no');
-    this.r_table_detailButtonInRowIcon = this.setDefaultValue(cfg.detailButtonInRowIcon, 'search');
-    this.r_table_detailFormRoute = this.setDefaultValue(cfg.detailFormRoute, 'detail');
-    this.r_table_detailMode = this.resolveStringWithGlobal(cfg.detailMode, g?.detailMode, 'click');
+    this.r_table_detailButtonInRowIcon = this.setDefaultValue(cfg.detailButtonInRowIcon, Codes.DETAIL_ICON);
     this.r_table_editButtonInRow = this.setDefaultValue(cfg.editButtonInRow, 'no');
-    this.r_table_editButtonInRowIcon = this.setDefaultValue(cfg.editButtonInRowIcon, 'edit');
-    this.r_table_editFormRoute = this.setDefaultValue(cfg.editFormRoute, 'edit');
+    this.r_table_editButtonInRowIcon = this.setDefaultValue(cfg.editButtonInRowIcon, Codes.EDIT_ICON);
+    this.r_table_editFormRoute = this.setDefaultValue(cfg.editFormRoute, undefined);
     this.r_table_enabled = this.setDefaultValue(cfg.enabled, 'yes');
-    this.r_table_filterCaseSensitive = this.setDefaultValue(cfg.filterCaseSensitive, 'no');
-    this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [10, 25, 50, 100]);
-    this.r_table_paginationControls = this.setDefaultValue(cfg.paginationControls, 'yes');
-    this.r_table_quickFilter = this.setDefaultValue(cfg.quickFilter, 'yes');
-    this.r_table_recursiveDetail = this.setDefaultValue(cfg.recursiveDetail, 'no');
-    this.r_table_recursiveEdit = this.setDefaultValue(cfg.recursiveEdit, 'no');
-    this.r_table_recursiveInsert = this.setDefaultValue(cfg.recursiveInsert, 'no');
-    this.r_table_rowHeight = this.resolveStringWithGlobal(cfg.rowHeight, g?.rowHeight, 'medium');
-    this.r_table_title = this.setDefaultValue(cfg.title, undefined);
+    this.r_table_rowHeight = this.resolveStringWithGlobal(cfg.rowHeight, g?.rowHeight, Codes.DEFAULT_ROW_HEIGHT);
     this.r_table_visible = this.setDefaultValue(cfg.visible, 'yes');
     this.r_table_autoAdjust = this.resolveYesNoWithGlobal(cfg.autoAdjust, g?.autoAdjust, 'yes');
     this.r_table_autoAlignTitles = this.resolveYesNoWithGlobal(cfg.autoAlignTitles, g?.autoAlignTitles, 'yes');
     this.r_table_collapseGroupedColumns = this.setDefaultValue(cfg.collapseGroupedColumns, 'no');
     this.r_table_columnsVisibilityButton = this.setDefaultValue(cfg.columnsVisibilityButton, 'yes');
     this.r_table_defaultVisibleColumns = this.setDefaultValue(cfg.defaultVisibleColumns, undefined);
-    this.r_table_insertFormRoute = this.setDefaultValue(cfg.insertFormRoute, 'new');
     this.r_table_deleteButton = this.setDefaultValue(cfg.deleteButton, 'yes');
-    this.r_table_editionMode = this.resolveStringWithGlobal(cfg.editionMode, g?.editionMode, 'none');
+    this.r_table_editionMode = this.resolveStringWithGlobal(cfg.editionMode, g?.editionMode, Codes.EDITION_MODE_NONE);
     this.r_table_exportButton = this.setDefaultValue(cfg.exportButton, 'yes');
     this.r_table_exportServiceType = this.setDefaultValue(cfg.exportServiceType, 'OntimizeExportService');
     this.r_table_filterColumnActiveByDefault = this.resolveYesNoWithGlobal(
@@ -312,7 +320,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       g?.filterColumnActiveByDefault,
       'yes'
     );
-    this.r_table_groupable = this.setDefaultValue(cfg.groupable, 'no');
+    this.r_table_groupable = this.setDefaultValue(cfg.groupable, 'yes');
     this.r_table_groupedColumns = this.setDefaultValue(cfg.groupedColumns, undefined);
     this.r_table_horizontalScroll = this.setDefaultValue(cfg.horizontalScroll, 'no');
     this.r_table_multipleSort = this.setDefaultValue(cfg.multipleSort, 'yes');
@@ -320,10 +328,11 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_resizable = this.setDefaultValue(cfg.resizable, 'yes');
     this.r_table_selectAllCheckbox = this.setDefaultValue(cfg.selectAllCheckbox, 'no');
     this.r_table_selectAllCheckboxVisible = this.setDefaultValue(cfg.selectAllCheckboxVisible, 'no');
-    this.r_table_selectionMode = this.setDefaultValue(cfg.selectionMode, 'multiple');
+    this.r_table_selectionMode = this.setDefaultValue(cfg.selectionMode, Codes.SELECTION_MODE_MULTIPLE);
     this.r_table_showConfigurationOption = this.setDefaultValue(cfg.showConfigurationOption, 'yes');
     this.r_table_showFilterOption = this.setDefaultValue(cfg.showFilterOption, 'yes');
     this.r_table_showPaginatorFirstLastButtons = this.setDefaultValue(cfg.showPaginatorFirstLastButtons, 'yes');
+    this.r_table_showChartsOnDemandOption = this.setDefaultValue(cfg.showChartsOnDemandOption, 'yes');
     this.r_table_showReportOnDemandOption = this.setDefaultValue(cfg.showReportOnDemandOption, 'yes');
     this.r_table_showResetWidthOption = this.setDefaultValue(cfg.showResetWidthOption, 'yes');
     this.r_table_showTitle = this.setDefaultValue(cfg.showTitle, 'no');
@@ -342,14 +351,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   private resolveGridInputs(): void {
     const cfg = this.gridConfig ?? {};
 
-    this.r_grid_controls = this.setDefaultValue(cfg.controls, 'yes');
-    this.r_grid_detailFormRoute = this.setDefaultValue(cfg.detailFormRoute, 'detail');
-    this.r_grid_detailMode = this.setDefaultValue(cfg.detailMode, 'click');
     this.r_grid_enabled = this.setDefaultValue(cfg.enabled, 'yes');
-    this.r_grid_quickFilter = this.setDefaultValue(cfg.quickFilter, 'yes');
-    this.r_grid_quickFilterAppearance = this.setDefaultValue(cfg.quickFilterAppearance, 'outline');
-    this.r_grid_recursiveDetail = this.setDefaultValue(cfg.recursiveDetail, 'no');
-    this.r_grid_title = this.setDefaultValue(cfg.title, undefined);
     this.r_grid_visible = this.setDefaultValue(cfg.visible, 'yes');
     this.r_grid_cols = cfg.cols;
     this.r_grid_gridItemHeight = this.setDefaultValueAny<string | number>(cfg?.gridItemHeight, '1:1');
@@ -357,10 +359,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_insertButtonFloatable = this.setDefaultValue(cfg.insertButtonFloatable, 'yes');
     this.r_grid_insertButtonPosition = this.setDefaultValue(cfg.insertButtonPosition, 'bottom');
     this.r_grid_orderable = this.setDefaultValue(cfg.orderable, 'no');
-    this.r_grid_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [8, 16, 24, 32, 64]);
-    this.r_grid_paginationControls = this.setDefaultValue(cfg.paginationControls, 'no');
-    this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.r_columns);
-    this.r_grid_showFooter = this.setDefaultValue(cfg.showFooter, 'true');
+    this.r_grid_showFooter = this.setDefaultValue(cfg.showFooter, 'yes');
     this.r_grid_showPageSize = this.setDefaultValue(cfg.showPageSize, 'no');
     this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, undefined);
     this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, undefined);
@@ -392,7 +391,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     globalVal: boolean | undefined | null,
     defaultVal: string
   ): string {
-    const inputResolved = this.setDefaultValue(inputVal, undefined);
+    const inputResolved = this.setDefaultValue(inputVal, defaultVal);
     if (inputResolved !== undefined) return inputResolved;
 
     if (globalVal !== undefined && globalVal !== null) {
@@ -407,10 +406,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     globalVal: string | undefined | null,
     defaultVal: string
   ): string {
-    const inputResolved = this.setDefaultValue(inputVal, undefined);
+    const inputResolved = this.setDefaultValue(inputVal, defaultVal);
     if (inputResolved !== undefined) return inputResolved;
 
-    const globalResolved = this.setDefaultValue(globalVal as any, undefined);
+    const globalResolved = this.setDefaultValue(globalVal as any, defaultVal);
     if (globalResolved !== undefined) return globalResolved;
 
     return defaultVal;

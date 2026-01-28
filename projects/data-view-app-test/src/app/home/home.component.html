@@ -4,9 +4,8 @@
   <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
 
   <o-data-view #dv attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;duration;score"
-
     [table-config]="tableCfg" [grid-config]="gridCfg" quick-filter-placeholder="test" refresh-button="no" toggle-on-toolbar="yes"
-    show-buttons-text="no" query-rows="15" controls="no">
+    show-buttons-text="no" title="Data View Example">
 
     <ng-template oDataViewTableColumns>
       <!-- filter by columns -->

@@ -2,22 +2,12 @@ import { QuickFilterFunction } from "ontimize-web-ngx";
 import { CustomBoolean } from "../types";
 
 export interface TableConfig {
-  controls?: CustomBoolean;
-  detailFormRoute?: string;
-  pageSizeOptions?: any[];
-  quickFilter?: CustomBoolean;
-  recursiveDetail?: CustomBoolean;
-  title?: string;
   visible?: CustomBoolean;
   detailButtonInRow?: CustomBoolean;
   detailButtonInRowIcon?: string;
   editButtonInRow?: CustomBoolean;
   editButtonInRowIcon?: string;
   editFormRoute?: string;
-  filterCaseSensitive?: CustomBoolean;
-  insertFormRoute?: string;
-  recursiveEdit?: CustomBoolean;
-  recursiveInsert?: CustomBoolean;
   rowHeight?: 'small' | 'medium' | 'large';
   autoAdjust?: CustomBoolean;
   autoAlignTitles?: CustomBoolean;
@@ -25,7 +15,6 @@ export interface TableConfig {
   columnsVisibilityButton?: CustomBoolean;
   defaultVisibleColumns?: string;
   deleteButton?: CustomBoolean;
-  detailMode?: 'none' | 'click' | 'dblclick';
   disableSelectionFunction?: (item: any) => boolean;
   editionMode?: 'none' | 'click' | 'dblclick';
   enabled?: CustomBoolean;
@@ -39,7 +28,6 @@ export interface TableConfig {
   multipleSort?: CustomBoolean;
   nonHidableColumns?: string;
   orderable?: CustomBoolean;
-  paginationControls?: CustomBoolean;
   quickFilterFunction?: QuickFilterFunction;
   resizable?: CustomBoolean;
   rowClass?: (rowData: any, rowIndex: number) => string | string[];
@@ -51,6 +39,7 @@ export interface TableConfig {
   showFilterOption?: CustomBoolean;
   showPaginatorFirstLastButtons?: CustomBoolean;
   showReportOnDemandOption?: CustomBoolean;
+  showChartsOnDemandOption?: CustomBoolean;
   showResetWidthOption?: CustomBoolean;
   showTitle?: CustomBoolean;
   sortColumns?: string;
