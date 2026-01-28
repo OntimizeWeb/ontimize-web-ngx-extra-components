@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableColumnComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
+import { FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -184,9 +184,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   ngAfterViewInit(): void {
-    // Register columns only if they exist and we're in table view
+    // Initialize and synchronize table columns once the view and projected content are ready
     if (this.tableTpl && this.table) {
-      this.registerTableColumns();
+      this.syncTableColumnsWithTable();
     }
   }
 
@@ -198,7 +198,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }
   }
 
-  private registerTableColumns(): void {
+  private syncTableColumnsWithTable(): void {
     if (!this.tableTpl || !this.table?.injector) {
       return;
     }
@@ -212,25 +212,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
       // Detect changes to ensure nodes are fully initialized
       this.columnsView.detectChanges();
-
-      // Filter and register only OTableColumnComponent instances
-      const columns = this.columnsView.rootNodes
-        .filter((node): node is OTableColumnComponent => node instanceof OTableColumnComponent);
-
-      if (columns.length === 0) {
-        console.warn('No columns found to register in o-data-view');
-      }
-
-      columns.forEach((column: OTableColumnComponent) => {
-        if (this.table && typeof this.table.registerColumn === 'function') {
-          this.table.registerColumn(column);
-        }
-      });
-
-      // Force change detection in the table after registering columns
-      if (this.table && typeof (this.table as any).cd?.detectChanges === 'function') {
-        (this.table as any).cd.detectChanges();
-      }
+       setTimeout(() => {
+         this.table.parseVisibleColumns(true);
+         if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
+           this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
+         }
+       }, 0);
 
     } catch (error) {
       console.error('Error registering table columns:', error);
@@ -248,7 +235,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
     // If switching to table and columns aren't registered, register them
     if (this.defaultView === 'table' && previousView !== 'table') {
-      setTimeout(() => this.registerTableColumns(), 0);
+      setTimeout(() => this.syncTableColumnsWithTable(), 0);
     }
   }
 
