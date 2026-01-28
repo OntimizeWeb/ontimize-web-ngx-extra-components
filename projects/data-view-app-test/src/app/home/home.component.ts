@@ -109,13 +109,17 @@ export class HomeComponent implements OnInit {
       foundedYear: 2016
     }];
 
-  tableCfg = { visibleColumns: 'name;location;price;duration;score', rowHeight: 'medium', selectionOnRowClick: 'no' };
-  gridCfg = { cols: 4, gutterSize: '2px', gridItemHeight: '175px', quickFilterColumns: 'name;price', title: "Grid example", showTitle: "yes", showPageSize: "yes", insertButtonFloatable: 'yes'};
+  tableCfg = { visibleColumns: 'name;location;price;duration;score', editButtonInRow: 'yes', detailButtonInRow: 'yes', selectAllCheckbox: 'yes', paginationControls: 'yes', pageSizeOptions: [5, 10, 20, 50], title: "Table example", showTitle: "yes",  showPaginatorFirstLastButtons: "yes", filterColumnActiveByDefault: "yes", showReportOnDemandOption: 'no', showChartOnDemandOption: 'no', exportButton: 'no', showFilterOption:'no', showConfigurationOption:'no', editionMode:'click', detailMode:'none', multipleSort:'no'};
+  gridCfg = { cols: 4, gutterSize: '2px', gridItemHeight: '175px', quickFilterColumns: 'name;price', title: "Grid example", showTitle: "yes", showPageSize: "yes", insertButtonFloatable: 'no'};
 
   constructor() {
   }
 
   ngOnInit(): void {
+  }
+
+  onExecute(text: string, event: any): void {
+    alert('Clicked menu element: ' + text + '\n' + event.data.NAME);
   }
 
 }
