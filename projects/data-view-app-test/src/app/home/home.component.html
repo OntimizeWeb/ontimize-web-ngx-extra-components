@@ -9,7 +9,9 @@
     show-buttons-text="no" query-rows="15" controls="no">
 
     <ng-template oDataViewTableColumns>
+      <!-- filter by columns -->
       <o-table-columns-filter columns="name;location;price;duration;score"></o-table-columns-filter>
+
       <o-table-columns-grouping columns="score"></o-table-columns-grouping>
       <o-table-column attr="name" title-align="start" editable="yes" width="400px"></o-table-column>
       <o-table-column attr="location" title-align="start" editable="yes" width="500px"></o-table-column>
