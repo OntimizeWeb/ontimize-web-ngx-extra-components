@@ -109,7 +109,7 @@ export class HomeComponent implements OnInit {
       foundedYear: 2016
     }];
 
-  tableCfg = { visibleColumns: 'name;location;price;duration;score', editButtonInRow: 'yes', detailButtonInRow: 'yes', selectAllCheckbox: 'yes', showTitle: "yes",  showPaginatorFirstLastButtons: "yes", filterColumnActiveByDefault: "yes", showReportOnDemandOption: 'no', showChartsOnDemandOption: 'no', exportButton: 'no', showFilterOption:'no', showConfigurationOption:'no', editionMode:'click', detailMode:'none', multipleSort:'no'};
+  tableCfg = { visibleColumns: 'name;location;price;duration;score', editButtonInRow: 'yes', detailButtonInRow: 'yes', selectAllCheckbox: 'yes',  showPaginatorFirstLastButtons: "yes", filterColumnActiveByDefault: "yes", showReportOnDemandOption: 'no', showChartsOnDemandOption: 'no', exportButton: 'no', showFilterOption:'no', showConfigurationOption:'no', editionMode:'click', detailMode:'none', multipleSort:'no'};
   gridCfg = { cols: 4, gutterSize: '2px', gridItemHeight: '175px', quickFilterColumns: 'name;price', showPageSize: "yes", insertButtonFloatable: 'no'};
 
   constructor() {

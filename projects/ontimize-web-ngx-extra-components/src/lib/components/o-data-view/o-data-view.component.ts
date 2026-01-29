@@ -60,16 +60,13 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('refresh-button') refreshButton?: string;
   @Input('fixed-header') fixedHeader?: string;
   @Input() controls?: string;
-  @Input('detail-mode') detailMode?: string;
   @Input() title?: string;
   @Input('quick-filter') quickFilter?: string;
   @Input('quick-filter-appearance') quickFilterAppearance?: string;
-  @Input('quick-filter-columns') quickFilterColumns?: string;
   @Input('recursive-detail') recursiveDetail?: string;
   @Input('recursive-edit') recursiveEdit?: string;
   @Input('recursive-insert') recursiveInsert?: string;
   @Input('detail-form-route') detailFormRoute?: string;
-  @Input('page-size-options') pageSizeOptions?: any[];
   @Input('pagination-controls') paginationControls?: string;
   @Input('insert-form-route') insertFormRoute?: string;
   @Input('filter-case-sensitive') filterCaseSensitive?: string;
@@ -104,7 +101,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_refreshButton?: string;
   r_fixedHeader?: string;
   r_controls?: string;
-  r_detailMode?: string;
   r_title?: string;
   r_quickFilter?: string;
   r_quickFilterAppearance?: string;
@@ -113,13 +109,13 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_recursiveEdit?: string;
   r_recursiveInsert?: string;
   r_detailFormRoute?: string;
-  r_pageSizeOptions?: any[];
   r_paginationControls?: string;
   r_insertFormRoute?: string;
   r_filterCaseSensitive?: string;
 
   r_table_detailButtonInRow?: string;
   r_table_detailButtonInRowIcon?: string;
+  r_table_detailMode?: string;
   r_table_editButtonInRow?: string;
   r_table_editButtonInRowIcon?: string;
   r_table_editFormRoute?: string;
@@ -152,7 +148,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_showReportOnDemandOption?: string;
   r_table_showChartsOnDemandOption?: string;
   r_table_showResetWidthOption?: string;
-  r_table_showTitle?: string;
   r_table_sortColumns?: string;
   r_table_virtualScroll?: string;
   r_table_visibleColumns?: string;
@@ -162,7 +157,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_rowClass?: (rowData: any, rowIndex: number) => string | string[];
   r_table_showExpandableIconFunction?: Function;
   r_table_selectionOnRowClick?: string;
+  r_table_pageSizeOptions?: any[];
 
+  r_grid_detailMode?: string;
   r_grid_enabled?: string;
   r_grid_visible?: string;
   r_grid_cols?: number;
@@ -175,6 +172,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_grid_showPageSize?: string;
   r_grid_sortColumn?: string;
   r_grid_sortableColumns?: string;
+  r_grid_pageSizeOptions?: any[];
+  r_grid_quickFilterColumns?: string;
 
   private columnsView: EmbeddedViewRef<any> | null = null;
 
@@ -282,7 +281,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_controls = this.setDefaultValue(this.controls, 'yes');
     this.r_detailFormRoute = this.setDefaultValue(this.detailFormRoute, undefined);
     this.r_filterCaseSensitive = this.setDefaultValue(this.filterCaseSensitive, 'no');
-    this.r_pageSizeOptions = this.setDefaultArray(this.pageSizeOptions, Codes.PAGE_SIZE_OPTIONS);
     this.r_paginationControls = this.setDefaultValue(this.paginationControls, 'yes');
     this.r_quickFilter = this.setDefaultValue(this.quickFilter, 'yes');
     this.r_recursiveDetail = this.setDefaultValue(this.recursiveDetail, 'no');
@@ -291,7 +289,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_insertFormRoute = this.setDefaultValue(this.insertFormRoute, Codes.DEFAULT_INSERT_ROUTE);
     this.r_title = this.setDefaultValue(this.title, undefined);
     this.r_quickFilterAppearance = this.setDefaultValue(this.quickFilterAppearance, 'outline');
-    this.r_quickFilterColumns = this.setDefaultValue(this.quickFilterColumns, this.r_columns);
   }
 
   private resolveTableInputs(): void {
@@ -325,6 +322,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_horizontalScroll = this.setDefaultValue(cfg.horizontalScroll, 'no');
     this.r_table_multipleSort = this.setDefaultValue(cfg.multipleSort, 'yes');
     this.r_table_nonHidableColumns = this.setDefaultValue(cfg.nonHidableColumns, undefined);
+    this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, Codes.PAGE_SIZE_OPTIONS);
     this.r_table_resizable = this.setDefaultValue(cfg.resizable, 'yes');
     this.r_table_selectAllCheckbox = this.setDefaultValue(cfg.selectAllCheckbox, 'no');
     this.r_table_selectAllCheckboxVisible = this.setDefaultValue(cfg.selectAllCheckboxVisible, 'no');
@@ -335,13 +333,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_showChartsOnDemandOption = this.setDefaultValue(cfg.showChartsOnDemandOption, 'yes');
     this.r_table_showReportOnDemandOption = this.setDefaultValue(cfg.showReportOnDemandOption, 'yes');
     this.r_table_showResetWidthOption = this.setDefaultValue(cfg.showResetWidthOption, 'yes');
-    this.r_table_showTitle = this.setDefaultValue(cfg.showTitle, 'no');
     this.r_table_sortColumns = this.setDefaultValue(cfg.sortColumns, undefined);
     this.r_table_virtualScroll = this.setDefaultValue(cfg.virtualScroll, 'yes');
     this.r_table_visibleColumns = this.setDefaultValue(cfg.visibleColumns, undefined);
     this.r_table_visibleExportDialogButtons = this.setDefaultValue(cfg.visibleExportDialogButtons, undefined);
     this.r_table_selectionOnRowClick = this.resolveYesNoWithGlobal(cfg.selectionOnRowClick, g?.selectionOnRowClick, 'yes');
-
+    this.r_table_detailMode = this.resolveStringWithGlobal(cfg.detailMode, g?.detailMode, Codes.DETAIL_MODE_CLICK);
     this.r_table_disableSelectionFunction = cfg.disableSelectionFunction;
     this.r_table_quickFilterFunction = cfg.quickFilterFunction;
     this.r_table_rowClass = cfg.rowClass;
@@ -363,6 +360,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_showPageSize = this.setDefaultValue(cfg.showPageSize, 'no');
     this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, undefined);
     this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, undefined);
+    this.r_grid_detailMode = this.setDefaultValue(cfg.detailMode, Codes.DETAIL_MODE_CLICK);
+    this.r_grid_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [8, 16, 24, 32, 64]);
+    this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.r_columns);
   }
 
   private setDefaultValue(v: string | undefined | null, def: string | undefined): string | undefined {

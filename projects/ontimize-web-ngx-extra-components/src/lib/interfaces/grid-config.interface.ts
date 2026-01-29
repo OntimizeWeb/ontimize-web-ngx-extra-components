@@ -8,10 +8,13 @@ export interface GridConfig {
   gutterSize?: string;
   insertButtonFloatable?: CustomBoolean;
   insertButtonPosition?: 'botton' | 'top';
+  pageSizeOptions?: any[];
   orderable?: CustomBoolean;
+  quickFilterColumns?: string;
   showFooter?: CustomBoolean;
   showPageSize?: CustomBoolean;
   sortColumn?: string;
   sortableColumns?: string;
+  detailMode?: 'none' | 'click' | 'dblclick';
 };
 

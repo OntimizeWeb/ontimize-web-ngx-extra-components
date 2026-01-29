@@ -16,6 +16,7 @@ export interface TableConfig {
   defaultVisibleColumns?: string;
   deleteButton?: CustomBoolean;
   disableSelectionFunction?: (item: any) => boolean;
+  detailMode?: 'none' | 'click' | 'dblclick';
   editionMode?: 'none' | 'click' | 'dblclick';
   enabled?: CustomBoolean;
   exportButton?: CustomBoolean;
@@ -27,6 +28,7 @@ export interface TableConfig {
   keepSelectedItems?: CustomBoolean;
   multipleSort?: CustomBoolean;
   nonHidableColumns?: string;
+  pageSizeOptions?: any[];
   orderable?: CustomBoolean;
   quickFilterFunction?: QuickFilterFunction;
   resizable?: CustomBoolean;
