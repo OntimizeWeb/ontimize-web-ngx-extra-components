@@ -43,7 +43,6 @@ export interface TableConfig {
   showReportOnDemandOption?: CustomBoolean;
   showChartsOnDemandOption?: CustomBoolean;
   showResetWidthOption?: CustomBoolean;
-  showTitle?: CustomBoolean;
   sortColumns?: string;
   virtualScroll?: CustomBoolean;
   visibleColumns?: string;
