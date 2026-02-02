@@ -1,5 +1,5 @@
 <div mat-dialog-title>
-  <h2>{{ 'image_editor' | ipTranslate }}</h2>
+  <h2>{{ 'image_editor' | oTranslate }}</h2>
   <button mat-icon-button (click)=close()>
     <mat-icon>close</mat-icon>
   </button>
@@ -10,15 +10,15 @@
     <div class="aspect-ratio-toggle">
       <span (click)="updateAspectRatio('rectangular')"
             [ngClass]="{'selected': aspectRatio === 1/1.5 || aspectRatio === 1.5/1}">
-        {{ 'rectangular' | ipTranslate }}
+        {{ 'rectangular' | oTranslate }}
       </span>
       <span (click)="updateAspectRatio('square')" [ngClass]="{'selected': aspectRatio === 1/1}">
-        {{ 'square_f' | ipTranslate }}
+        {{ 'square_f' | oTranslate }}
       </span>
     </div> -->
     <button mat-stroked-button (click)="reset()">
       <mat-icon>restore</mat-icon>
-      <span>{{ 'restore' | ipTranslate }}</span>
+      <span>{{ 'restore' | oTranslate }}</span>
     </button>
   </div>
 
@@ -35,7 +35,7 @@
       ' x ' + croppedImages.get(selectedIndex)?.height + '
       px'}}</span>
     <div [style.visibility]="isCropperLoaded ? 'visible' : 'hidden'" class="image-editor-zoom">
-      <span class="zoom-label">{{ 'zoom' | ipTranslate }}: {{ getZoomPercentage(zoom) | number: '1.0-1' }}%</span>
+      <span class="zoom-label">{{ 'zoom' | oTranslate }}: {{ getZoomPercentage(zoom) | number: '1.0-1' }}%</span>
       <button mat-icon-button (click)="zoomOut()" aria-label="Zoom out">
         <mat-icon>remove</mat-icon>
       </button>
@@ -53,8 +53,8 @@
         <input type="file" #fileInput multiple (change)="onFilesSelected($event)" hidden />
         <div class="load-image" fxLayout="column">
           <mat-icon>add</mat-icon>
-          <span class="load-image-text">{{'add_photos' | ipTranslate}}</span>
-          <span class="load-image-subtext">{{'upload_photos_info' | ipTranslate}}</span>
+          <span class="load-image-text">{{'add_photos' | oTranslate}}</span>
+          <span class="load-image-subtext">{{'upload_photos_info' | oTranslate}}</span>
         </div>
       </div>
       <div class="image-container" *ngFor="let image of data.images; let i = index" (click)="selectImage(i)"
@@ -69,10 +69,10 @@
 </mat-dialog-content>
 <mat-dialog-actions>
   <button class="button-modal-cancel" mat-stroked-button (click)=close()>
-    {{ 'cancel' | ipTranslate }}
+    {{ 'cancel' | oTranslate }}
   </button>
   <button color="primary" mat-stroked-button (click)="save()" [disabled]="loading">
     <mat-icon>save</mat-icon>
-    {{ 'save' | ipTranslate }}
+    {{ 'save' | oTranslate }}
   </button>
 </mat-dialog-actions>
