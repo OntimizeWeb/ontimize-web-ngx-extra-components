@@ -1,1 +1,78 @@
-<p>o-image-editor works!</p>
+<div mat-dialog-title>
+  <h2>{{ 'image_editor' | ipTranslate }}</h2>
+  <button mat-icon-button (click)=close()>
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+<mat-dialog-content>
+  <div *ngIf="isCropperLoaded" class="image-editor-header">
+    <!-- TODO: Uncomment this once the platform supports square images.
+    <div class="aspect-ratio-toggle">
+      <span (click)="updateAspectRatio('rectangular')"
+            [ngClass]="{'selected': aspectRatio === 1/1.5 || aspectRatio === 1.5/1}">
+        {{ 'rectangular' | ipTranslate }}
+      </span>
+      <span (click)="updateAspectRatio('square')" [ngClass]="{'selected': aspectRatio === 1/1}">
+        {{ 'square_f' | ipTranslate }}
+      </span>
+    </div> -->
+    <button mat-stroked-button (click)="reset()">
+      <mat-icon>restore</mat-icon>
+      <span>{{ 'restore' | ipTranslate }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="data?.images?.length > 0" class="image-editor">
+    <image-cropper [imageFile]="selectedImage.file" [maintainAspectRatio]="true" [aspectRatio]="aspectRatio" [allowMoveImage]="true"
+      [cropper]="cropper" imageQuality="95" format="jpeg" [(transform)]="transform" (imageCropped)="imageCropped($event)"
+      (imageLoaded)="imageLoaded()" (cropperReady)="cropperReady($event)" (transformChange)="transformChange($event)"
+      [hideResizeSquares]="true"></image-cropper>
+    <div *ngIf="!isCropperLoaded" class="loading-spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+    <span [style.visibility]="croppedImages?.get(selectedIndex) ? 'visible' : 'hidden'"
+      class="image-size-label">{{croppedImages.get(selectedIndex)?.width +
+      ' x ' + croppedImages.get(selectedIndex)?.height + '
+      px'}}</span>
+    <div [style.visibility]="isCropperLoaded ? 'visible' : 'hidden'" class="image-editor-zoom">
+      <span class="zoom-label">{{ 'zoom' | ipTranslate }}: {{ getZoomPercentage(zoom) | number: '1.0-1' }}%</span>
+      <button mat-icon-button (click)="zoomOut()" aria-label="Zoom out">
+        <mat-icon>remove</mat-icon>
+      </button>
+      <mat-slider class="zoom-slider" [min]="minZoom" [max]="maxZoom" step="0.1" (change)="updateZoom(true)" aria-label="Zoom">
+        <input matSliderThumb [(ngModel)]="zoom">
+      </mat-slider>
+      <button mat-icon-button (click)="zoomIn()" aria-label="Zoom in">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+  <div (dragover)="onDragOverImageGrid($event)" (drop)="onDropOnImageGrid($event)">
+    <div *ngIf="data.allowMultiple" class="image-grid" [class.disabled]="loading">
+      <div class="image-container" (click)="fileInputClick()">
+        <input type="file" #fileInput multiple (change)="onFilesSelected($event)" hidden />
+        <div class="load-image" fxLayout="column">
+          <mat-icon>add</mat-icon>
+          <span class="load-image-text">{{'add_photos' | ipTranslate}}</span>
+          <span class="load-image-subtext">{{'upload_photos_info' | ipTranslate}}</span>
+        </div>
+      </div>
+      <div class="image-container" *ngFor="let image of data.images; let i = index" (click)="selectImage(i)"
+        [ngClass]="{'selected': selectedIndex === i}" draggable="true" (dragstart)="onDragStart($event, i)" (dragover)="onDragOver($event)"
+        (drop)="onDrop($event, i)">
+        <img [src]="getMediumUrl(image)" alt="Image {{i + 1}}" (error)="onImageError($event, image)" />
+        <span class="image-position">{{i + 1}}</span>
+        <span *ngIf="selectedIndex === i" class="delete-image" (click)="deleteImage(i)">✖</span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button class="button-modal-cancel" mat-stroked-button (click)=close()>
+    {{ 'cancel' | ipTranslate }}
+  </button>
+  <button color="primary" mat-stroked-button (click)="save()" [disabled]="loading">
+    <mat-icon>save</mat-icon>
+    {{ 'save' | ipTranslate }}
+  </button>
+</mat-dialog-actions>
