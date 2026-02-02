@@ -13,20 +13,22 @@
 }
 
 .toggle-toolbar {
-  height: 30px;
+  height: 32px;
+  width: 64px;
   margin-right: 8px;
 
   .mat-button-toggle-standalone,
   .mat-button-toggle-group {
-    //Border toggle 0.8px: up + botton = 1.6px
-    height: calc(30px - 1.6px);
+    height: 30px;
 
     .o-button-toggle .mat-button-toggle {
-      height: calc(30px - 1.6px);
+      height: 30px;
+      width: 32px;
 
       span.mat-button-toggle-label-content {
-        line-height: calc(30px - 1.6px);
         display: flex;
+        padding: 0;
+        justify-content: center;
       }
     }
   }

@@ -252,14 +252,14 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   private resolveCommonInputs(): void {
-    this.r_columns = this.setDefaultValue(this.columns, undefined);
-    this.r_keys = this.setDefaultValue(this.keys, undefined);
-    this.r_attr = this.setDefaultValue(this.attr, undefined);
-    this.r_entity = this.setDefaultValue(this.entity, undefined);
-    this.r_service = this.setDefaultValue(this.service, undefined);
-    this.r_serviceType = this.setDefaultValue(this.serviceType, undefined);
+    this.r_columns = this.setDefaultValue(this.columns, '');
+    this.r_keys = this.setDefaultValue(this.keys, '');
+    this.r_attr = this.setDefaultValue(this.attr, '');
+    this.r_entity = this.setDefaultValue(this.entity, '');
+    this.r_service = this.setDefaultValue(this.service, '');
+    this.r_serviceType = this.setDefaultValue(this.serviceType, '');
     this.r_paginatedQueryMethod = this.setDefaultValue(this.paginatedQueryMethod, Codes.PAGINATED_QUERY_METHOD);
-    this.r_parentKeys = this.setDefaultValue(this.parentKeys, undefined);
+    this.r_parentKeys = this.setDefaultValue(this.parentKeys, '');
     this.r_queryMethod = this.setDefaultValue(this.queryMethod, Codes.QUERY_METHOD);
     this.r_configureServiceArgs = this.configureServiceArgs;
     this.r_queryFallbackFunction = this.queryFallbackFunction;
@@ -274,12 +274,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_insertMethod = this.setDefaultValue(this.insertMethod, Codes.INSERT_METHOD);
     this.r_updateMethod = this.setDefaultValue(this.updateMethod, Codes.UPDATE_METHOD);
     this.r_showButtonsText = this.setDefaultValue(this.showButtonsText, 'yes');
-    this.r_quickFilterPlaceholder = this.setDefaultValue(this.quickFilterPlaceholder, undefined);
+    this.r_quickFilterPlaceholder = this.setDefaultValue(this.quickFilterPlaceholder, '');
     this.r_insertButton = this.setDefaultValue(this.insertButton, 'yes');
     this.r_refreshButton = this.setDefaultValue(this.refreshButton, 'yes');
     this.r_fixedHeader = this.setDefaultValue(this.fixedHeader, 'yes');
     this.r_controls = this.setDefaultValue(this.controls, 'yes');
-    this.r_detailFormRoute = this.setDefaultValue(this.detailFormRoute, undefined);
+    this.r_detailFormRoute = this.setDefaultValue(this.detailFormRoute, '');
     this.r_filterCaseSensitive = this.setDefaultValue(this.filterCaseSensitive, 'no');
     this.r_paginationControls = this.setDefaultValue(this.paginationControls, 'yes');
     this.r_quickFilter = this.setDefaultValue(this.quickFilter, 'yes');
@@ -287,7 +287,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_recursiveEdit = this.setDefaultValue(this.recursiveEdit, 'no');
     this.r_recursiveInsert = this.setDefaultValue(this.recursiveInsert, 'no');
     this.r_insertFormRoute = this.setDefaultValue(this.insertFormRoute, Codes.DEFAULT_INSERT_ROUTE);
-    this.r_title = this.setDefaultValue(this.title, undefined);
+    this.r_title = this.setDefaultValue(this.title, '');
     this.r_quickFilterAppearance = this.setDefaultValue(this.quickFilterAppearance, 'outline');
   }
 
@@ -299,7 +299,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_detailButtonInRowIcon = this.setDefaultValue(cfg.detailButtonInRowIcon, Codes.DETAIL_ICON);
     this.r_table_editButtonInRow = this.setDefaultValue(cfg.editButtonInRow, 'no');
     this.r_table_editButtonInRowIcon = this.setDefaultValue(cfg.editButtonInRowIcon, Codes.EDIT_ICON);
-    this.r_table_editFormRoute = this.setDefaultValue(cfg.editFormRoute, undefined);
+    this.r_table_editFormRoute = this.setDefaultValue(cfg.editFormRoute, '');
     this.r_table_enabled = this.setDefaultValue(cfg.enabled, 'yes');
     this.r_table_rowHeight = this.resolveStringWithGlobal(cfg.rowHeight, g?.rowHeight, Codes.DEFAULT_ROW_HEIGHT);
     this.r_table_visible = this.setDefaultValue(cfg.visible, 'yes');
@@ -307,7 +307,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_autoAlignTitles = this.resolveYesNoWithGlobal(cfg.autoAlignTitles, g?.autoAlignTitles, 'yes');
     this.r_table_collapseGroupedColumns = this.setDefaultValue(cfg.collapseGroupedColumns, 'no');
     this.r_table_columnsVisibilityButton = this.setDefaultValue(cfg.columnsVisibilityButton, 'yes');
-    this.r_table_defaultVisibleColumns = this.setDefaultValue(cfg.defaultVisibleColumns, undefined);
+    this.r_table_defaultVisibleColumns = this.setDefaultValue(cfg.defaultVisibleColumns, '');
     this.r_table_deleteButton = this.setDefaultValue(cfg.deleteButton, 'yes');
     this.r_table_editionMode = this.resolveStringWithGlobal(cfg.editionMode, g?.editionMode, Codes.EDITION_MODE_NONE);
     this.r_table_exportButton = this.setDefaultValue(cfg.exportButton, 'yes');
@@ -318,10 +318,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       'yes'
     );
     this.r_table_groupable = this.setDefaultValue(cfg.groupable, 'yes');
-    this.r_table_groupedColumns = this.setDefaultValue(cfg.groupedColumns, undefined);
+    this.r_table_groupedColumns = this.setDefaultValue(cfg.groupedColumns, '');
     this.r_table_horizontalScroll = this.setDefaultValue(cfg.horizontalScroll, 'no');
     this.r_table_multipleSort = this.setDefaultValue(cfg.multipleSort, 'yes');
-    this.r_table_nonHidableColumns = this.setDefaultValue(cfg.nonHidableColumns, undefined);
+    this.r_table_nonHidableColumns = this.setDefaultValue(cfg.nonHidableColumns, '');
     this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, Codes.PAGE_SIZE_OPTIONS);
     this.r_table_resizable = this.setDefaultValue(cfg.resizable, 'yes');
     this.r_table_selectAllCheckbox = this.setDefaultValue(cfg.selectAllCheckbox, 'no');
@@ -333,10 +333,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_showChartsOnDemandOption = this.setDefaultValue(cfg.showChartsOnDemandOption, 'yes');
     this.r_table_showReportOnDemandOption = this.setDefaultValue(cfg.showReportOnDemandOption, 'yes');
     this.r_table_showResetWidthOption = this.setDefaultValue(cfg.showResetWidthOption, 'yes');
-    this.r_table_sortColumns = this.setDefaultValue(cfg.sortColumns, undefined);
+    this.r_table_sortColumns = this.setDefaultValue(cfg.sortColumns, '');
     this.r_table_virtualScroll = this.setDefaultValue(cfg.virtualScroll, 'yes');
-    this.r_table_visibleColumns = this.setDefaultValue(cfg.visibleColumns, undefined);
-    this.r_table_visibleExportDialogButtons = this.setDefaultValue(cfg.visibleExportDialogButtons, undefined);
+    this.r_table_visibleColumns = this.setDefaultValue(cfg.visibleColumns, '');
+    this.r_table_visibleExportDialogButtons = this.setDefaultValue(cfg.visibleExportDialogButtons, '');
     this.r_table_selectionOnRowClick = this.resolveYesNoWithGlobal(cfg.selectionOnRowClick, g?.selectionOnRowClick, 'yes');
     this.r_table_detailMode = this.resolveStringWithGlobal(cfg.detailMode, g?.detailMode, Codes.DETAIL_MODE_CLICK);
     this.r_table_disableSelectionFunction = cfg.disableSelectionFunction;
@@ -358,8 +358,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_orderable = this.setDefaultValue(cfg.orderable, 'no');
     this.r_grid_showFooter = this.setDefaultValue(cfg.showFooter, 'yes');
     this.r_grid_showPageSize = this.setDefaultValue(cfg.showPageSize, 'no');
-    this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, undefined);
-    this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, undefined);
+    this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, '');
+    this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, '');
     this.r_grid_detailMode = this.setDefaultValue(cfg.detailMode, Codes.DETAIL_MODE_CLICK);
     this.r_grid_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [8, 16, 24, 32, 64]);
     this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.r_columns);
