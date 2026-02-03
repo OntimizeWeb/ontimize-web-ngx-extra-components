@@ -1,0 +1,50 @@
+<o-app-layout>
+  <!--
+  <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
+  <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
+
+  <o-data-view #dv attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;duration;score"
+    [table-config]="tableCfg" [grid-config]="gridCfg" quick-filter-placeholder="test" refresh-button="no" toggle-on-toolbar="yes"
+    show-buttons-text="no" title="Data View Example">
+
+    <ng-template oDataViewTableColumns>
+      <!-- filter by columns -->
+      <o-table-columns-filter columns="name;location;price;duration;score"></o-table-columns-filter>
+
+      <o-table-columns-grouping columns="score"></o-table-columns-grouping>
+      <o-table-column attr="name" title-align="start" editable="yes" width="400px"></o-table-column>
+      <o-table-column attr="location" title-align="start" editable="yes" width="500px"></o-table-column>
+      <o-table-column attr="price" type="currency" thousand-separator="." decimal-separator="," currency-symbol="€" currency-symbol-position="right"
+        title-align="end"></o-table-column>
+      <o-table-column attr="score" title-align="end" filterable="yes" sortable="yes">
+        <o-table-cell-renderer-real></o-table-cell-renderer-real>
+      </o-table-column>
+      <!-- Aggregate columns -->
+      <o-table-column-aggregate attr="score" aggregate="avg" title="Avg Price"></o-table-column-aggregate>
+
+      <!-- Table context menu -->
+      <o-table-context-menu [context-menu]="contextMenu" insert="no" edit="no" view-detail="no"></o-table-context-menu>
+
+      <!-- Table paginator -->
+      <o-table-paginator page-size-options="5;10;15"></o-table-paginator>
+    </ng-template>
+
+    <o-context-menu #contextMenu>
+      <o-context-menu-item icon="grade" label="Item 1" (execute)="onExecute('Item 1', $event)"></o-context-menu-item>
+      <o-context-menu-item icon="grade" label="Item 2" enabled="no"></o-context-menu-item>
+    </o-context-menu>
+
+    <ng-template oDataViewGridItem let-item>
+      <mat-card class="grid-card">
+        <mat-card-header>
+          <mat-card-title>{{ item.name }}</mat-card-title>
+          <mat-card-subtitle>{{ item.location }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div fxLayout="column" fxLayoutAlign="center">Cost: {{item.price | currency}}</div>
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+
+  </o-data-view>
+</o-app-layout>
