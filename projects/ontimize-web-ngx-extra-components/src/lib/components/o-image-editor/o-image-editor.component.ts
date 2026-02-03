@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Inject, OnDestroy, OnInit, Optional, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CropperPosition, Dimensions, ImageCroppedEvent, ImageCropperComponent, ImageTransform } from 'ngx-image-cropper';
 import { DialogService, OTranslateService } from 'ontimize-web-ngx';
@@ -70,7 +70,7 @@ export class OImageEditorComponent implements OnInit, OnDestroy{
   private loadImageSubscription: Subscription = null;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA)
+    @Optional() @Inject(MAT_DIALOG_DATA)
     public data: {
       images: Image.Image[];
       allowMultiple: boolean;
