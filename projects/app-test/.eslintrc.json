@@ -10,7 +10,7 @@
       ],
       "parserOptions": {
         "project": [
-          "projects/data-view-app-test/tsconfig.(app|spec).json"
+          "projects/app-test/tsconfig.(app|spec).json"
         ]
       },
       "rules": {

@@ -70,7 +70,7 @@ export class OImageEditorComponent implements OnInit, OnDestroy{
   private loadImageSubscription: Subscription = null;
 
   constructor(
-    @Optional() @Inject(MAT_DIALOG_DATA)
+    @Inject(MAT_DIALOG_DATA)
     public data: {
       images: Image.Image[];
       allowMultiple: boolean;

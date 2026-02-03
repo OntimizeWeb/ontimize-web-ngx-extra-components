@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { O_TABLE_GLOBAL_CONFIG, OntimizeWebModule } from 'ontimize-web-ngx';
 
-import { HomeComponent } from './home.component';
+import { DataViewTestComponent } from './data-view-test.component';
 import { OExtraComponentsModule } from 'ontimize-web-ngx-extra-components';
 import { PacksService } from '../../services/packs.service';
 
@@ -12,7 +12,7 @@ import { PacksService } from '../../services/packs.service';
     OExtraComponentsModule
   ],
   declarations: [
-    HomeComponent
+    DataViewTestComponent
   ],
   providers: [{
     provide: 'packs',
@@ -32,4 +32,4 @@ import { PacksService } from '../../services/packs.service';
   }
   ]
 })
-export class HomeModule { }
+export class DataViewTestModule { }

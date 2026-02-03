@@ -4,8 +4,8 @@ import { MENU_CONFIG } from './app.menu.config';
 
 export const CONFIG: Config = {
   apiEndpoint: '',
-  uuid: 'com.ontimize.web.ngx.data-view-app-test',
-  title: 'Data View App Test',
+  uuid: 'com.ontimize.web.ngx.app-test',
+  title: 'App Test',
   locale: 'en',
   applicationLocales: ['en'],
   servicesConfiguration: SERVICE_CONFIG,
