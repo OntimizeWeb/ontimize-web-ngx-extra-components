@@ -40,15 +40,15 @@
         }
       }
     },
-    "data-view-app-test": {
+    "app-test": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
         }
       },
-      "root": "projects/data-view-app-test",
-      "sourceRoot": "projects/data-view-app-test/src",
+      "root": "projects/app-test",
+      "sourceRoot": "projects/app-test/src",
       "prefix": "app",
       "architect": {
         "build": {
@@ -58,9 +58,9 @@
               "moment",
               "google-libphonenumber"
             ],
-            "outputPath": "dist/data-view-app-test",
-            "index": "projects/data-view-app-test/src/index.html",
-            "main": "projects/data-view-app-test/src/main.ts",
+            "outputPath": "dist/app-test",
+            "index": "projects/app-test/src/index.html",
+            "main": "projects/app-test/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -69,11 +69,11 @@
                 "node_modules"
               ]
             },
-            "tsConfig": "projects/data-view-app-test/tsconfig.app.json",
+            "tsConfig": "projects/app-test/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "projects/data-view-app-test/src/favicon.ico",
-              "projects/data-view-app-test/src/assets",
+              "projects/app-test/src/favicon.ico",
+              "projects/app-test/src/assets",
               {
                 "glob": "**/*",
                 "input": "node_modules/ontimize-web-ngx/assets",
@@ -81,7 +81,7 @@
               }
             ],
             "styles": [
-              "projects/data-view-app-test/src/styles.scss",
+              "projects/app-test/src/styles.scss",
               "node_modules/ontimize-web-ngx/ontimize.scss"
             ],
             "scripts": []
@@ -117,10 +117,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "data-view-app-test:build:production"
+              "browserTarget": "app-test:build:production"
             },
             "development": {
-              "browserTarget": "data-view-app-test:build:development"
+              "browserTarget": "app-test:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -128,7 +128,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "data-view-app-test:build"
+            "browserTarget": "app-test:build"
           }
         },
         "test": {
@@ -138,11 +138,11 @@
               "zone.js",
               "zone.js/testing"
             ],
-            "tsConfig": "projects/data-view-app-test/tsconfig.spec.json",
+            "tsConfig": "projects/app-test/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "projects/data-view-app-test/src/favicon.ico",
-              "projects/data-view-app-test/src/assets"
+              "projects/app-test/src/favicon.ico",
+              "projects/app-test/src/assets"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
@@ -150,7 +150,7 @@
               ]
             },
             "styles": [
-              "projects/data-view-app-test/src/styles.scss",
+              "projects/app-test/src/styles.scss",
               "node_modules/ontimize-web-ngx/ontimize.scss"
             ],
             "scripts": []
@@ -160,8 +160,8 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/data-view-app-test/**/*.ts",
-              "projects/data-view-app-test/**/*.html"
+              "projects/app-test/**/*.ts",
+              "projects/app-test/**/*.html"
             ]
           }
         }
