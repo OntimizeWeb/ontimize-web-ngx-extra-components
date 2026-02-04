@@ -9,6 +9,7 @@ import { APP_CONFIG, ONTIMIZE_PROVIDERS, OntimizeWebModule } from 'ontimize-web-
 import { CONFIG } from './app.config';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DataViewTestModule } from './data-view/data-view-test.module';
+import { ImageEditorTestModule } from './image-editor/image-editor-test.module';
 @NgModule({
   declarations: [
     AppComponent
@@ -20,7 +21,8 @@ import { DataViewTestModule } from './data-view/data-view-test.module';
     OExtraComponentsModule,
     OntimizeWebModule,
     OntimizeWebModule.forRoot(CONFIG),
-    DataViewTestModule
+    DataViewTestModule,
+    ImageEditorTestModule
   ],
   providers: [
     { provide: APP_CONFIG, useValue: CONFIG },

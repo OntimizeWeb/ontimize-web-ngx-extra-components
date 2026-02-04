@@ -1,0 +1,5 @@
+<o-app-layout>
+  <o-image-editor [images]="images" [allow-multiple]="true" orientation="horizontal" (onUpdated)="onSaved($event)" (onDeleted)="onDeleted($event)"
+    (onCancel)="onCancel()">
+  </o-image-editor>
+</o-app-layout>

@@ -4,6 +4,7 @@
     <mat-icon>close</mat-icon>
   </button>
 </div>
+
 <mat-dialog-content>
   <div *ngIf="isCropperLoaded" class="image-editor-header">
     <!-- TODO: Uncomment this once the platform supports square images.
@@ -22,18 +23,22 @@
     </button>
   </div>
 
-  <div *ngIf="data?.images?.length > 0" class="image-editor">
-    <image-cropper [imageFile]="selectedImage.file" [maintainAspectRatio]="true" [aspectRatio]="aspectRatio" [allowMoveImage]="true"
-      [cropper]="cropper" imageQuality="95" format="jpeg" [(transform)]="transform" (imageCropped)="imageCropped($event)"
-      (imageLoaded)="imageLoaded()" (cropperReady)="cropperReady($event)" (transformChange)="transformChange($event)"
-      [hideResizeSquares]="true"></image-cropper>
+  <div *ngIf="ctxImages?.length > 0" class="image-editor">
+    <image-cropper [imageFile]="selectedImage.file" [maintainAspectRatio]="cropperOptions?.maintainAspectRatio ?? true" [aspectRatio]="aspectRatio"
+      [allowMoveImage]="cropperOptions?.allowMoveImage ?? true" [cropper]="cropper" [imageQuality]="cropperOptions?.imageQuality ?? 95"
+      [format]="cropperOptions?.format ?? 'jpeg'" [(transform)]="transform" (imageCropped)="imageCropped($event)" (imageLoaded)="imageLoaded()"
+      (cropperReady)="cropperReady($event)" (transformChange)="transformChange($event)"
+      [hideResizeSquares]="cropperOptions?.hideResizeSquares ?? true">
+    </image-cropper>
+
     <div *ngIf="!isCropperLoaded" class="loading-spinner">
       <mat-spinner></mat-spinner>
     </div>
-    <span [style.visibility]="croppedImages?.get(selectedIndex) ? 'visible' : 'hidden'"
-      class="image-size-label">{{croppedImages.get(selectedIndex)?.width +
-      ' x ' + croppedImages.get(selectedIndex)?.height + '
-      px'}}</span>
+
+    <span [style.visibility]="croppedImages?.get(selectedIndex) ? 'visible' : 'hidden'" class="image-size-label">
+      {{ croppedImages.get(selectedIndex)?.width + ' x ' + croppedImages.get(selectedIndex)?.height + ' px' }}
+    </span>
+
     <div [style.visibility]="isCropperLoaded ? 'visible' : 'hidden'" class="image-editor-zoom">
       <span class="zoom-label">{{ 'zoom' | oTranslate }}: {{ getZoomPercentage(zoom) | number: '1.0-1' }}%</span>
       <button mat-icon-button (click)="zoomOut()" aria-label="Zoom out">
@@ -47,26 +52,30 @@
       </button>
     </div>
   </div>
+
   <div (dragover)="onDragOverImageGrid($event)" (drop)="onDropOnImageGrid($event)">
-    <div *ngIf="data.allowMultiple" class="image-grid" [class.disabled]="loading">
+    <div *ngIf="ctxAllowMultiple" class="image-grid" [class.disabled]="loading">
       <div class="image-container" (click)="fileInputClick()">
         <input type="file" #fileInput multiple (change)="onFilesSelected($event)" hidden />
         <div class="load-image" fxLayout="column">
           <mat-icon>add</mat-icon>
-          <span class="load-image-text">{{'add_photos' | oTranslate}}</span>
-          <span class="load-image-subtext">{{'upload_photos_info' | oTranslate}}</span>
+          <span class="load-image-text">{{ 'add_photos' | oTranslate }}</span>
+          <span class="load-image-subtext">{{ 'upload_photos_info' | oTranslate }}</span>
         </div>
       </div>
-      <div class="image-container" *ngFor="let image of data.images; let i = index" (click)="selectImage(i)"
+
+      <div class="image-container" *ngFor="let image of ctxImages; let i = index" (click)="selectImage(i)"
         [ngClass]="{'selected': selectedIndex === i}" draggable="true" (dragstart)="onDragStart($event, i)" (dragover)="onDragOver($event)"
         (drop)="onDrop($event, i)">
-        <img [src]="getMediumUrl(image)" alt="Image {{i + 1}}" (error)="onImageError($event, image)" />
-        <span class="image-position">{{i + 1}}</span>
+
+        <img [src]="getMediumUrl(image)" alt="Image {{ i + 1 }}" (error)="onImageError($event, image)" />
+        <span class="image-position">{{ i + 1 }}</span>
         <span *ngIf="selectedIndex === i" class="delete-image" (click)="deleteImage(i)">✖</span>
       </div>
     </div>
   </div>
 </mat-dialog-content>
+
 <mat-dialog-actions>
   <button class="button-modal-cancel" mat-stroked-button (click)=close()>
     {{ 'cancel' | oTranslate }}
