@@ -1,87 +1,67 @@
-<div mat-dialog-title>
-  <h2>{{ 'image_editor' | oTranslate }}</h2>
-  <button mat-icon-button (click)=close()>
-    <mat-icon>close</mat-icon>
-  </button>
-</div>
+<div class="o-image-editor" fxLayout="column" fxFlexFill>
 
-<mat-dialog-content>
-  <div *ngIf="isCropperLoaded" class="image-editor-header">
-    <!-- TODO: Uncomment this once the platform supports square images.
-    <div class="aspect-ratio-toggle">
-      <span (click)="updateAspectRatio('rectangular')"
-            [ngClass]="{'selected': aspectRatio === 1/1.5 || aspectRatio === 1.5/1}">
-        {{ 'rectangular' | oTranslate }}
-      </span>
-      <span (click)="updateAspectRatio('square')" [ngClass]="{'selected': aspectRatio === 1/1}">
-        {{ 'square_f' | oTranslate }}
-      </span>
-    </div> -->
-    <button mat-stroked-button (click)="reset()">
-      <mat-icon>restore</mat-icon>
-      <span>{{ 'restore' | oTranslate }}</span>
-    </button>
+  <div class="o-image-editor-header" fxLayout="row" fxLayoutAlign="space-between">
+    <o-button attr="reset" type="BASIC" icon="restart_alt" (onClick)="reset()" label="Reset">
+    </o-button>
+    <o-button attr="save" type="RAISED" icon="done" label="Save" (onClick)="save()">
+    </o-button>
   </div>
 
-  <div *ngIf="ctxImages?.length > 0" class="image-editor">
-    <image-cropper [imageFile]="selectedImage.file" [maintainAspectRatio]="cropperOptions?.maintainAspectRatio ?? true" [aspectRatio]="aspectRatio"
-      [allowMoveImage]="cropperOptions?.allowMoveImage ?? true" [cropper]="cropper" [imageQuality]="cropperOptions?.imageQuality ?? 95"
-      [format]="cropperOptions?.format ?? 'jpeg'" [(transform)]="transform" (imageCropped)="imageCropped($event)" (imageLoaded)="imageLoaded()"
-      (cropperReady)="cropperReady($event)" (transformChange)="transformChange($event)"
-      [hideResizeSquares]="cropperOptions?.hideResizeSquares ?? true">
-    </image-cropper>
+  <div class="o-image-editor-body">
 
-    <div *ngIf="!isCropperLoaded" class="loading-spinner">
-      <mat-spinner></mat-spinner>
-    </div>
+    <aside class="tools" fxLayout="column" fxLayoutGap="8px">
+      <o-button attr="crop" type="FAB" icon="crop" matTooltip="Crop" (onClick)="setTool('crop')">
+      </o-button>
+      <o-button attr="resize" type="FAB" icon="photo_size_select_large" matTooltip="Resize" (onClick)="setTool('resize')">
+      </o-button>
+    </aside>
 
-    <span [style.visibility]="croppedImages?.get(selectedIndex) ? 'visible' : 'hidden'" class="image-size-label">
-      {{ croppedImages.get(selectedIndex)?.width + ' x ' + croppedImages.get(selectedIndex)?.height + ' px' }}
-    </span>
+    <main class="o-image-editor-workspace" fxLayout="column" fxLayoutGap="12px">
 
-    <div [style.visibility]="isCropperLoaded ? 'visible' : 'hidden'" class="image-editor-zoom">
-      <span class="zoom-label">{{ 'zoom' | oTranslate }}: {{ getZoomPercentage(zoom) | number: '1.0-1' }}%</span>
-      <button mat-icon-button (click)="zoomOut()" aria-label="Zoom out">
-        <mat-icon>remove</mat-icon>
-      </button>
-      <mat-slider class="zoom-slider" [min]="minZoom" [max]="maxZoom" step="0.1" (change)="updateZoom(true)" aria-label="Zoom">
-        <input matSliderThumb [(ngModel)]="zoom">
-      </mat-slider>
-      <button mat-icon-button (click)="zoomIn()" aria-label="Zoom in">
-        <mat-icon>add</mat-icon>
-      </button>
-    </div>
-  </div>
+      <div *ngIf="activeTool === 'crop' && selectedFile" fxLayout="row" fxLayoutGap="6px" fxLayoutAlign="center">
+        <o-button attr="icon1" type="ICON" icon="rotate_right" matTooltip="Rotate right" (onClick)="rotate()"></o-button>
+        <o-button attr="icon1" type="ICON" icon="flip" matTooltip="Flip horizontal" (onClick)="flip()"></o-button>
+        <button mat-icon-button class="oie-ratio-trigger" [matMenuTriggerFor]="ratioMenu" matTooltip="Aspect ratio">
+          <mat-icon>crop_free</mat-icon>
+        </button>
+        <mat-menu #ratioMenu="matMenu">
+          <button mat-menu-item (click)="setCropRatio(1/1)">1:1</button>
+          <button mat-menu-item (click)="setCropRatio(3/2)">3:2</button>
+          <button mat-menu-item (click)="setCropRatio(4/3)">4:3</button>
+          <button mat-menu-item (click)="setCropRatio(5/4)">5:4</button>
+          <button mat-menu-item (click)="setCropRatio(16/9)">16:9</button>
+        </mat-menu>
+      </div>
 
-  <div (dragover)="onDragOverImageGrid($event)" (drop)="onDropOnImageGrid($event)">
-    <div *ngIf="ctxAllowMultiple" class="image-grid" [class.disabled]="loading">
-      <div class="image-container" (click)="fileInputClick()">
-        <input type="file" #fileInput multiple (change)="onFilesSelected($event)" hidden />
-        <div class="load-image" fxLayout="column">
-          <mat-icon>add</mat-icon>
-          <span class="load-image-text">{{ 'add_photos' | oTranslate }}</span>
-          <span class="load-image-subtext">{{ 'upload_photos_info' | oTranslate }}</span>
+      <div *ngIf="activeTool === 'resize' && selectedFile" fxLayout="row" fxLayoutGap="6px" fxLayoutAlign="center">
+        <o-integer-input attr="width" label="Width"></o-integer-input>
+        <o-integer-input attr="height" label="Height"></o-integer-input>
+      </div>
+
+      <ng-container *ngIf="!selectedFile; else editorTpl">
+        <div class="o-image-editor-load-zone" fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="32px" fxFlex="100"
+          [class.o-image-editor-load-zone--dragover]="dragOver" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)">
+          <span>Drag and drop here</span>
+          <span>OR</span>
+          <o-button attr="select_image" type="RAISED" icon="upload" label="Upload image" (onClick)="$event.stopPropagation(); openFilePicker()">
+          </o-button>
+          <input #fileInput type="file" hidden accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onFileInputChange($event)">
         </div>
-      </div>
+      </ng-container>
 
-      <div class="image-container" *ngFor="let image of ctxImages; let i = index" (click)="selectImage(i)"
-        [ngClass]="{'selected': selectedIndex === i}" draggable="true" (dragstart)="onDragStart($event, i)" (dragover)="onDragOver($event)"
-        (drop)="onDrop($event, i)">
+      <ng-template #editorTpl>
+        <image-cropper [imageFile]="selectedFile!" [maintainAspectRatio]="maintainAspectRatio" [aspectRatio]="aspectRatio || 1"
+          [canvasRotation]="canvasRotation" [(transform)]="transform" [imageQuality]="95" format="jpeg" (imageCropped)="onImageCropped($event)"
+          (imageLoaded)="onImageLoaded()" (loadImageFailed)="onLoadImageFailed()" [containWithinAspectRatio]="true">
+        </image-cropper>
 
-        <img [src]="getMediumUrl(image)" alt="Image {{ i + 1 }}" (error)="onImageError($event, image)" />
-        <span class="image-position">{{ i + 1 }}</span>
-        <span *ngIf="selectedIndex === i" class="delete-image" (click)="deleteImage(i)">✖</span>
-      </div>
-    </div>
+        <div *ngIf="cropperLoading" fxLayout="column" fxLayoutAlign="center center" fxFlex="100">
+          <mat-spinner diameter="60"></mat-spinner>
+        </div>
+
+      </ng-template>
+    </main>
   </div>
-</mat-dialog-content>
 
-<mat-dialog-actions>
-  <button class="button-modal-cancel" mat-stroked-button (click)=close()>
-    {{ 'cancel' | oTranslate }}
-  </button>
-  <button color="primary" mat-stroked-button (click)="save()" [disabled]="loading">
-    <mat-icon>save</mat-icon>
-    {{ 'save' | oTranslate }}
-  </button>
-</mat-dialog-actions>
+</div>

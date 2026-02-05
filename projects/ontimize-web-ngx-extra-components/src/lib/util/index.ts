@@ -1,1 +1,1 @@
-export * from './o-extra-componentss-translate.pipe';
+export * from './o-extra-components-translate.pipe';

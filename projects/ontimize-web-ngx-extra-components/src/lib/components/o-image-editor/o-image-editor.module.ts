@@ -4,8 +4,6 @@ import { ImageCropperModule } from 'ngx-image-cropper';
 import { OImageEditorComponent } from './o-image-editor.component';
 import { OntimizeWebModule } from 'ontimize-web-ngx';
 
-
-
 @NgModule({
   declarations: [OImageEditorComponent],
   imports: [
