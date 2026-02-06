@@ -1,14 +1,16 @@
-.o-image-editor-body {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 56px 1fr;
+.o-image-editor {
   gap: 24px;
   padding: 24px;
+  background-color: #FFFFFF;
 }
 
-.tools{
+.o-image-editor-header {
+  padding-left: 10px;
+}
+
+.tools {
   padding-top: 68px;
+  gap: 12px;
 }
 
 .o-image-editor-workspace {
@@ -16,5 +18,124 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+
+.o-image-editor-upload-dialog {
+  padding: 16px;
+}
+
+.ratio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oie-adjust-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 0 10px;
+}
+
+.oie-dot-slider {
+  width: 552px;
+}
+
+.oie-dot-track {
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  --dot-step: 22px;
+
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.55) 1.2px, transparent 1.3px);
+  background-size: var(--dot-step) 6px;
+  background-repeat: repeat-x;
+
+  background-position: calc(50% - (var(--dot-step) / 2));
+}
+
+.oie-dot-track.is-scale {
+  background-image: none;
+}
+
+.oie-dot-track.is-scale::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  right: 0;
+  top: 0;
+  height: 100%;
+
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.55) 1.2px, transparent 1.3px);
+  background-size: var(--dot-step) 6px;
+  background-repeat: repeat-x;
+
+  background-position: 0 12px;
+}
+
+.oie-dot-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.oie-dot-input.is-scale {
+  left: 50%;
+  width: 50%;
+  right: auto;
+  top: 0;
+  bottom: 0;
+}
+
+.oie-dot-indicator {
+  position: absolute;
+  top: 2px;
+  height: 12px;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.55);
+  transform: translateX(-50%);
+}
+
+.oie-dot-value {
+  position: absolute;
+  top: -12px;
+  transform: translate(-50%, 0);
+  font-size: 12px;
+  opacity: 0.75;
+  user-select: none;
+  white-space: nowrap;
+  padding-left: 5px;
+}
+
+:host ::ng-deep .oie-segment.mat-button-toggle-group {
+  border: 0;
+  border-radius: 999px;
+  padding: 2px;
+  background: white;
+}
+
+:host ::ng-deep .oie-segment .mat-button-toggle {
+  border: 0;
+  border-radius: 999px;
   background: transparent;
+}
+
+:host ::ng-deep .oie-segment .mat-button-toggle-button {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+:host ::ng-deep .oie-segment .mat-button-toggle-button span {
+  line-height: 32px;
+}
+
+:host ::ng-deep .oie-segment .mat-button-toggle-checked .mat-button-toggle-button {
+  background: rgba(0, 0, 0, 0.16);
 }
