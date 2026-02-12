@@ -112,30 +112,18 @@
   padding-left: 5px;
 }
 
-:host ::ng-deep .oie-segment.mat-button-toggle-group {
-  border: 0;
-  border-radius: 999px;
-  padding: 2px;
-  background: white;
+:host ::ng-deep .oie-segment {
+  display: inline-flex;
+  gap: 8px;
 }
 
-:host ::ng-deep .oie-segment .mat-button-toggle {
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
+:host ::ng-deep .oie-segment button.mat-button,
+:host ::ng-deep .oie-segment button.mat-mdc-button {
+  min-width: auto;
+  width: 80px;
 }
 
-:host ::ng-deep .oie-segment .mat-button-toggle-button {
-  height: 32px;
-  padding: 0 16px;
-  border-radius: 999px;
-  font-size: 13px;
-}
-
-:host ::ng-deep .oie-segment .mat-button-toggle-button span {
-  line-height: 32px;
-}
-
-:host ::ng-deep .oie-segment .mat-button-toggle-checked .mat-button-toggle-button {
+/* “seleccionado” (equivale a mat-button-toggle-checked) */
+:host ::ng-deep .oie-segment button.is-active {
   background: rgba(0, 0, 0, 0.16);
 }

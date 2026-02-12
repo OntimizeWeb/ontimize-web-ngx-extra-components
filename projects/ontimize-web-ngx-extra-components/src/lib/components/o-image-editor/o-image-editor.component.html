@@ -118,10 +118,15 @@
           </div>
         </div>
 
-        <mat-button-toggle-group class="oie-segment" [(ngModel)]="cropAdjustMode" aria-label="Crop adjust mode">
-          <mat-button-toggle value="rotation">Rotation</mat-button-toggle>
-          <mat-button-toggle value="scale">Scale</mat-button-toggle>
-        </mat-button-toggle-group>
+        <div class="oie-segment">
+          <button mat-button type="button" [class.is-active]="cropAdjustMode === 'rotation'" (click)="cropAdjustMode = 'rotation'">
+            Rotation
+          </button>
+
+          <button mat-button type="button" [class.is-active]="cropAdjustMode === 'scale'" (click)="cropAdjustMode = 'scale'">
+            Scale
+          </button>
+        </div>
 
       </div>
 

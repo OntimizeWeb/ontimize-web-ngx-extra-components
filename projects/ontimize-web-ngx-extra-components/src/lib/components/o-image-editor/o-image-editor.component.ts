@@ -1,5 +1,7 @@
 import { Component, ElementRef, TemplateRef, ViewChild } from '@angular/core';
-import { ImageCroppedEvent, ImageTransform } from 'ngx-image-cropper';
+import { base64ToFile, ImageCroppedEvent, ImageTransform } from 'ngx-image-cropper';
+import { DialogService, ODialogConfig } from 'ontimize-web-ngx';
+import { take } from 'rxjs';
 
 type OImageEditorTool = 'crop' | 'resize' | 'upload';
 
@@ -11,7 +13,6 @@ type OImageEditorTool = 'crop' | 'resize' | 'upload';
 export class OImageEditorComponent {
 
   @ViewChild('fileInput', { static: false }) fileInput?: ElementRef<HTMLInputElement>;
-  @ViewChild('uploadDialogTpl', { static: true }) uploadDialogTpl!: TemplateRef<any>;
 
   activeTool: OImageEditorTool = 'crop';
   activeIndex = 0;
@@ -30,6 +31,8 @@ export class OImageEditorComponent {
   minScale = 1;
   maxScale = 3;
   uploadMode = false;
+
+  constructor(private dialogService: DialogService){}
 
   startReplaceImage(): void {
     this.uploadMode = true;
@@ -208,8 +211,115 @@ export class OImageEditorComponent {
     this.cropperLoading = false;
     console.error('[o-image-editor] loadImageFailed');
   }
-  save(): void {
-    console.log('save');
+
+  async save(): Promise<void> {
+    const blob = this.getCroppedBlob();
+    if (!blob) {
+      this.dialogService.warn('Guardar', 'No hay imagen recortada para guardar.');
+      return;
+    }
+
+    const suggestedName = this.buildSuggestedFileName(blob.type || 'image/png');
+
+    const saved = await this.persistBlobToDisk(blob, suggestedName);
+    if (!saved) {
+      // El usuario canceló el guardado (o hubo AbortError)
+      return;
+    }
+
+    this.askLoadNewOrContinue();
+  }
+
+  private getCroppedBlob(): Blob | null {
+    // 1) Preferible: si ngx-image-cropper te entrega blob
+    const fromBlob = this.lastCropped?.blob;
+    if (fromBlob instanceof Blob) return fromBlob;
+
+    // 2) Alternativa: convertir desde base64
+    const b64 = this.lastCropped?.base64;
+    if (typeof b64 === 'string' && b64.length) {
+      return base64ToFile(b64); // devuelve Blob
+    }
+
+    return null;
+  }
+
+  private buildSuggestedFileName(mime: string): string {
+    const ext =
+      mime.includes('jpeg') ? 'jpg' :
+        mime.includes('png') ? 'png' :
+          mime.includes('webp') ? 'webp' : 'png';
+
+    // Si tienes el nombre original, úsalo aquí
+    return `image-edited.${ext}`;
+  }
+
+  /**
+   * Devuelve true si se guardó; false si se canceló.
+   * - Usa showSaveFilePicker cuando existe (elige ruta).
+   * - Si no existe, descarga (el usuario elige según su navegador).
+   */
+  private async persistBlobToDisk(blob: Blob, suggestedName: string): Promise<boolean> {
+    const w = window as any;
+
+    // File System Access API (Chrome/Edge/Opera)
+    if (typeof w.showSaveFilePicker === 'function') {
+      try {
+        const handle = await w.showSaveFilePicker({
+          suggestedName,
+          types: [
+            {
+              description: 'Image',
+              accept: { [blob.type || 'image/png']: ['.png', '.jpg', '.jpeg', '.webp'] }
+            }
+          ]
+        });
+
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return true;
+      } catch (e: any) {
+        // AbortError = usuario canceló
+        if (e?.name === 'AbortError') return false;
+        this.dialogService.error('Guardar', 'No se pudo guardar la imagen.');
+        return false;
+      }
+    }
+
+    // Fallback universal: descarga
+    this.downloadBlob(blob, suggestedName);
+    return true;
+  }
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private askLoadNewOrContinue(): void {
+    const config: ODialogConfig = {
+      icon: 'save',
+      okButtonText: 'Cargar nueva',
+      cancelButtonText: 'Seguir editando'
+    };
+
+    this.dialogService.confirm(
+      'Imagen guardada',
+      '¿Quieres cargar una imagen nueva o seguir editando esta?',
+      config
+    );
+
+    this.dialogService.dialogRef.afterClosed().pipe(take(1)).subscribe((loadNew: boolean) => {
+      if (loadNew) {
+        this.resetEditorState();
+        this.selectedFile = null;
+      }
+    });
   }
 
   reset(): void {
