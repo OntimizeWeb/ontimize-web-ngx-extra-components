@@ -32,6 +32,13 @@ export class OImageEditorComponent {
   maxScale = 3;
   uploadMode = false;
 
+  resizeWidth: number | null = null;
+  resizeHeight: number | null = null;
+
+  private naturalWidth: number | null = null;
+  private naturalHeight: number | null = null;
+
+
   constructor(private dialogService: DialogService){}
 
   startReplaceImage(): void {
@@ -134,6 +141,10 @@ export class OImageEditorComponent {
 
   setTool(tool: OImageEditorTool): void {
     this.activeTool = tool;
+
+    if (tool === 'resize') {
+      this.syncResizeInputsFromCurrent();
+    }
   }
 
   onFileInputChange(event: Event): void {
@@ -197,14 +208,40 @@ export class OImageEditorComponent {
     this.maintainAspectRatio = false;
     this.rotationDeg = 0;
     this.scalePercent = 0;
+    this.resizeWidth = null;
+    this.resizeHeight = null;
+    this.naturalWidth = null;
+    this.naturalHeight = null;
   }
 
   onImageCropped(e: ImageCroppedEvent): void {
     this.lastCropped = e;
+    this.syncResizeInputsFromCurrent();
   }
 
-  onImageLoaded(): void {
+  onImageLoaded(img?: any): void {
     this.cropperLoading = false;
+    const w = img?.original?.size?.width ?? img?.width;
+    const h = img?.original?.size?.height ?? img?.height;
+
+    if (typeof w === 'number' && typeof h === 'number') {
+      this.naturalWidth = w;
+      this.naturalHeight = h;
+    }
+
+    this.syncResizeInputsFromCurrent();
+  }
+
+  private syncResizeInputsFromCurrent(): void {
+    // prioridad: tamaño del último crop (si existe)
+    const w = this.lastCropped?.width ?? this.naturalWidth;
+    const h = this.lastCropped?.height ?? this.naturalHeight;
+
+    if (!w || !h) return;
+
+    // solo inicializa si están vacíos (para no pisar lo que el usuario edita)
+    if (this.resizeWidth == null) this.resizeWidth = w;
+    if (this.resizeHeight == null) this.resizeHeight = h;
   }
 
   onLoadImageFailed(): void {

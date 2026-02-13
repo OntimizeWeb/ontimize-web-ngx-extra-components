@@ -10,8 +10,8 @@
   </aside>
 
   <main class="o-image-editor-workspace" fxLayout="column" fxLayoutGap="12px">
-    <div class="o-image-editor-header" fxLayout="row" fxLayoutGap="calc(50% - 118px)" fxLayoutAlign="end end">
-
+    <div class="o-image-editor-header" fxLayout="row" fxLayoutAlign="space-between center">
+      <div fxLayout="column" fxFlex="64px"></div>
       <div *ngIf="activeTool === 'crop' && selectedFile && !uploadMode" fxLayout="row" fxLayoutGap="6px" fxLayoutAlign="center">
         <o-button attr="icon1" type="ICON" icon="rotate_right" matTooltip="Rotate right" (onClick)="rotate()"></o-button>
         <o-button attr="icon1" type="ICON" icon="flip" matTooltip="Flip horizontal" (onClick)="flip()"></o-button>
@@ -68,11 +68,12 @@
       <div *ngIf="activeTool === 'resize' && selectedFile && !uploadMode" fxLayout="row" fxLayoutGap="6px" fxLayoutAlign="center">
         <mat-form-field>
           <mat-label>Width</mat-label>
-          <input matInput>
+          <input matInput type="number" min="1" [(ngModel)]="resizeWidth" [ngModelOptions]="{ standalone: true }">
         </mat-form-field>
+
         <mat-form-field>
           <mat-label>Height</mat-label>
-          <input matInput>
+          <input matInput type="number" min="1" [(ngModel)]="resizeHeight" [ngModelOptions]="{ standalone: true }">
         </mat-form-field>
       </div>
       <div fxLayout="row">
