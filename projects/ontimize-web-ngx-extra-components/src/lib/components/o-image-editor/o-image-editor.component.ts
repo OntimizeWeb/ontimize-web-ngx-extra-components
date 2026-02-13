@@ -1,7 +1,8 @@
-import { Component, ElementRef, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Injector, ViewChild } from '@angular/core';
 import { base64ToFile, ImageCroppedEvent, ImageTransform } from 'ngx-image-cropper';
 import { DialogService, ODialogConfig } from 'ontimize-web-ngx';
 import { take } from 'rxjs';
+import { TranslateExtraComponentsService } from '../../services';
 
 type OImageEditorTool = 'crop' | 'resize' | 'upload';
 
@@ -38,8 +39,11 @@ export class OImageEditorComponent {
   private naturalWidth: number | null = null;
   private naturalHeight: number | null = null;
 
+  protected translateService: TranslateExtraComponentsService;
 
-  constructor(private dialogService: DialogService){}
+  constructor(private dialogService: DialogService, protected injector: Injector) {
+    this.translateService = this.injector.get(TranslateExtraComponentsService);
+  }
 
   startReplaceImage(): void {
     this.uploadMode = true;
@@ -252,7 +256,7 @@ export class OImageEditorComponent {
   async save(): Promise<void> {
     const blob = this.getCroppedBlob();
     if (!blob) {
-      this.dialogService.warn('Guardar', 'No hay imagen recortada para guardar.');
+      this.dialogService.warn('SAVE', 'NOT_IMAGE');
       return;
     }
 
@@ -319,7 +323,9 @@ export class OImageEditorComponent {
       } catch (e: any) {
         // AbortError = usuario canceló
         if (e?.name === 'AbortError') return false;
-        this.dialogService.error('Guardar', 'No se pudo guardar la imagen.');
+        const action = this.getText('SAVE');
+        const message = this.getText('NOT_IMAGE');
+        this.dialogService.error(action, message);
         return false;
       }
     }
@@ -339,15 +345,20 @@ export class OImageEditorComponent {
   }
 
   private askLoadNewOrContinue(): void {
+    const actionNew = this.getText('UPLOAD_NEW');
+    const actionEdit = this.getText('KEEP_EDITING');
+    const saveMessage = this.getText('SAVE_CONFIRM');
+    const question = this.getText('QUESTION');
+
     const config: ODialogConfig = {
       icon: 'save',
-      okButtonText: 'Cargar nueva',
-      cancelButtonText: 'Seguir editando'
+      okButtonText: actionNew,
+      cancelButtonText: actionEdit
     };
 
     this.dialogService.confirm(
-      'Imagen guardada',
-      '¿Quieres cargar una imagen nueva o seguir editando esta?',
+      saveMessage,
+      question,
       config
     );
 
@@ -361,6 +372,13 @@ export class OImageEditorComponent {
 
   reset(): void {
     this.resetEditorState();
+  }
+
+  private getText(text: string): string {
+    if (this.translateService) {
+      return this.translateService.get(text);
+    }
+    return text;
   }
 
 }

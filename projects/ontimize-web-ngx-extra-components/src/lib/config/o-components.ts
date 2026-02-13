@@ -6,6 +6,7 @@ import { OSkeletonComponent } from '../components/o-skeleton/o-skeleton.componen
 import { OntimizeWebModule } from 'ontimize-web-ngx';
 import { ODataViewModule } from '../components/o-data-view/o-data-view.module';
 import { OImageEditorModule } from '../components';
+import { TranslateExtraComponentsService } from '../services';
 
 export const OEXTRACOMPONENTS_DECLARATION_MODULES: any = [
   OSkeletonComponent,
@@ -16,5 +17,11 @@ export const OEXTRACOMPONENTS_IMPORTS_MODULES: any = [
   NgxSkeletonLoaderModule,
   FlexLayoutModule,
   OntimizeWebModule
-]
-export const OEXTRACOMPONENTS_EXPORT_MODULES: any = [ODataViewModule, OImageEditorModule];
+];
+export const OEXTRACOMPONENTS_PROVIDERS: any = [
+  TranslateExtraComponentsService
+];
+export const OEXTRACOMPONENTS_EXPORT_MODULES: any = [
+  ODataViewModule,
+  OImageEditorModule
+];

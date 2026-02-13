@@ -1,11 +1,11 @@
 <div class="o-image-editor" fxLayout="row" fxFlexFill>
 
   <aside class="tools" fxLayout="column" fxLayoutGap="8px">
-    <o-button attr="resize" type="FAB" icon="upload" matTooltip="Upload image" (onClick)="startReplaceImage()">
+    <o-button attr="resize" type="FAB" icon="upload" matTooltip="{{ 'UPLOAD_IMAGE' | oTranslate }}" (onClick)="startReplaceImage()">
     </o-button>
-    <o-button attr="crop" type="FAB" icon="crop" matTooltip="Crop" (onClick)="setTool('crop')">
+    <o-button attr="crop" type="FAB" icon="crop" matTooltip="{{ 'CROP' | oTranslate}}" (onClick)="setTool('crop')">
     </o-button>
-    <o-button attr="resize" type="FAB" icon="photo_size_select_large" matTooltip="Resize" (onClick)="setTool('resize')">
+    <o-button attr="resize" type="FAB" icon="photo_size_select_large" matTooltip="{{ 'RESIZE' | oTranslate}}" (onClick)="setTool('resize')">
     </o-button>
   </aside>
 
@@ -67,19 +67,19 @@
       </div>
       <div *ngIf="activeTool === 'resize' && selectedFile && !uploadMode" fxLayout="row" fxLayoutGap="6px" fxLayoutAlign="center">
         <mat-form-field>
-          <mat-label>Width</mat-label>
+          <mat-label>{{ "WIDTH" | oTranslate}}</mat-label>
           <input matInput type="number" min="1" [(ngModel)]="resizeWidth" [ngModelOptions]="{ standalone: true }">
         </mat-form-field>
 
         <mat-form-field>
-          <mat-label>Height</mat-label>
+          <mat-label>{{ "HEIGHT" | oTranslate}}</mat-label>
           <input matInput type="number" min="1" [(ngModel)]="resizeHeight" [ngModelOptions]="{ standalone: true }">
         </mat-form-field>
       </div>
       <div fxLayout="row">
-        <o-button attr="reset" type="ICON" icon="restart_alt" matTooltip="Reset" (onClick)="reset()">
+        <o-button attr="reset" type="ICON" icon="restart_alt" matTooltip="{{ 'RESET' | oTranslate}}" (onClick)="reset()">
         </o-button>
-        <o-button attr="save" type="ICON" icon="save" matTooltip="Save" (onClick)="save()">
+        <o-button attr="save" type="ICON" icon="save" matTooltip="{{ 'SAVE' | oTranslate}}" (onClick)="save()">
         </o-button>
       </div>
     </div>
@@ -91,9 +91,9 @@
         <div *ngIf="selectedFile && uploadMode" fxLayout="row" fxLayoutAlign="end">
           <o-button attr="cancel_upload" type="ICON" icon="close" matTooltip="Cancel" (onClick)="cancelReplaceImage()"></o-button>
         </div>
-        <span>Drag and drop here</span>
-        <span>OR</span>
-        <o-button attr="select_image" type="RAISED" icon="upload" label="Upload image" (onClick)="$event.stopPropagation(); openFilePicker()">
+        <span>{{ "DRAG_MESSAGE" | oTranslate }}</span>
+        <span>{{ "OR" | oTranslate }}</span>
+        <o-button attr="select_image" type="RAISED" icon="upload" label="UPLOAD_IMAGE" (onClick)="$event.stopPropagation(); openFilePicker()">
         </o-button>
         <input #fileInput type="file" hidden accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onFileInputChange($event)">
       </div>
@@ -121,11 +121,11 @@
 
         <div class="oie-segment">
           <button mat-button type="button" [class.is-active]="cropAdjustMode === 'rotation'" (click)="cropAdjustMode = 'rotation'">
-            Rotation
+            {{ "ROTATION" | oTranslate }}
           </button>
 
           <button mat-button type="button" [class.is-active]="cropAdjustMode === 'scale'" (click)="cropAdjustMode = 'scale'">
-            Scale
+            {{ "SCALE" | oTranslate }}
           </button>
         </div>
 

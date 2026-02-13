@@ -7,3 +7,4 @@ export * from './lib/types/index';
 export * from './lib/util/index';
 export * from './lib/interfaces/index';
 export * from './lib/directives/index';
+export * from './lib/services/index';

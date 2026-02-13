@@ -6,8 +6,7 @@ export const CONFIG: Config = {
   apiEndpoint: '',
   uuid: 'com.ontimize.web.ngx.app-test',
   title: 'App Test',
-  locale: 'en',
-  applicationLocales: ['en'],
+  applicationLocales: ['es', 'en'],
   servicesConfiguration: SERVICE_CONFIG,
   appMenuConfiguration: MENU_CONFIG
 };
