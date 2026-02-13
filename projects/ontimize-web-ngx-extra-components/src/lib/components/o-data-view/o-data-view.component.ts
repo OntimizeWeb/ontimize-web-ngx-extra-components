@@ -1,15 +1,22 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
+import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
 import { ODataViewMode } from '../../types/data-view.types';
 
+export const DEFAULT_INPUTS_O_DATA_VIEW = [
+  'toggleButton: toggle-button',
+  'toggleOnToolbar: toggle-on-toolbar',
+  'toggleFloatable: toggle-floatable'
+];
+
 @Component({
   selector: 'o-data-view',
   templateUrl: './o-data-view.component.html',
   styleUrls: ['./o-data-view.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
+  inputs: DEFAULT_INPUTS_O_DATA_VIEW
 })
 
 export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
@@ -25,13 +32,15 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   tableTpl?: ODataViewTableColumnsDirective;
 
   @Input('default-view') defaultView?: ODataViewMode;
-  @Input('toggle-on-toolbar') toggleOnToolbar?: string;
-  @Input('toggle-floatable') toggleFloatable?: string;
-  @Input('toggle-button') toggleButton?: string;
 
-  protected showToggleOnToolbar: boolean = false;
-  protected showToggleFloatable: boolean = false;
-  protected showToggleButton: boolean = true;
+  @BooleanInputConverter()
+  public toggleButton = true;
+
+  @BooleanInputConverter()
+  public toggleOnToolbar = false;
+
+  @BooleanInputConverter()
+  public toggleFloatable = false;
 
   @Input() attr?: string;
   @Input() columns?: string;
@@ -184,9 +193,18 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   ngOnInit(): void {
     if (!this.defaultView) this.defaultView = 'table';
-    this.showToggleOnToolbar = Util.parseBoolean(this.toggleOnToolbar, false);
-    this.showToggleFloatable = Util.parseBoolean(this.toggleFloatable, false);
-    this.showToggleButton = Util.parseBoolean(this.toggleButton, true);
+  }
+
+  get inlineToggleVisible(): boolean {
+    return this.toggleButton && !this.toggleFloatable && !this.toggleOnToolbar;
+  }
+
+  get toolbarToggleVisible(): boolean {
+    return this.toggleButton && !this.toggleFloatable && this.toggleOnToolbar;
+  }
+
+  get floatableToggleVisible(): boolean {
+    return this.toggleButton && this.toggleFloatable;
   }
 
   ngAfterViewInit(): void {

@@ -1,6 +1,6 @@
-<div class="o-data-view-container">
+<div class="o-data-view-container bg-level-1">
 
-  <o-button-toggle-group #toggleGroup *ngIf="!showToggleOnToolbar && !showToggleFloatable && showToggleButton" class="button-toggle-group"
+  <o-button-toggle-group #toggleGroup *ngIf="inlineToggleVisible" class="button-toggle-group"
     attr="toggleGroup" multiple="no" [value]="defaultView" (onChange)="changeView($event)">
     <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
     <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
@@ -37,7 +37,7 @@
       [virtual-scroll]="r_table_virtualScroll" [visible-columns]="r_table_visibleColumns"
       [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons" [show-charts-on-demand-option]="r_table_showChartsOnDemandOption" show-title="yes">
 
-      <o-button-toggle-group #toggleGroup *ngIf="showToggleOnToolbar" class="toggle-toolbar" attr="toggleGroup" o-table-toolbar position="end"
+      <o-button-toggle-group #toggleGroup *ngIf="toolbarToggleVisible" class="toggle-toolbar" attr="toggleGroup" o-table-toolbar position="end"
         multiple="no" [value]="defaultView" (onChange)="changeView($event)">
         <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
         <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
@@ -60,7 +60,7 @@
       [show-footer]="r_grid_showFooter" [show-page-size]="r_grid_showPageSize" [sort-column]="r_grid_sortColumn"
       [sortable-columns]="r_grid_sortableColumns">
 
-      <o-button-toggle-group #toggleGroup *ngIf="showToggleOnToolbar" class="toggle-toolbar" attr="toggleGroup" o-grid-toolbar position="end"
+      <o-button-toggle-group #toggleGroup *ngIf="toolbarToggleVisible" class="toggle-toolbar" attr="toggleGroup" o-grid-toolbar position="end"
         multiple="no" [value]="defaultView" (onChange)="changeView($event)">
         <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
         <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
@@ -73,7 +73,7 @@
 
     </o-grid>
 
-    <o-button-toggle-group #toggleGroup *ngIf="showToggleFloatable" class="button-toggle-floatable" attr="toggleGroup" multiple="no"
+    <o-button-toggle-group #toggleGroup *ngIf="floatableToggleVisible" class="button-toggle-floatable" attr="toggleGroup" multiple="no"
       [value]="defaultView" (onChange)="changeView($event)">
       <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
       <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>

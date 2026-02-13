@@ -3,12 +3,15 @@
   flex-direction: row;
   justify-content: flex-end;
   margin-bottom: 8px;
+  padding-top: .5%;
+  padding-right: .5%;
 }
 
 .button-toggle-floatable {
-  position: fixed;
-  left: calc(50% + 72px);
-  bottom: 16px;
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translate(-50%, -50%);
   z-index: 1000;
 }
 
@@ -53,11 +56,11 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .data-view-grid {
   overflow: auto;
-  background-color: white;
 
   .o-grid-container {
     padding: 0 .5%;
