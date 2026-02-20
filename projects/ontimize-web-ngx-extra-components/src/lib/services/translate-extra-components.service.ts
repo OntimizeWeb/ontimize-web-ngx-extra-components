@@ -6,49 +6,45 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class TranslateExtraComponentsService {
-  protected oTranslateService: OTranslateService;
-  protected currentLang: string = 'en';
+  private currentLang = 'en';
+  private loadedLangs = new Set<string>();
 
-  private static initialized = false;
-  constructor(
-    public translate: OTranslateService
-  ) {
-    this.translate.onLanguageChanged.subscribe((event: Event) => {
-      TranslateExtraComponentsService.initialized = false;
+  constructor(private oTranslate: OTranslateService) {
+    // Carga inicial
+    this.loadTranslations();
+
+    // Recarga cuando cambia el idioma
+    this.oTranslate.onLanguageChanged.subscribe(() => {
       this.loadTranslations();
     });
   }
 
-  loadTranslations() {
-    if (!TranslateExtraComponentsService.initialized) {
-      const lang = this.translate.getCurrentLang();
-      this.translate.getNgxTranslateService().setTranslation(lang, MAP[lang], true); // `true` => merge
-      TranslateExtraComponentsService.initialized = true;
+  private loadTranslations(): void {
+    const lang = this.oTranslate.getCurrentLang() || 'en';
+    this.currentLang = lang;
+
+    // Evita setTranslation repetido por idioma (opcional)
+    if (this.loadedLangs.has(lang)) return;
+
+    const dict = MAP[lang] ?? MAP['en'];
+    if (dict) {
+      this.oTranslate.getNgxTranslateService().setTranslation(lang, dict, true); // merge
+      this.loadedLangs.add(lang);
     }
   }
 
-  public get(text: string): string {
-    let textTranslated;
-    try {
-      if (this.oTranslateService) {
-        const bundle = this.oTranslateService.get(text);
-        if (bundle && bundle['value']) {
-          textTranslated = bundle['value'];
-        }
-        textTranslated = textTranslated === text ? undefined : textTranslated;
-      }
-    } catch (e) {
-      textTranslated = undefined;
-    }
-    if (!textTranslated) {
-      const bundle = MAP[this.currentLang];
-      if (bundle && bundle[text]) {
-        textTranslated = bundle[text];
-      } else {
-        textTranslated = text;
-      }
-    }
-    return textTranslated;
-  }
+  public get(key: string, values: any[] = []): string {
+    // Asegura que el diccionario de ese idioma está cargado
+    this.loadTranslations();
 
+    // OTranslateService.get devuelve string (no bundle)
+    const translated = this.oTranslate.get(key, values);
+
+    // Si no existe, OTranslateService suele devolver la key tal cual
+    if (translated && translated !== key) return translated;
+
+    // Fallback a tu MAP (ya con currentLang actualizado)
+    const dict = MAP[this.currentLang] ?? MAP['en'];
+    return (dict && dict[key]) ? dict[key] : key;
+  }
 }

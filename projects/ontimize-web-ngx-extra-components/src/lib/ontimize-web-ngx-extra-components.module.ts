@@ -9,9 +9,5 @@ import { TranslateExtraComponentsService } from './services';
   exports: [...OEXTRACOMPONENTS_EXPORT_MODULES]
 })
 
-export class OExtraComponentsModule {
+export class OExtraComponentsModule {}
 
-  constructor(private readonly translationService: TranslateExtraComponentsService) {
-    this.translationService.loadTranslations();
-  }
-}

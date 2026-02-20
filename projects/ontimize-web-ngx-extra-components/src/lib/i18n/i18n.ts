@@ -7,6 +7,7 @@ export const MAP = {
     'DRAG_MESSAGE': 'Drag and drop here',
     'OR': 'OR',
     'UPLOAD_IMAGE': 'Upload image',
+    'UPLOAD': 'Upload',
     'ROTATION': 'Rotation',
     'SCALE': 'Scale',
     'CROP': 'Crop',
@@ -17,7 +18,12 @@ export const MAP = {
     'UPLOAD_NEW': 'Upload new',
     'KEEP_EDITING': 'Keep editing',
     'SAVE_CONFIRM': 'Image saved',
-    'QUESTION': 'Upload a new image or keep editing?'
+    'QUESTION': 'Upload a new image or keep editing?',
+    'FLIP': 'Flip horizontal',
+    'ROTATE_90': 'Rotate 90°',
+    'HORIZONTAL': 'Horizontal',
+    'VERTICAL': 'Vertical',
+    'AVATAR': 'Avatar'
   },
 
   // Spanish
@@ -27,17 +33,23 @@ export const MAP = {
     'DRAG_MESSAGE': 'Arrastra y suelta aquí',
     'OR': 'O',
     'UPLOAD_IMAGE': 'Subir imagen',
+    'UPLOAD': 'Subir',
     'ROTATION': 'Rotar',
     'SCALE': 'Escalar',
     'CROP': 'Cortar',
     'RESIZE': 'Aspecto',
-    'RESET': 'Resetear',
+    'RESET': 'Reestablecer',
     'SAVE': 'Guardar',
     'NOT_IMAGE': 'No hay imagen recortada para guardar',
     'UPLOAD_NEW': 'Cargar nueva',
     'KEEP_EDITING': 'Seguir editando',
     'SAVE_CONFIRM': 'Imagen guardada',
-    'QUESTION': '¿Quieres seguir editando esta o subir una nueva imagen?'
+    'QUESTION': '¿Quieres seguir editando esta o subir una nueva imagen?',
+    'FLIP': 'Voltear horizontal',
+    'ROTATE_90': 'Rotar 90°',
+    'HORIZONTAL': 'Horizontal',
+    'VERTICAL': 'Vertical',
+    'AVATAR': 'Avatar'
   }
 
 };
