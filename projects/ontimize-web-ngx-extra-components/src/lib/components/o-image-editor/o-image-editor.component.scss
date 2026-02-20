@@ -1,33 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+
 .o-image-editor {
-  gap: 24px;
-  padding: 24px;
-  background-color: #FFFFFF;
+  padding: 32px;
+  overflow: hidden;
 }
 
-.o-image-editor-header {
-  padding-left: 10px;
-}
-
-.tools {
-  padding-top: 68px;
-  gap: 12px;
-}
-
-.o-image-editor-workspace {
-  flex: 1;
-  min-width: 0;
+.o-image-editor-content {
   min-height: 0;
   overflow: hidden;
 }
 
-.o-image-editor-upload-dialog {
-  padding: 16px;
+.o-image-editor-body {
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
 }
 
-.ratio-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.o-image-editor-load-zone.is-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .oie-adjust-bar {
@@ -38,92 +33,145 @@
   padding: 10px 0 0 10px;
 }
 
-.oie-dot-slider {
-  width: 552px;
-}
-
 .oie-dot-track {
   position: relative;
+  width: 328px;
   height: 22px;
+  overflow: visible;
+}
+
+.oie-dots {
+  height: 100%;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  --dot-step: 22px;
-
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.55) 1.2px, transparent 1.3px);
-  background-size: var(--dot-step) 6px;
-  background-repeat: repeat-x;
-
-  background-position: calc(50% - (var(--dot-step) / 2));
 }
 
-.oie-dot-track.is-scale {
-  background-image: none;
+.oie-dots-track {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  will-change: transform;
 }
 
-.oie-dot-track.is-scale::before {
-  content: '';
+.oie-dots--left .oie-dots-track {
+  flex-direction: row-reverse;
+}
+
+.oie-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #00000029;
+  flex: 0 0 auto;
+}
+
+.oie-dot--big {
+  width: 6px;
+  height: 6px;
+  background: #0000007A;
+}
+
+.oie-center {
+  position: relative;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.oie-dot-value {
   position: absolute;
   left: 50%;
-  right: 0;
-  top: 0;
-  height: 100%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  line-height: 14px;
+  white-space: nowrap;
+  color: rgba(0, 0, 0, 0.65);
+}
 
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.55) 1.2px, transparent 1.3px);
-  background-size: var(--dot-step) 6px;
-  background-repeat: repeat-x;
-
-  background-position: 0 12px;
+.oie-dot-indicator {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 8px);
+  transform: translate(-50%, -100%);
+  width: 2px;
+  height: 10px;
+  border-radius: 2px;
+  background: #0000007A;
 }
 
 .oie-dot-input {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
   opacity: 0;
   cursor: pointer;
+  z-index: 4;
 }
 
 .oie-dot-input.is-scale {
-  left: 50%;
-  width: 50%;
+  left: 135px;
+  width: calc(328px - 135px);
   right: auto;
-  top: 0;
-  bottom: 0;
 }
 
-.oie-dot-indicator {
-  position: absolute;
-  top: 2px;
-  height: 12px;
-  width: 1px;
-  background: rgba(0, 0, 0, 0.55);
-  transform: translateX(-50%);
-}
-
-.oie-dot-value {
-  position: absolute;
-  top: -12px;
-  transform: translate(-50%, 0);
-  font-size: 12px;
-  opacity: 0.75;
-  user-select: none;
-  white-space: nowrap;
-  padding-left: 5px;
-}
-
-:host ::ng-deep .oie-segment {
+.oie-selector {
   display: inline-flex;
-  gap: 8px;
+  gap: 16px;
 }
 
-:host ::ng-deep .oie-segment button.mat-button,
-:host ::ng-deep .oie-segment button.mat-mdc-button {
+.oie-selector button.mat-button,
+.oie-selector button.mat-mdc-button {
   min-width: auto;
   width: 80px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
 }
 
-/* “seleccionado” (equivale a mat-button-toggle-checked) */
-:host ::ng-deep .oie-segment button.is-active {
-  background: rgba(0, 0, 0, 0.16);
+.oie-selector.ratio button.mat-button,
+.oie-selector.ratio button.mat-mdc-button {
+  width: auto;
+}
+
+.oie-selector button.is-active {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+.oie-selector button.mat-button[disabled],
+.oie-selector button.mat-mdc-button[disabled] {
+  opacity: 0.45;
+}
+
+.tools-toggle {
+  border: 0;
+
+  .mat-button-toggle {
+    width: 72px;
+    height: 64px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+
+    mat-icon {
+      padding-top: 10px;
+    }
+
+    span {
+      line-height: 20px;
+      padding-bottom: 10px;
+      font-size: 13px;
+    }
+  }
+}
+
+.tools-toggle.mat-button-toggle-group-appearance-standard .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
+  padding: 0;
+}
+
+.tools-toggle .mat-button-toggle.mat-button-toggle-checked {
+  background: #1464A5;
+  color: #fff;
+  border-color: transparent;
 }

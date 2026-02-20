@@ -1,22 +1,27 @@
-import { Component, ElementRef, Injector, ViewChild } from '@angular/core';
-import { base64ToFile, ImageCroppedEvent, ImageTransform } from 'ngx-image-cropper';
+import { ChangeDetectorRef, Component, ElementRef, Injector, NgZone, ViewChild, ViewEncapsulation } from '@angular/core';
+import { base64ToFile, CropperPosition, ImageCroppedEvent, ImageCropperComponent, ImageTransform } from 'ngx-image-cropper';
 import { DialogService, ODialogConfig } from 'ontimize-web-ngx';
 import { take } from 'rxjs';
 import { TranslateExtraComponentsService } from '../../services';
 
-type OImageEditorTool = 'crop' | 'resize' | 'upload';
+type EditorTool = 'crop' | 'resize';
+type ToolsUI = EditorTool | 'upload';
+type ResizePreset = 'horizontal' | 'vertical' | 'avatar';
+type ResizeRatioPreset = 'custom' | '1:1' | '2:1' | '3:2' | '4:3' | '5:4' | '16:9';
 
 @Component({
   selector: 'o-image-editor',
   templateUrl: './o-image-editor.component.html',
   styleUrls: ['./o-image-editor.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class OImageEditorComponent {
 
   @ViewChild('fileInput', { static: false }) fileInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('cropper') private cropperComp?: ImageCropperComponent;
 
-  activeTool: OImageEditorTool = 'crop';
-  activeIndex = 0;
+  activeTool: EditorTool = 'crop';
+  uploadOverlay = false;
   selectedFile: File | null = null;
   dragOver = false;
   cropperLoading = false;
@@ -27,11 +32,32 @@ export class OImageEditorComponent {
   lastCropped?: ImageCroppedEvent;
   rotationDeg = 0;
   cropAdjustMode: 'rotation' | 'scale' = 'rotation';
-
+  resizeLocked = false;
+  private lockedW: number | null = null;
+  private lockedH: number | null = null;
+  resizePreset: ResizePreset | null = null;
+  resizeRatioPreset: ResizeRatioPreset | null = 'custom';
+  roundCropper = false;
   scalePercent = 0;
   minScale = 1;
   maxScale = 3;
-  uploadMode = false;
+  dotsTape = Array.from({ length: 80 });
+  private readonly VIEWPORT_W = 135;
+  private readonly GAP = 4;
+  private readonly SMALL = 4;
+  private readonly BIG = 6;
+  private readonly INIT_CROPPER: CropperPosition = {
+    x1: 0,
+    y1: 0,
+    x2: 10_000_000,
+    y2: 10_000_000
+  };
+
+  cropperPosition: CropperPosition = { ...this.INIT_CROPPER };
+
+  private cropperIsReady = false;
+  private displayedW: number | null = null;
+  private displayedH: number | null = null;
 
   resizeWidth: number | null = null;
   resizeHeight: number | null = null;
@@ -41,18 +67,150 @@ export class OImageEditorComponent {
 
   protected translateService: TranslateExtraComponentsService;
 
-  constructor(private dialogService: DialogService, protected injector: Injector) {
+  constructor(private dialogService: DialogService, protected injector: Injector, private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,) {
     this.translateService = this.injector.get(TranslateExtraComponentsService);
   }
 
-  startReplaceImage(): void {
-    this.uploadMode = true;
-    this.dragOver = false;
+  setResizePreset(preset: ResizePreset | null): void {
+    if (this.resizeLocked) return;
+
+    this.resizePreset = preset;
+
+    if (preset === 'avatar') {
+      this.resizeRatioPreset = '1:1';
+    } else {
+      if (!this.resizeRatioPreset) {
+        this.resizeRatioPreset = '16:9';
+      }
+    }
+
+    this.applyResizeAspectFromState();
   }
 
-  cancelReplaceImage(): void {
-    this.uploadMode = false;
-    this.dragOver = false;
+  setResizeRatioPreset(preset: ResizeRatioPreset | null): void {
+    if (this.resizeLocked) return;
+
+    this.resizeRatioPreset = preset;
+
+    if (!this.resizePreset) {
+      this.resizePreset = 'horizontal';
+    }
+
+    this.applyResizeAspectFromState();
+  }
+
+  private getBaseRatio(preset: ResizeRatioPreset): number | null {
+    switch (preset) {
+      case '1:1': return 1;
+      case '2:1': return 2;
+      case '3:2': return 3 / 2;
+      case '4:3': return 4 / 3;
+      case '5:4': return 5 / 4;
+      case '16:9': return 16 / 9;
+    }
+  }
+
+  private applyResizeAspectFromState(): void {
+    if (this.resizePreset == null || this.resizeRatioPreset == null) {
+      this.roundCropper = false;
+      this.setCropRatio(null);
+      return;
+    }
+
+    if (this.resizePreset === 'avatar') {
+      this.roundCropper = true;
+      this.setCropRatio(1);
+      return;
+    }
+
+    this.roundCropper = false;
+
+    if (this.resizeRatioPreset === 'custom') {
+      this.setCropRatio(null);
+      return;
+    }
+
+    const base = this.getBaseRatio(this.resizeRatioPreset)!;
+    const ratio = this.resizePreset === 'vertical' ? (1 / base) : base;
+    this.setCropRatio(ratio);
+  }
+
+  toggleResizeLock(): void {
+    this.resizeLocked = !this.resizeLocked;
+
+    if (this.resizeLocked) {
+      const w = this.resizeWidth ?? this.lastCropped?.width ?? this.naturalWidth;
+      const h = this.resizeHeight ?? this.lastCropped?.height ?? this.naturalHeight;
+
+      this.lockedW = w ?? null;
+      this.lockedH = h ?? null;
+    } else {
+      this.lockedW = null;
+      this.lockedH = null;
+    }
+  }
+
+  get cropperStaticWidth(): number {
+    return this.resizeLocked && this.lockedW ? this.lockedW : 0;
+  }
+  get cropperStaticHeight(): number {
+    return this.resizeLocked && this.lockedH ? this.lockedH : 0;
+  }
+
+  get toolsValue(): ToolsUI {
+    return this.uploadOverlay ? 'upload' : this.activeTool;
+  }
+
+  isBig(i: number): boolean {
+    return (i + 1) % 5 === 0;
+  }
+
+  private dotWidth(i: number): number {
+    return this.isBig(i) ? this.BIG : this.SMALL;
+  }
+
+  private tapeWidthPx(count: number): number {
+    let w = 0;
+    for (let i = 0; i < count; i++) w += this.dotWidth(i);
+    w += (count - 1) * this.GAP;
+    return w;
+  }
+
+  private clamp(v: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  get rotateDotsTranslatePx(): number {
+    if (this.cropAdjustMode === 'scale') return 0;
+
+    const min = Number(this.adjustMin);
+    const max = Number(this.adjustMax);
+    const val = Number(this.adjustValue);
+
+    if (!isFinite(min) || !isFinite(max) || max === min || !isFinite(val)) return 0;
+
+    const t = (this.clamp(val, min, max) - min) / (max - min);
+    const tapeW = this.tapeWidthPx(this.dotsTape.length);
+    const extra = Math.max(0, tapeW - this.VIEWPORT_W);
+
+    return (0.5 - t) * extra;
+  }
+
+  get scaleDotsTranslatePx(): number {
+    if (this.cropAdjustMode !== 'scale') return 0;
+
+    const min = Number(this.adjustMin);
+    const max = Number(this.adjustMax);
+    const val = Number(this.adjustValue);
+
+    if (!isFinite(min) || !isFinite(max) || max === min || !isFinite(val)) return 0;
+
+    const t = (this.clamp(val, min, max) - min) / (max - min);
+    const tapeW = this.tapeWidthPx(this.dotsTape.length);
+    const extra = Math.max(0, tapeW - this.VIEWPORT_W);
+
+    return -t * extra;
   }
 
   private normalizeDeg(v: number): number {
@@ -79,7 +237,89 @@ export class OImageEditorComponent {
     this.canvasRotation = (this.canvasRotation + 1) % 4;
   }
 
-  /** Slider input */
+  onCropperReady(dim: any): void {
+    this.cropperIsReady = true;
+    this.displayedW = typeof dim?.width === 'number' ? dim.width : null;
+    this.displayedH = typeof dim?.height === 'number' ? dim.height : null;
+  }
+
+  onResizeBoxCommit(changed: 'w' | 'h'): void {
+    if (this.resizeLocked) return;
+    if (this.activeTool !== 'resize') return;
+
+    const w0 = this.toPx(this.resizeWidth);
+    const h0 = this.toPx(this.resizeHeight);
+    if (w0 == null || h0 == null) return;
+
+    let w = w0;
+    let h = h0;
+
+    // Si hay ratio activo, ajusta el otro campo para mantenerlo
+    if (this.maintainAspectRatio && this.aspectRatio) {
+      if (changed === 'w') {
+        h = Math.max(1, Math.round(w / this.aspectRatio));
+        this.resizeHeight = h;
+      } else {
+        w = Math.max(1, Math.round(h * this.aspectRatio));
+        this.resizeWidth = w;
+      }
+    }
+
+    this.applyCropperBoxSize(w, h);
+  }
+
+  private toPx(v: any): number | null {
+    const n = Number(v);
+    if (!isFinite(n)) return null;
+    const r = Math.round(n);
+    return r > 0 ? r : null;
+  }
+
+  private applyCropperBoxSize(targetW: number, targetH: number): void {
+    const current = this.lastCropped?.cropperPosition;
+    const imgW = this.displayedW;
+    const imgH = this.displayedH;
+
+    // Centro actual (si no existe, centro del displayed image)
+    const cx = current ? (current.x1 + current.x2) / 2 : (imgW ? imgW / 2 : targetW / 2);
+    const cy = current ? (current.y1 + current.y2) / 2 : (imgH ? imgH / 2 : targetH / 2);
+
+    // No dejes que el tamaño supere el displayed image si lo conocemos
+    let w = targetW;
+    let h = targetH;
+    if (imgW != null) w = Math.min(w, imgW);
+    if (imgH != null) h = Math.min(h, imgH);
+
+    let x1 = cx - w / 2;
+    let x2 = cx + w / 2;
+    let y1 = cy - h / 2;
+    let y2 = cy + h / 2;
+
+    // Ajuste para que quede dentro
+    if (imgW != null) {
+      if (x1 < 0) { x2 -= x1; x1 = 0; }
+      if (x2 > imgW) { x1 -= (x2 - imgW); x2 = imgW; }
+      x1 = Math.max(0, x1);
+      x2 = Math.min(imgW, x2);
+    }
+    if (imgH != null) {
+      if (y1 < 0) { y2 -= y1; y1 = 0; }
+      if (y2 > imgH) { y1 -= (y2 - imgH); y2 = imgH; }
+      y1 = Math.max(0, y1);
+      y2 = Math.min(imgH, y2);
+    }
+
+    // IMPORTANT: objeto nuevo cada vez
+    this.cropperPosition = {
+      x1: Math.round(x1),
+      y1: Math.round(y1),
+      x2: Math.round(x2),
+      y2: Math.round(y2)
+    };
+
+    this.refreshCropperLayout();
+  }
+
   onAdjustInput(raw: string): void {
     const v = Number(raw);
 
@@ -90,7 +330,6 @@ export class OImageEditorComponent {
     }
   }
 
-  /** Props del slider según modo */
   get adjustMin(): number {
     return this.cropAdjustMode === 'rotation' ? -180 : 0;
   }
@@ -129,36 +368,47 @@ export class OImageEditorComponent {
     }
   }
 
-  isRatioSelected(ratio: number | null): boolean {
-    if (ratio == null) {
-      return !this.maintainAspectRatio;
-    }
-    if (!this.maintainAspectRatio || this.aspectRatio == null) return false;
-
-    const EPS = 0.0001;
-    return Math.abs(this.aspectRatio - ratio) < EPS;
-  }
-
   openFilePicker(): void {
     this.fileInput?.nativeElement.click();
   }
 
-  setTool(tool: OImageEditorTool): void {
-    this.activeTool = tool;
+  private refreshCropperLayout(): void {
+    this.cdr.detectChanges();
 
-    if (tool === 'resize') {
+    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+      this.cropperComp?.onResize();
+      window.dispatchEvent(new Event('resize'));
+    });
+  }
+
+  onToolChange(value: ToolsUI): void {
+    if (value === 'upload') {
+      this.uploadOverlay = true;
+      this.dragOver = false;
+      return;
+    }
+
+    this.uploadOverlay = false;
+    this.activeTool = value;
+
+    if (value === 'resize') {
       this.syncResizeInputsFromCurrent();
     }
+
+    this.refreshCropperLayout();
   }
 
   onFileInputChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
+    input.value = '';
     if (!file) return;
 
-    this.loadFile(file);
-    this.uploadMode = false;
-    input.value = '';
+    const ok = this.loadFile(file);
+    if (ok) {
+      this.uploadOverlay = false;
+      this.activeTool = 'crop';
+    }
   }
 
   onDragOver(ev: DragEvent): void {
@@ -178,30 +428,22 @@ export class OImageEditorComponent {
     const file = ev.dataTransfer?.files?.[0] ?? null;
     if (!file) return;
 
-    this.loadFile(file);
-    this.uploadMode = false;
-  }
-
-  select(index: number): void {
-    this.activeIndex = index;
-  }
-
-  private loadFile(file: File): void {
-    if (!file.type?.startsWith('image/')) {
-      console.warn('[o-image-editor] Not an image:', file.type);
-      return;
+    const ok = this.loadFile(file);
+    if (ok) {
+      this.uploadOverlay = false;
+      this.activeTool = 'crop';
     }
+  }
 
+  private loadFile(file: File): boolean {
+    if (!file.type?.startsWith('image/')) return false;
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!allowed.includes(file.type)) {
-      console.warn('[o-image-editor] Unsupported type:', file.type);
-      return;
-    }
+    if (!allowed.includes(file.type)) return false;
 
     this.resetEditorState();
-
     this.selectedFile = file;
     this.cropperLoading = true;
+    return true;
   }
 
   private resetEditorState(): void {
@@ -216,15 +458,30 @@ export class OImageEditorComponent {
     this.resizeHeight = null;
     this.naturalWidth = null;
     this.naturalHeight = null;
+    this.roundCropper = false;
+    this.resizePreset = null;
+    this.resizeLocked = false;
+    this.lockedW = null;
+    this.lockedH = null;
+    this.resizeRatioPreset = 'custom';
+    this.cropperPosition = { ...this.INIT_CROPPER };
+    this.cropperIsReady = false;
+    this.displayedW = null;
+    this.displayedH = null;
   }
 
   onImageCropped(e: ImageCroppedEvent): void {
     this.lastCropped = e;
+    if (!this.resizeLocked) {
+      if (typeof e.width === 'number') this.resizeWidth = e.width;
+      if (typeof e.height === 'number') this.resizeHeight = e.height;
+    }
     this.syncResizeInputsFromCurrent();
   }
 
   onImageLoaded(img?: any): void {
     this.cropperLoading = false;
+
     const w = img?.original?.size?.width ?? img?.width;
     const h = img?.original?.size?.height ?? img?.height;
 
@@ -234,16 +491,17 @@ export class OImageEditorComponent {
     }
 
     this.syncResizeInputsFromCurrent();
+    this.refreshCropperLayout();
   }
 
   private syncResizeInputsFromCurrent(): void {
-    // prioridad: tamaño del último crop (si existe)
+    if (this.resizeLocked) return;
+
     const w = this.lastCropped?.width ?? this.naturalWidth;
     const h = this.lastCropped?.height ?? this.naturalHeight;
 
     if (!w || !h) return;
 
-    // solo inicializa si están vacíos (para no pisar lo que el usuario edita)
     if (this.resizeWidth == null) this.resizeWidth = w;
     if (this.resizeHeight == null) this.resizeHeight = h;
   }
@@ -254,7 +512,7 @@ export class OImageEditorComponent {
   }
 
   async save(): Promise<void> {
-    const blob = this.getCroppedBlob();
+    const blob = await this.getFinalBlob();
     if (!blob) {
       this.dialogService.warn('SAVE', 'NOT_IMAGE');
       return;
@@ -264,7 +522,6 @@ export class OImageEditorComponent {
 
     const saved = await this.persistBlobToDisk(blob, suggestedName);
     if (!saved) {
-      // El usuario canceló el guardado (o hubo AbortError)
       return;
     }
 
@@ -272,17 +529,62 @@ export class OImageEditorComponent {
   }
 
   private getCroppedBlob(): Blob | null {
-    // 1) Preferible: si ngx-image-cropper te entrega blob
     const fromBlob = this.lastCropped?.blob;
     if (fromBlob instanceof Blob) return fromBlob;
 
-    // 2) Alternativa: convertir desde base64
     const b64 = this.lastCropped?.base64;
     if (typeof b64 === 'string' && b64.length) {
-      return base64ToFile(b64); // devuelve Blob
+      return base64ToFile(b64);
     }
 
     return null;
+  }
+
+  private async getFinalBlob(): Promise<Blob | null> {
+    const base = this.getCroppedBlob();
+    if (!base) return null;
+
+    if (!this.roundCropper) return base;
+
+    try {
+      return await this.makeCircularPng(base);
+    } catch (e) {
+      console.error('[o-image-editor] makeCircularPng failed', e);
+      return base;
+    }
+  }
+
+  private async makeCircularPng(src: Blob): Promise<Blob> {
+    const img = await this.blobToHtmlImage(src);
+
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    const size = Math.min(w, h);
+
+    const sx = Math.max(0, (w - size) / 2);
+    const sy = Math.max(0, (h - size) / 2);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D context not available');
+
+    ctx.clearRect(0, 0, size, size);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+
+    ctx.drawImage(img, sx, sy, size, size, 0, 0, size, size);
+    ctx.restore();
+
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('canvas.toBlob returned null'))), 'image/png', 0.95);
+    });
   }
 
   private buildSuggestedFileName(mime: string): string {
@@ -291,37 +593,46 @@ export class OImageEditorComponent {
         mime.includes('png') ? 'png' :
           mime.includes('webp') ? 'webp' : 'png';
 
-    // Si tienes el nombre original, úsalo aquí
-    return `image-edited.${ext}`;
+    return `image_edited.${ext}`;
   }
 
-  /**
-   * Devuelve true si se guardó; false si se canceló.
-   * - Usa showSaveFilePicker cuando existe (elige ruta).
-   * - Si no existe, descarga (el usuario elige según su navegador).
-   */
   private async persistBlobToDisk(blob: Blob, suggestedName: string): Promise<boolean> {
     const w = window as any;
 
-    // File System Access API (Chrome/Edge/Opera)
     if (typeof w.showSaveFilePicker === 'function') {
       try {
         const handle = await w.showSaveFilePicker({
           suggestedName,
           types: [
             {
-              description: 'Image',
-              accept: { [blob.type || 'image/png']: ['.png', '.jpg', '.jpeg', '.webp'] }
+              description: 'PNG image',
+              accept: { 'image/png': ['.png'] }
+            },
+            {
+              description: 'JPEG image',
+              accept: { 'image/jpeg': ['.jpg', '.jpeg'] }
+            },
+            {
+              description: 'WebP image',
+              accept: { 'image/webp': ['.webp'] }
             }
           ]
         });
 
+        // 👇 El usuario elige extensión/tipo; convertimos si hace falta
+        const targetMime = this.mimeFromFilename(handle?.name) ?? (blob.type || 'image/png');
+
+        const finalBlob = await this.convertBlobToMime(blob, targetMime, {
+          // Si estás en avatar y el usuario elige JPEG, no hay alpha → fondo blanco
+          background: (this.roundCropper && targetMime === 'image/jpeg') ? '#ffffff' : null
+        });
+
         const writable = await handle.createWritable();
-        await writable.write(blob);
+        await writable.write(finalBlob);
         await writable.close();
         return true;
+
       } catch (e: any) {
-        // AbortError = usuario canceló
         if (e?.name === 'AbortError') return false;
         const action = this.getText('SAVE');
         const message = this.getText('NOT_IMAGE');
@@ -330,9 +641,73 @@ export class OImageEditorComponent {
       }
     }
 
-    // Fallback universal: descarga
+    // Fallback universal: descarga (aquí no hay desplegable de formatos)
     this.downloadBlob(blob, suggestedName);
     return true;
+  }
+
+  private mimeFromFilename(name?: string): string | null {
+    if (!name) return null;
+    const ext = name.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'png': return 'image/png';
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg';
+      case 'webp': return 'image/webp';
+      default: return null;
+    }
+  }
+
+  private blobToHtmlImage(blob: Blob): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = (err) => { URL.revokeObjectURL(url); reject(err); };
+      img.src = url;
+    });
+  }
+
+  private async convertBlobToMime(
+    src: Blob,
+    targetMime: string,
+    opts?: { background?: string | null }
+  ): Promise<Blob> {
+    const normalized = targetMime === 'image/jpg' ? 'image/jpeg' : targetMime;
+
+    // Si ya es el tipo pedido, no hacemos nada
+    if ((src.type || '') === normalized) return src;
+
+    const img = await this.blobToHtmlImage(src);
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D context not available');
+
+    // Si hay background (p.ej. avatar -> jpeg), rellenamos antes
+    if (opts?.background) {
+      ctx.fillStyle = opts.background;
+      ctx.fillRect(0, 0, w, h);
+    } else {
+      ctx.clearRect(0, 0, w, h);
+    }
+
+    ctx.drawImage(img, 0, 0, w, h);
+
+    const quality = (normalized === 'image/jpeg' || normalized === 'image/webp') ? 0.95 : undefined;
+
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        b => (b ? resolve(b) : reject(new Error('canvas.toBlob returned null'))),
+        normalized,
+        quality as any
+      );
+    });
   }
 
   private downloadBlob(blob: Blob, filename: string): void {
@@ -371,7 +746,42 @@ export class OImageEditorComponent {
   }
 
   reset(): void {
-    this.resetEditorState();
+    this.resetEditsState();
+    this.cdr.detectChanges();
+
+    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+      this.cropperComp?.resetCropperPosition();
+    });
+  }
+
+  private resetEditsState(): void {
+    this.lastCropped = undefined;
+    this.canvasRotation = 0;
+    this.transform = { scale: 1, rotate: 0, flipH: false, flipV: false };
+    this.rotationDeg = 0;
+    this.scalePercent = 0;
+
+    this.resizeLocked = false;
+    this.lockedW = null;
+    this.lockedH = null;
+
+    this.resizePreset = null;
+    this.resizeRatioPreset = 'custom';
+    this.roundCropper = false;
+    this.applyResizeAspectFromState();
+
+    if (this.naturalWidth && this.naturalHeight) {
+      this.resizeWidth = this.naturalWidth;
+      this.resizeHeight = this.naturalHeight;
+    } else {
+      this.resizeWidth = null;
+      this.resizeHeight = null;
+    }
+
+    this.cropperPosition = { ...this.INIT_CROPPER };
+    this.cropperIsReady = false;
+    this.displayedW = null;
+    this.displayedH = null;
   }
 
   private getText(text: string): string {

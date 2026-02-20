@@ -23,7 +23,8 @@ export const MAP = {
     'ROTATE_90': 'Rotate 90°',
     'HORIZONTAL': 'Horizontal',
     'VERTICAL': 'Vertical',
-    'AVATAR': 'Avatar'
+    'AVATAR': 'Avatar',
+    'CUSTOM': 'Custom'
   },
 
   // Spanish
@@ -49,7 +50,8 @@ export const MAP = {
     'ROTATE_90': 'Rotar 90°',
     'HORIZONTAL': 'Horizontal',
     'VERTICAL': 'Vertical',
-    'AVATAR': 'Avatar'
+    'AVATAR': 'Avatar',
+    'CUSTOM': 'Custom'
   }
 
 };
