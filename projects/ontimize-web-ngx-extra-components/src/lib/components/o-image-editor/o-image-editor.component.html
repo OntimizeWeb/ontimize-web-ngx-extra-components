@@ -82,23 +82,19 @@
 
           <div class="oie-dot-track" fxLayout="row" fxLayoutAlign="center center" [class.is-scale]="cropAdjustMode === 'scale'">
 
-            <!-- IZQUIERDA -->
             <div fxLayout="row" fxFlex="135px" class="oie-dots oie-dots--left" *ngIf="cropAdjustMode !== 'scale'">
               <div class="oie-dots-track" [style.transform]="'translateX(' + rotateDotsTranslatePx + 'px)'">
                 <span *ngFor="let _ of dotsTape; let i = index" class="oie-dot" [class.oie-dot--big]="isBig(i)"></span>
               </div>
             </div>
 
-            <!-- spacer cuando es scale (para mantener el centro igual) -->
             <div *ngIf="cropAdjustMode === 'scale'" fxFlex="135px"></div>
 
-            <!-- CENTRO -->
             <div fxLayout="column" fxFlex="55px" class="oie-center" aria-hidden="true">
               <span class="oie-dot-value">{{ adjustLabel }}</span>
               <span class="oie-dot-indicator"></span>
             </div>
 
-            <!-- DERECHA -->
             <div fxLayout="row" fxFlex="135px" class="oie-dots oie-dots--right">
               <div class="oie-dots-track"
                 [style.transform]="'translateX(' + (cropAdjustMode === 'scale' ? scaleDotsTranslatePx : rotateDotsTranslatePx) + 'px)'">

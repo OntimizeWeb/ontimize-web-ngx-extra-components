@@ -56,21 +56,17 @@ export class OImageEditorComponent {
   cropperPosition: CropperPosition = { ...this.INIT_CROPPER };
 
   private cropperIsReady = false;
-  private displayedW: number | null = null;
-  private displayedH: number | null = null;
 
   private commitTarget: { w: number; h: number } | null = null;
   private commitTry = 0;
   private committingResize = false;
 
-  private lastCommitted: { w: number; h: number } | null = null;
 
-  private loadedImg?: LoadedImage; // mejor tiparlo como LoadedImage si lo importas
+  private loadedImg?: LoadedImage;
   private maxSizeW: number | null = null;
   private maxSizeH: number | null = null;
 
   private applyingCropperFromInputs = false;
-  private pendingCropperPosition: CropperPosition | null = null;
   private hasManualResizeTarget = false;
 
   resizeWidth: number | null = null;
@@ -81,7 +77,7 @@ export class OImageEditorComponent {
 
   protected translateService: TranslateExtraComponentsService;
 
-  constructor(private dialogService: DialogService, protected injector: Injector, private cdr: ChangeDetectorRef,
+  constructor(private readonly dialogService: DialogService, protected injector: Injector, private cdr: ChangeDetectorRef,
     private ngZone: NgZone,) {
     this.translateService = this.injector.get(TranslateExtraComponentsService);
   }
@@ -126,13 +122,10 @@ export class OImageEditorComponent {
   }
 
   onCropperChange(pos: CropperPosition): void {
-    // Si el cambio lo provocamos nosotros desde los inputs, no re-sincronices
     if (this.applyingCropperFromInputs) return;
 
-    // Mantén el estado real del cropper siempre sincronizado
     this.cropperPosition = pos;
 
-    // Si estás en resize, refleja tamaño en inputs (si no está bloqueado)
     if (this.activeTool === 'resize' && !this.resizeLocked) {
       this.resizeWidth = Math.round(pos.x2 - pos.x1);
       this.resizeHeight = Math.round(pos.y2 - pos.y1);
@@ -269,9 +262,6 @@ export class OImageEditorComponent {
     this.cropperIsReady = true;
     this.maxSizeW = typeof dim?.width === 'number' ? dim.width : null;
     this.maxSizeH = typeof dim?.height === 'number' ? dim.height : null;
-
-    this.displayedW = this.maxSizeW;
-    this.displayedH = this.maxSizeH;
   }
 
   private async resizeBlobToExact(
@@ -301,7 +291,6 @@ export class OImageEditorComponent {
     if (!ctx) throw new Error('Canvas 2D context not available');
 
     ctx.clearRect(0, 0, w, h);
-    // ⚠️ esto estira si el ratio no coincide (en custom es lo esperado)
     ctx.drawImage(img, 0, 0, w, h);
 
     const mime = src.type || 'image/png';
@@ -338,12 +327,7 @@ export class OImageEditorComponent {
       }
     }
 
-    // ✅ desde aquí, los inputs son “target de salida”
     this.hasManualResizeTarget = true;
-
-    // (opcional) si quieres mover el cropper visualmente, haz tu applyCropper...,
-    // pero OJO: ya NO debes dejar que imageCropped te pise los inputs.
-    // this.applyCropperForOutput(w, h);
   }
 
   private toPx(v: any): number | null {
@@ -351,68 +335,6 @@ export class OImageEditorComponent {
     if (!isFinite(n)) return null;
     const r = Math.round(n);
     return r > 0 ? r : null;
-  }
-
-  private applyCropperBoxSize(targetOutW: number, targetOutH: number): void {
-    if (!this.cropperIsReady) return;
-
-    // ✅ convierte “salida” -> “cropper (pantalla)”
-    const { w: targetW, h: targetH } = this.outputPxToCropperPx(targetOutW, targetOutH);
-
-    const current = this.cropperPosition;
-    const imgW = this.maxSizeW;
-    const imgH = this.maxSizeH;
-
-    const isInit = current.x2 > 1_000_000 || current.y2 > 1_000_000;
-
-    const cx = !isInit ? (current.x1 + current.x2) / 2 : (imgW ? imgW / 2 : targetW / 2);
-    const cy = !isInit ? (current.y1 + current.y2) / 2 : (imgH ? imgH / 2 : targetH / 2);
-
-    let w = targetW;
-    let h = targetH;
-
-    if (imgW != null) w = Math.min(w, imgW);
-    if (imgH != null) h = Math.min(h, imgH);
-
-    let x1 = cx - w / 2;
-    let y1 = cy - h / 2;
-
-    if (imgW != null) x1 = Math.max(0, Math.min(x1, imgW - w));
-    if (imgH != null) y1 = Math.max(0, Math.min(y1, imgH - h));
-
-    const x1i = Math.round(x1);
-    const y1i = Math.round(y1);
-
-    this.cropperPosition = {
-      x1: x1i,
-      y1: y1i,
-      x2: x1i + w,   // 👈 usa el mismo w calculado
-      y2: y1i + h
-    };
-
-    this.refreshCropperLayout();
-  }
-
-  private outputPxToCropperPx(targetW: number, targetH: number): { w: number; h: number } {
-    const maxW = this.maxSizeW;
-    const maxH = this.maxSizeH;
-
-    // tamaño “real” usado por ngx-image-cropper para escalar
-    const tW = this.loadedImg?.transformed?.size?.width ?? this.naturalWidth;
-    const tH = this.loadedImg?.transformed?.size?.height ?? this.naturalHeight;
-
-    if (!maxW || !maxH || !tW || !tH) {
-      // fallback: sin datos, asumimos 1:1
-      return { w: targetW, h: targetH };
-    }
-
-    const ratioX = tW / maxW;
-    const ratioY = tH / maxH;
-
-    return {
-      w: Math.max(1, targetW / ratioX),
-      h: Math.max(1, targetH / ratioY)
-    };
   }
 
   onAdjustInput(raw: string): void {
@@ -561,8 +483,6 @@ export class OImageEditorComponent {
     this.resizeRatioPreset = 'custom';
     this.cropperPosition = { ...this.INIT_CROPPER };
     this.cropperIsReady = false;
-    this.displayedW = null;
-    this.displayedH = null;
     this.hasManualResizeTarget = false;
   }
 
@@ -574,7 +494,6 @@ export class OImageEditorComponent {
       if (typeof e.height === 'number') this.resizeHeight = e.height;
     }
 
-    // Si NO estamos commiteando, comportamiento normal: se actualiza con ratios/drag/etc.
     if (!this.resizeLocked && this.activeTool === 'resize' && !this.committingResize) {
       if (typeof e.width === 'number') this.resizeWidth = e.width;
       if (typeof e.height === 'number') this.resizeHeight = e.height;
@@ -582,7 +501,6 @@ export class OImageEditorComponent {
       return;
     }
 
-    // Estamos en commit manual: refina para que coincida EXACTO con target
     if (this.committingResize && this.commitTarget && typeof e.width === 'number' && typeof e.height === 'number') {
       const tw = this.commitTarget.w;
       const th = this.commitTarget.h;
@@ -590,19 +508,15 @@ export class OImageEditorComponent {
       const dw = tw - e.width;
       const dh = th - e.height;
 
-      // ¿ya clavado?
       if (dw === 0 && dh === 0) {
         this.committingResize = false;
-        this.lastCommitted = { w: tw, h: th };
         this.resizeWidth = tw;
         this.resizeHeight = th;
         return;
       }
 
-      // máximo 2 refinados (suficiente en la práctica)
       if (this.commitTry >= 2) {
         this.committingResize = false;
-        this.lastCommitted = { w: e.width, h: e.height };
         this.resizeWidth = e.width;
         this.resizeHeight = e.height;
         return;
@@ -614,28 +528,13 @@ export class OImageEditorComponent {
         return;
       }
 
-      // Ajusta el “tamaño de pantalla” en proporción al error de salida
       const adjOutW = Math.max(1, tw);
       const adjOutH = Math.max(1, th);
 
-      // Empuja otro intento (misma API, nuevo objetivo exacto)
       this.commitTry++;
       this.applyCropperForOutput(adjOutW, adjOutH);
       return;
     }
-  }
-
-  private shouldEnforceResizeRatio(): boolean {
-    if (this.activeTool !== 'resize') return false;
-
-    // Avatar siempre 1:1
-    if (this.resizePreset === 'avatar') return true;
-
-    // En "custom" NO forzamos ratio
-    if (this.resizeRatioPreset === 'custom') return false;
-
-    // En el resto, usamos el estado del cropper
-    return !!(this.maintainAspectRatio && this.aspectRatio);
   }
 
   private getScreenToOutputRatios(): { rx: number; ry: number } | null {
@@ -646,7 +545,6 @@ export class OImageEditorComponent {
 
     if (!maxW || !maxH || !tW || !tH) return null;
 
-    // outputPx ≈ screenPx * rx
     return { rx: tW / maxW, ry: tH / maxH };
   }
 
@@ -658,7 +556,6 @@ export class OImageEditorComponent {
 
     const { rx, ry } = ratios;
 
-    // Queremos: outW ≈ screenW * rx  => screenW ≈ outW / rx
     const desiredScreenW = Math.max(1, Math.round(targetOutW / rx));
     const desiredScreenH = Math.max(1, Math.round(targetOutH / ry));
 
@@ -682,7 +579,6 @@ export class OImageEditorComponent {
     const x1i = Math.round(x1);
     const y1i = Math.round(y1);
 
-    // ✅ clave anti-drift: x2/y2 se construyen desde x1/y1 + w/h (no redondear todo por separado)
     this.cropperPosition = {
       x1: x1i,
       y1: y1i,
@@ -696,7 +592,7 @@ export class OImageEditorComponent {
   onImageLoaded(img?: any): void {
     this.cropperLoading = false;
 
-    this.loadedImg = img; // ✅ aquí tienes img.transformed.size.width/height
+    this.loadedImg = img;
 
     const w = img?.original?.size?.width ?? img?.width;
     const h = img?.original?.size?.height ?? img?.height;
@@ -712,7 +608,7 @@ export class OImageEditorComponent {
 
   private syncResizeInputsFromCurrent(): void {
     if (this.resizeLocked) return;
-    if (this.hasManualResizeTarget) return; // ✅ no pises el target del usuario
+    if (this.hasManualResizeTarget) return;
 
     const w = this.lastCropped?.width ?? this.naturalWidth;
     const h = this.lastCropped?.height ?? this.naturalHeight;
@@ -760,7 +656,6 @@ export class OImageEditorComponent {
     let base = this.getCroppedBlob();
     if (!base) return null;
 
-    // ✅ aplica resize exacto si el usuario fijó target
     if (this.hasManualResizeTarget && this.resizeWidth && this.resizeHeight) {
       base = await this.resizeBlobToExact(base, this.resizeWidth, this.resizeHeight);
     }
@@ -809,10 +704,15 @@ export class OImageEditorComponent {
   }
 
   private buildSuggestedFileName(mime: string): string {
-    const ext =
-      mime.includes('jpeg') ? 'jpg' :
-        mime.includes('png') ? 'png' :
-          mime.includes('webp') ? 'webp' : 'png';
+    let ext = 'png';
+
+    if (mime.includes('jpeg')) {
+      ext = 'jpg';
+    } else if (mime.includes('png')) {
+      ext = 'png';
+    } else if (mime.includes('webp')) {
+      ext = 'webp';
+    }
 
     return `image_edited.${ext}`;
   }
@@ -840,11 +740,9 @@ export class OImageEditorComponent {
           ]
         });
 
-        // 👇 El usuario elige extensión/tipo; convertimos si hace falta
         const targetMime = this.mimeFromFilename(handle?.name) ?? (blob.type || 'image/png');
 
         const finalBlob = await this.convertBlobToMime(blob, targetMime, {
-          // Si estás en avatar y el usuario elige JPEG, no hay alpha → fondo blanco
           background: (this.roundCropper && targetMime === 'image/jpeg') ? '#ffffff' : null
         });
 
@@ -862,7 +760,6 @@ export class OImageEditorComponent {
       }
     }
 
-    // Fallback universal: descarga (aquí no hay desplegable de formatos)
     this.downloadBlob(blob, suggestedName);
     return true;
   }
@@ -896,7 +793,6 @@ export class OImageEditorComponent {
   ): Promise<Blob> {
     const normalized = targetMime === 'image/jpg' ? 'image/jpeg' : targetMime;
 
-    // Si ya es el tipo pedido, no hacemos nada
     if ((src.type || '') === normalized) return src;
 
     const img = await this.blobToHtmlImage(src);
@@ -910,7 +806,6 @@ export class OImageEditorComponent {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D context not available');
 
-    // Si hay background (p.ej. avatar -> jpeg), rellenamos antes
     if (opts?.background) {
       ctx.fillStyle = opts.background;
       ctx.fillRect(0, 0, w, h);
@@ -1001,8 +896,6 @@ export class OImageEditorComponent {
 
     this.cropperPosition = { ...this.INIT_CROPPER };
     this.cropperIsReady = false;
-    this.displayedW = null;
-    this.displayedH = null;
     this.hasManualResizeTarget = false;
   }
 
