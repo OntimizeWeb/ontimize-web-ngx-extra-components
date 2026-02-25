@@ -7,9 +7,9 @@ import { Injectable } from '@angular/core';
 })
 export class TranslateExtraComponentsService {
   private currentLang = 'en';
-  private loadedLangs = new Set<string>();
+  private readonly loadedLangs = new Set<string>();
 
-  constructor(private oTranslate: OTranslateService) {
+  constructor(private readonly oTranslate: OTranslateService) {
     this.loadTranslations();
 
     this.oTranslate.onLanguageChanged.subscribe(() => {
@@ -38,6 +38,6 @@ export class TranslateExtraComponentsService {
     if (translated && translated !== key) return translated;
 
     const dict = MAP[this.currentLang] ?? MAP['en'];
-    return (dict && dict[key]) ? dict[key] : key;
+    return dict?.[key] ?? key;
   }
 }

@@ -489,19 +489,12 @@ export class OImageEditorComponent {
   onImageCropped(e: ImageCroppedEvent): void {
     this.lastCropped = e;
 
-    if (!this.hasManualResizeTarget && !this.resizeLocked) {
-      if (typeof e.width === 'number') this.resizeWidth = e.width;
-      if (typeof e.height === 'number') this.resizeHeight = e.height;
-    }
-
-    if (!this.resizeLocked && this.activeTool === 'resize' && !this.committingResize) {
-      if (typeof e.width === 'number') this.resizeWidth = e.width;
-      if (typeof e.height === 'number') this.resizeHeight = e.height;
-      this.syncResizeInputsFromCurrent();
+    const hasSize = typeof e.width === 'number' && typeof e.height === 'number';
+    if (!hasSize) {
       return;
     }
 
-    if (this.committingResize && this.commitTarget && typeof e.width === 'number' && typeof e.height === 'number') {
+    if (this.committingResize && this.commitTarget) {
       const tw = this.commitTarget.w;
       const th = this.commitTarget.h;
 
@@ -522,18 +515,20 @@ export class OImageEditorComponent {
         return;
       }
 
-      const ratios = this.getScreenToOutputRatios();
-      if (!ratios) {
+      if (!this.getScreenToOutputRatios()) {
         this.committingResize = false;
         return;
       }
 
-      const adjOutW = Math.max(1, tw);
-      const adjOutH = Math.max(1, th);
-
       this.commitTry++;
-      this.applyCropperForOutput(adjOutW, adjOutH);
+      this.applyCropperForOutput(Math.max(1, tw), Math.max(1, th));
       return;
+    }
+
+    if (!this.resizeLocked && this.activeTool === 'resize' && !this.hasManualResizeTarget) {
+      this.resizeWidth = e.width;
+      this.resizeHeight = e.height;
+      this.syncResizeInputsFromCurrent();
     }
   }
 
@@ -560,12 +555,12 @@ export class OImageEditorComponent {
     const desiredScreenH = Math.max(1, Math.round(targetOutH / ry));
 
     const cur = this.cropperPosition;
-    const imgW = this.maxSizeW!;
-    const imgH = this.maxSizeH!;
+    const imgW = this.maxSizeW;
+    const imgH = this.maxSizeH;
     const isInit = cur.x2 > 1_000_000 || cur.y2 > 1_000_000;
 
-    const cx = !isInit ? (cur.x1 + cur.x2) / 2 : imgW / 2;
-    const cy = !isInit ? (cur.y1 + cur.y2) / 2 : imgH / 2;
+    const cx = isInit ? imgW / 2 : (cur.x1 + cur.x2) / 2;
+    const cy = isInit ? imgH / 2 : (cur.y1 + cur.y2) / 2;
 
     const w = Math.min(desiredScreenW, imgW);
     const h = Math.min(desiredScreenH, imgH);
@@ -708,8 +703,6 @@ export class OImageEditorComponent {
 
     if (mime.includes('jpeg')) {
       ext = 'jpg';
-    } else if (mime.includes('png')) {
-      ext = 'png';
     } else if (mime.includes('webp')) {
       ext = 'webp';
     }
@@ -718,11 +711,11 @@ export class OImageEditorComponent {
   }
 
   private async persistBlobToDisk(blob: Blob, suggestedName: string): Promise<boolean> {
-    const w = window as any;
+    const g = globalThis as any;
 
-    if (typeof w.showSaveFilePicker === 'function') {
+    if (typeof g.showSaveFilePicker === 'function') {
       try {
-        const handle = await w.showSaveFilePicker({
+        const handle = await g.showSaveFilePicker({
           suggestedName,
           types: [
             {
@@ -780,8 +773,19 @@ export class OImageEditorComponent {
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(blob);
       const img = new Image();
-      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-      img.onerror = (err) => { URL.revokeObjectURL(url); reject(err); };
+
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+
+      img.onerror = (err) => {
+        URL.revokeObjectURL(url);
+        const error =
+          err instanceof Error ? err : new Error('Failed to load image from Blob');
+        reject(error);
+      };
+
       img.src = url;
     });
   }
