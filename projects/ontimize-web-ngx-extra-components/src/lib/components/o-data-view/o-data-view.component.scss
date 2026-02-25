@@ -3,19 +3,6 @@
   flex-direction: row;
   justify-content: flex-end;
   margin-bottom: 8px;
-}
-
-.button-toggle-floatable {
-  position: fixed;
-  left: calc(50% + 72px);
-  bottom: 16px;
-  z-index: 1000;
-}
-
-.toggle-toolbar {
-  height: 32px;
-  width: 64px;
-  margin-right: 8px;
 
   .mat-button-toggle-standalone,
   .mat-button-toggle-group {
@@ -32,6 +19,18 @@
       }
     }
   }
+}
+
+.toggle-floatable {
+  position: fixed;
+  left: calc(50% + 72px);
+  bottom: 16px;
+  z-index: 1000;
+}
+
+.toggle-toolbar {
+  margin-right: 8px;
+  margin-bottom: 0px;
 }
 
 :host {
