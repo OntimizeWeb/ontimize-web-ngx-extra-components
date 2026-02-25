@@ -75,7 +75,7 @@
           (imageLoaded)="onImageLoaded($event)" (loadImageFailed)="onLoadImageFailed()" [containWithinAspectRatio]="true"
           [resetCropOnAspectRatioChange]="true" [roundCropper]="roundCropper" [cropperStaticWidth]=" cropperStaticWidth"
           [cropperStaticHeight]="cropperStaticHeight" [hideResizeSquares]="resizeLocked" [cropper]="cropperPosition"
-          (cropperReady)="onCropperReady($event)">
+          (cropperReady)="onCropperReady($event)" (cropperChange)="onCropperChange($event)">
         </image-cropper>
 
         <div *ngIf="activeTool === 'crop' && !cropperLoading" class="oie-adjust-bar">
