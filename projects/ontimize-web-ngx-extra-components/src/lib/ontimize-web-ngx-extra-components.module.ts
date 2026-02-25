@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { OEXTRACOMPONENTS_DECLARATION_MODULES, OEXTRACOMPONENTS_EXPORT_MODULES, OEXTRACOMPONENTS_IMPORTS_MODULES, OEXTRACOMPONENTS_PROVIDERS } from './config/o-components';
-import { TranslateExtraComponentsService } from './services';
 
 @NgModule({
   declarations: [...OEXTRACOMPONENTS_DECLARATION_MODULES],

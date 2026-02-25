@@ -614,8 +614,8 @@ export class OImageEditorComponent {
     const h = this.lastCropped?.height ?? this.naturalHeight;
     if (!w || !h) return;
 
-    if (this.resizeWidth == null) this.resizeWidth = w;
-    if (this.resizeHeight == null) this.resizeHeight = h;
+    this.resizeWidth ??= w;
+    this.resizeHeight ??= h;
   }
 
   onLoadImageFailed(): void {
