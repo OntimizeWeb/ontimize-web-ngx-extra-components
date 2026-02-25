@@ -18,7 +18,7 @@ type ResizeRatioPreset = 'custom' | '1:1' | '2:1' | '3:2' | '4:3' | '5:4' | '16:
 export class OImageEditorComponent {
 
   @ViewChild('fileInput', { static: false }) fileInput?: ElementRef<HTMLInputElement>;
-  @ViewChild('cropper') private cropperComp?: ImageCropperComponent;
+  @ViewChild('cropper') private readonly cropperComp?: ImageCropperComponent;
 
   activeTool: EditorTool = 'crop';
   uploadOverlay = false;
@@ -57,7 +57,7 @@ export class OImageEditorComponent {
 
   private cropperIsReady = false;
 
-  private commitTarget: { w: number; h: number } | null = null;
+  private readonly commitTarget: { w: number; h: number } | null = null;
   private commitTry = 0;
   private committingResize = false;
 
@@ -66,7 +66,7 @@ export class OImageEditorComponent {
   private maxSizeW: number | null = null;
   private maxSizeH: number | null = null;
 
-  private applyingCropperFromInputs = false;
+  private readonly applyingCropperFromInputs = false;
   private hasManualResizeTarget = false;
 
   resizeWidth: number | null = null;
@@ -77,8 +77,8 @@ export class OImageEditorComponent {
 
   protected translateService: TranslateExtraComponentsService;
 
-  constructor(private readonly dialogService: DialogService, protected injector: Injector, private cdr: ChangeDetectorRef,
-    private ngZone: NgZone,) {
+  constructor(private readonly dialogService: DialogService, protected injector: Injector, private readonly cdr: ChangeDetectorRef,
+    private readonly ngZone: NgZone,) {
     this.translateService = this.injector.get(TranslateExtraComponentsService);
   }
 
@@ -89,10 +89,8 @@ export class OImageEditorComponent {
 
     if (preset === 'avatar') {
       this.resizeRatioPreset = '1:1';
-    } else {
-      if (!this.resizeRatioPreset) {
-        this.resizeRatioPreset = '16:9';
-      }
+    } else if (!this.resizeRatioPreset) {
+      this.resizeRatioPreset = '16:9';
     }
 
     this.applyResizeAspectFromState();
@@ -152,7 +150,9 @@ export class OImageEditorComponent {
       return;
     }
 
-    const base = this.getBaseRatio(this.resizeRatioPreset)!;
+    const base = this.getBaseRatio(this.resizeRatioPreset);
+    if (base == null) return;
+
     const ratio = this.resizePreset === 'vertical' ? (1 / base) : base;
     this.setCropRatio(ratio);
   }
@@ -209,7 +209,7 @@ export class OImageEditorComponent {
     const max = Number(this.adjustMax);
     const val = Number(this.adjustValue);
 
-    if (!isFinite(min) || !isFinite(max) || max === min || !isFinite(val)) return 0;
+    if (!Number.isFinite(min) || !Number.isFinite(max) || max === min || !Number.isFinite(val)) return 0;
 
     const t = (this.clamp(val, min, max) - min) / (max - min);
     const tapeW = this.tapeWidthPx(this.dotsTape.length);
@@ -225,7 +225,7 @@ export class OImageEditorComponent {
     const max = Number(this.adjustMax);
     const val = Number(this.adjustValue);
 
-    if (!isFinite(min) || !isFinite(max) || max === min || !isFinite(val)) return 0;
+    if (!Number.isFinite(min) || !Number.isFinite(max) || max === min || !Number.isFinite(val)) return 0;
 
     const t = (this.clamp(val, min, max) - min) / (max - min);
     const tapeW = this.tapeWidthPx(this.dotsTape.length);
@@ -332,7 +332,7 @@ export class OImageEditorComponent {
 
   private toPx(v: any): number | null {
     const n = Number(v);
-    if (!isFinite(n)) return null;
+    if (!Number.isFinite(n)) return null;
     const r = Math.round(n);
     return r > 0 ? r : null;
   }
@@ -394,7 +394,7 @@ export class OImageEditorComponent {
 
     this.ngZone.onStable.pipe(take(1)).subscribe(() => {
       this.cropperComp?.onResize();
-      window.dispatchEvent(new Event('resize'));
+      globalThis.dispatchEvent(new Event('resize'));
     });
   }
 
