@@ -5,18 +5,11 @@ import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
 import { ODataViewMode } from '../../types/data-view.types';
 
-export const DEFAULT_INPUTS_O_DATA_VIEW = [
-  'toggleButton: toggle-button',
-  'toggleOnToolbar: toggle-on-toolbar',
-  'toggleFloatable: toggle-floatable'
-];
-
 @Component({
   selector: 'o-data-view',
   templateUrl: './o-data-view.component.html',
   styleUrls: ['./o-data-view.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  inputs: DEFAULT_INPUTS_O_DATA_VIEW
+  encapsulation: ViewEncapsulation.None
 })
 
 export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
@@ -33,12 +26,15 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   @Input('default-view') defaultView?: ODataViewMode;
 
+  @Input('toggle-button')
   @BooleanInputConverter()
   public toggleButton = true;
 
+  @Input('toggle-on-toolbar')
   @BooleanInputConverter()
   public toggleOnToolbar = false;
 
+  @Input('toggle-floatable')
   @BooleanInputConverter()
   public toggleFloatable = false;
 
@@ -237,12 +233,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
       // Detect changes to ensure nodes are fully initialized
       this.columnsView.detectChanges();
-       setTimeout(() => {
-         this.table.parseVisibleColumns(true);
-         if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
-           this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
-         }
-       }, 0);
+      setTimeout(() => {
+        this.table.parseVisibleColumns(true);
+        if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
+          this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
+        }
+      }, 0);
 
     } catch (error) {
       console.error('Error registering table columns:', error);
