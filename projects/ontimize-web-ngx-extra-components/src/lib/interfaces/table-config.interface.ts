@@ -14,7 +14,6 @@ export interface TableConfig {
   collapseGroupedColumns?: CustomBoolean;
   columnsVisibilityButton?: CustomBoolean;
   defaultVisibleColumns?: string;
-  deleteButton?: CustomBoolean;
   disableSelectionFunction?: (item: any) => boolean;
   detailMode?: 'none' | 'click' | 'dblclick';
   editionMode?: 'none' | 'click' | 'dblclick';
