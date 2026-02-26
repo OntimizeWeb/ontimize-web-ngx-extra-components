@@ -23,7 +23,7 @@
       [recursive-insert]="r_recursiveInsert" [row-height]="r_table_rowHeight" [title]="r_title" [visible]="r_table_visible"
       [auto-adjust]="r_table_autoAdjust" [auto-align-titles]="r_table_autoAlignTitles" [collapse-grouped-columns]="r_table_collapseGroupedColumns"
       [columns-visibility-button]="r_table_columnsVisibilityButton" [default-visible-columns]="r_table_defaultVisibleColumns"
-      [delete-button]="r_table_deleteButton" [disable-selection-function]="r_table_disableSelectionFunction" [edition-mode]="r_table_editionMode"
+      [delete-button]="r_deleteButton" [disable-selection-function]="r_table_disableSelectionFunction" [edition-mode]="r_table_editionMode"
       [export-button]="r_table_exportButton" [export-service-type]="r_table_exportServiceType"
       [filter-column-active-by-default]="r_table_filterColumnActiveByDefault" [fixed-header]="r_fixedHeader" [groupable]="r_table_groupable"
       [grouped-columns]="r_table_groupedColumns" [horizontal-scroll]="r_table_horizontalScroll" [keep-selected-items]="r_table_keepSelectedItems"
@@ -37,7 +37,7 @@
       [virtual-scroll]="r_table_virtualScroll" [visible-columns]="r_table_visibleColumns"
       [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons" [show-charts-on-demand-option]="r_table_showChartsOnDemandOption" show-title="yes">
 
-      <o-button-toggle-group #toggleGroup *ngIf="toolbarToggleVisible" class="toggle-toolbar" attr="toggleGroup" o-table-toolbar position="end"
+      <o-button-toggle-group #toggleGroup *ngIf="showToggleOnToolbar" class="button-toggle-group toggle-toolbar" attr="toggleGroup" o-table-toolbar position="end"
         multiple="no" [value]="defaultView" (onChange)="changeView($event)">
         <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
         <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
@@ -60,7 +60,7 @@
       [show-footer]="r_grid_showFooter" [show-page-size]="r_grid_showPageSize" [sort-column]="r_grid_sortColumn"
       [sortable-columns]="r_grid_sortableColumns">
 
-      <o-button-toggle-group #toggleGroup *ngIf="toolbarToggleVisible" class="toggle-toolbar" attr="toggleGroup" o-grid-toolbar position="end"
+      <o-button-toggle-group #toggleGroup *ngIf="showToggleOnToolbar" class="button-toggle-group toggle-toolbar" attr="toggleGroup" o-grid-toolbar position="end"
         multiple="no" [value]="defaultView" (onChange)="changeView($event)">
         <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
         <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
@@ -73,7 +73,7 @@
 
     </o-grid>
 
-    <o-button-toggle-group #toggleGroup *ngIf="floatableToggleVisible" class="button-toggle-floatable" attr="toggleGroup" multiple="no"
+    <o-button-toggle-group #toggleGroup *ngIf="showToggleFloatable" class="button-toggle-group toggle-floatable" attr="toggleGroup" multiple="no"
       [value]="defaultView" (onChange)="changeView($event)">
       <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
       <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
