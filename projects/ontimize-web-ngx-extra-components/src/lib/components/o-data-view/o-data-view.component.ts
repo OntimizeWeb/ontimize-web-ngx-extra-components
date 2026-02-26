@@ -70,6 +70,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('pagination-controls') paginationControls?: string;
   @Input('insert-form-route') insertFormRoute?: string;
   @Input('filter-case-sensitive') filterCaseSensitive?: string;
+  @Input('delete-button') deleteButton?: string;
 
   @Input('table-config') tableConfig?: TableConfig;
   @Input('grid-config') gridConfig?: GridConfig;
@@ -112,6 +113,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_paginationControls?: string;
   r_insertFormRoute?: string;
   r_filterCaseSensitive?: string;
+  r_deleteButton?: string;
 
   r_table_detailButtonInRow?: string;
   r_table_detailButtonInRowIcon?: string;
@@ -120,7 +122,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_editButtonInRowIcon?: string;
   r_table_editFormRoute?: string;
   r_table_enabled?: string;
-  r_table_deleteButton?: string;
   r_table_rowHeight?: string;
   r_table_visible?: string;
   r_table_autoAdjust?: string;
@@ -289,6 +290,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_insertFormRoute = this.setDefaultValue(this.insertFormRoute, Codes.DEFAULT_INSERT_ROUTE);
     this.r_title = this.setDefaultValue(this.title, '');
     this.r_quickFilterAppearance = this.setDefaultValue(this.quickFilterAppearance, 'outline');
+    this.r_deleteButton = this.setDefaultValue(this.deleteButton, 'yes');
   }
 
   private resolveTableInputs(): void {
@@ -308,7 +310,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_collapseGroupedColumns = this.setDefaultValue(cfg.collapseGroupedColumns, 'no');
     this.r_table_columnsVisibilityButton = this.setDefaultValue(cfg.columnsVisibilityButton, 'yes');
     this.r_table_defaultVisibleColumns = this.setDefaultValue(cfg.defaultVisibleColumns, '');
-    this.r_table_deleteButton = this.setDefaultValue(cfg.deleteButton, 'yes');
+
     this.r_table_editionMode = this.resolveStringWithGlobal(cfg.editionMode, g?.editionMode, Codes.EDITION_MODE_NONE);
     this.r_table_exportButton = this.setDefaultValue(cfg.exportButton, 'yes');
     this.r_table_exportServiceType = this.setDefaultValue(cfg.exportServiceType, 'OntimizeExportService');
