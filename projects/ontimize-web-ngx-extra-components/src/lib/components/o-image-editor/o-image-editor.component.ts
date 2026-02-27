@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Injector, NgZone, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Injector, Input, NgZone, ViewChild, ViewEncapsulation } from '@angular/core';
 import { base64ToFile, CropperPosition, ImageCroppedEvent, ImageCropperComponent, ImageTransform, LoadedImage } from 'ngx-image-cropper';
 import { DialogService, ODialogConfig } from 'ontimize-web-ngx';
 import { take } from 'rxjs';
@@ -19,6 +19,19 @@ export class OImageEditorComponent {
 
   @ViewChild('fileInput', { static: false }) fileInput?: ElementRef<HTMLInputElement>;
   @ViewChild('cropper') private readonly cropperComp?: ImageCropperComponent;
+
+  private _imageBase64?: string | null;
+
+  cropperImageBase64?: string;
+
+  @Input('image')
+  set imageBase64(value: string | null | undefined) {
+    this._imageBase64 = value ?? null;
+    this.loadFromBase64(this._imageBase64);
+  }
+  get imageBase64(): string | null | undefined {
+    return this._imageBase64;
+  }
 
   activeTool: EditorTool = 'crop';
   uploadOverlay = false;
@@ -81,6 +94,26 @@ export class OImageEditorComponent {
     private readonly ngZone: NgZone,) {
     this.translateService = this.injector.get(TranslateExtraComponentsService);
   }
+
+  private loadFromBase64(base64: string | null): void {
+    // Reset “suave” para forzar recarga del cropper cuando cambie la imagen
+    this.cropperImageBase64 = undefined;
+
+    if (!base64) {
+      // si quieres volver a la zona de carga cuando no haya imagen:
+      this.selectedFile = null;
+      return;
+    }
+
+    // Si al setear base64 quieres “pisar” cualquier imagen previa (upload):
+    this.selectedFile = this.selectedFile ?? ({} as any); // o pon tu flag hasImage=true
+
+    // En el siguiente tick para que el cropper detecte el cambio siempre
+    queueMicrotask(() => {
+      this.cropperImageBase64 = base64;
+    });
+  }
+
 
   setResizePreset(preset: ResizePreset | null): void {
     if (this.resizeLocked) return;

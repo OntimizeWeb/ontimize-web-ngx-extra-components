@@ -74,7 +74,7 @@
           [canvasRotation]="canvasRotation" [(transform)]="transform" [imageQuality]="95" format="jpeg" (imageCropped)="onImageCropped($event)"
           (imageLoaded)="onImageLoaded($event)" (loadImageFailed)="onLoadImageFailed()" [containWithinAspectRatio]="true"
           [resetCropOnAspectRatioChange]="true" [roundCropper]="roundCropper" [cropperStaticWidth]=" cropperStaticWidth"
-          [cropperStaticHeight]="cropperStaticHeight" [hideResizeSquares]="resizeLocked" [cropper]="cropperPosition"
+          [cropperStaticHeight]="cropperStaticHeight" [hideResizeSquares]="resizeLocked" [cropper]="cropperPosition" [imageBase64]="cropperImageBase64"
           (cropperReady)="onCropperReady($event)" (cropperChange)="onCropperChange($event)">
         </image-cropper>
 
