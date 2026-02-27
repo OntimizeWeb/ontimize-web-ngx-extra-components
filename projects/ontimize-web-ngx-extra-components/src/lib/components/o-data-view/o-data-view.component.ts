@@ -88,7 +88,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input('show-buttons-text')
   @BooleanInputConverter() showButtonsText = true;
 
-  @Input('quick-filter-placeholder') quickFilterPlaceholder?: string;
+  @Input('quick-filter-placeholder') quickFilterPlaceholder?: string = "";
 
   @Input('insert-button')
   @BooleanInputConverter() insertButton = true;
