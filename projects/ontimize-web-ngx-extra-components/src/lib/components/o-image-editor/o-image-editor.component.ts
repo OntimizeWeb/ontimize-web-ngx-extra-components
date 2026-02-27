@@ -57,7 +57,7 @@ export class OImageEditorComponent {
 
   @Input('save-target') saveTarget: OImageEditorSaveTarget = 'download';
   @Input('actions-position') actionsPosition: OImageEditorActionsPosition = 'top';
-  @Output() onSaveBase64 = new EventEmitter<string>();
+  @Output() oSaveBase64 = new EventEmitter<string>();
 
   /* ----------------------PUBLIC STATE (TEMPLATE)-----------------------*/
 
@@ -514,7 +514,7 @@ export class OImageEditorComponent {
 
   private async emitBase64(blob: Blob): Promise<void> {
     const dataUrl = await this.blobToDataUrl(blob);
-    this.onSaveBase64.emit(dataUrl);
+    this.oSaveBase64.emit(dataUrl);
   }
 
   private getCroppedBlob(): Blob | null {
@@ -768,8 +768,8 @@ export class OImageEditorComponent {
     const desiredScreenH = Math.max(1, Math.round(targetOutH / ry));
 
     const cur = this.cropperPosition;
-    const imgW = this.maxSizeW!;
-    const imgH = this.maxSizeH!;
+    const imgW = this.maxSizeW;
+    const imgH = this.maxSizeH;
     const isInit = cur.x2 > 1_000_000 || cur.y2 > 1_000_000;
 
     const cx = isInit ? imgW / 2 : (cur.x1 + cur.x2) / 2;
@@ -851,8 +851,18 @@ export class OImageEditorComponent {
   private blobToDataUrl(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
+
       reader.onerror = () => reject(reader.error);
-      reader.onload = () => resolve(String(reader.result));
+
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          resolve(result);
+        } else {
+          reject(new Error('Failed to convert blob to data URL'));
+        }
+      };
+
       reader.readAsDataURL(blob);
     });
   }
