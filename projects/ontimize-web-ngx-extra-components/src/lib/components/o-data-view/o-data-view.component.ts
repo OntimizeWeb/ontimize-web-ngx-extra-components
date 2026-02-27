@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
+import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -25,95 +25,115 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   tableTpl?: ODataViewTableColumnsDirective;
 
   @Input('default-view') defaultView?: ODataViewMode;
-  @Input('toggle-on-toolbar') toggleOnToolbar?: string;
-  @Input('toggle-floatable') toggleFloatable?: string;
-  @Input('toggle-button') toggleButton?: string;
 
-  protected showToggleOnToolbar: boolean = false;
-  protected showToggleFloatable: boolean = false;
-  protected showToggleButton: boolean = true;
+  @Input('toggle-button')
+  @BooleanInputConverter()
+  public toggleButton = true;
+
+  @Input('toggle-on-toolbar')
+  @BooleanInputConverter()
+  public toggleOnToolbar = false;
+
+  @Input('toggle-floatable')
+  @BooleanInputConverter()
+  public toggleFloatable = false;
 
   @Input() attr?: string;
+
   @Input() columns?: string;
+
   @Input('configure-service-args') configureServiceArgs?: OConfigureServiceArgs;
-  @Input('delete-method') deleteMethod?: string;
+
+  @Input('delete-method') deleteMethod?: string = Codes.DELETE_METHOD;
+
   @Input() entity?: string;
-  @Input('insert-method') insertMethod?: string;
+
+  @Input('insert-method') insertMethod?: string = Codes.INSERT_METHOD;
+
   @Input() keys?: string;
-  @Input() pageable?: string;
-  @Input('paginated-query-method') paginatedQueryMethod?: string;
+
+  @Input()
+  @BooleanInputConverter() pageable = false;
+
+  @Input('paginated-query-method') paginatedQueryMethod?: string = Codes.PAGINATED_QUERY_METHOD;
+
   @Input('parent-keys') parentKeys?: string;
+
   @Input('query-fallback-function') queryFallbackFunction?: Function;
-  @Input('query-method') queryMethod?: string;
-  @Input('query-on-bind') queryOnBind?: string;
-  @Input('query-on-init') queryOnInit?: string;
-  @Input('query-rows') queryRows?: number;
-  @Input('query-with-null-parent-keys') queryWithNullParentKeys?: string;
+
+  @Input('query-method') queryMethod?: string = Codes.QUERY_METHOD;
+
+  @Input('query-on-bind')
+  @BooleanInputConverter() queryOnBind = true;
+
+  @Input('query-on-init')
+  @BooleanInputConverter() queryOnInit = true;
+
+  @Input('query-rows') queryRows?: number = Codes.DEFAULT_QUERY_ROWS;
+
+  @Input('query-with-null-parent-keys')
+  @BooleanInputConverter() queryWithNullParentKeys = false;
+
   @Input() service?: string;
+
   @Input('service-type') serviceType?: string;
+
   @Input('static-data') staticData?: any[];
-  @Input('store-state') storeState?: string;
-  @Input('update-method') updateMethod?: string;
-  @Input('show-buttons-text') showButtonsText?: string;
-  @Input('quick-filter-placeholder') quickFilterPlaceholder?: string;
-  @Input('insert-button') insertButton?: string;
-  @Input('refresh-button') refreshButton?: string;
-  @Input('fixed-header') fixedHeader?: string;
-  @Input() controls?: string;
+
+  @Input('store-state')
+  @BooleanInputConverter() storeState = true;
+
+  @Input('update-method') updateMethod?: string = Codes.UPDATE_METHOD;
+
+  @Input('show-buttons-text')
+  @BooleanInputConverter() showButtonsText = true;
+
+  @Input('quick-filter-placeholder') quickFilterPlaceholder?: string = "";
+
+  @Input('insert-button')
+  @BooleanInputConverter() insertButton = true;
+
+  @Input('refresh-button')
+  @BooleanInputConverter() refreshButton = true;
+
+  @Input('fixed-header')
+  @BooleanInputConverter() fixedHeader = true;
+
+  @Input()
+  @BooleanInputConverter() controls = true;
+
   @Input() title?: string;
-  @Input('quick-filter') quickFilter?: string;
-  @Input('quick-filter-appearance') quickFilterAppearance?: string;
-  @Input('recursive-detail') recursiveDetail?: string;
-  @Input('recursive-edit') recursiveEdit?: string;
-  @Input('recursive-insert') recursiveInsert?: string;
+
+  @Input('quick-filter')
+  @BooleanInputConverter() quickFilter = true;
+
+  @Input('quick-filter-appearance') quickFilterAppearance?: string = 'outline';
+
+  @Input('recursive-detail')
+  @BooleanInputConverter() recursiveDetail = false;
+
+  @Input('recursive-edit')
+  @BooleanInputConverter() recursiveEdit = false;
+
+  @Input('recursive-insert')
+  @BooleanInputConverter() recursiveInsert = false;
+
   @Input('detail-form-route') detailFormRoute?: string;
-  @Input('pagination-controls') paginationControls?: string;
-  @Input('insert-form-route') insertFormRoute?: string;
-  @Input('filter-case-sensitive') filterCaseSensitive?: string;
-  @Input('delete-button') deleteButton?: string;
+
+  @Input('pagination-controls')
+  @BooleanInputConverter() paginationControls = true;
+
+  @Input('insert-form-route') insertFormRoute?: string = Codes.DEFAULT_INSERT_ROUTE;
+
+  @Input('filter-case-sensitive')
+  @BooleanInputConverter() filterCaseSensitive = false;
+
+  @Input('delete-button')
+  @BooleanInputConverter() deleteButton = true
 
   @Input('table-config') tableConfig?: TableConfig;
-  @Input('grid-config') gridConfig?: GridConfig;
 
-  r_attr?: string;
-  r_columns?: string;
-  r_configureServiceArgs?: OConfigureServiceArgs;
-  r_deleteMethod?: string;
-  r_entity?: string;
-  r_insertMethod?: string;
-  r_keys?: string;
-  r_pageable?: string;
-  r_paginatedQueryMethod?: string;
-  r_parentKeys?: string;
-  r_queryFallbackFunction?: Function;
-  r_queryMethod?: string;
-  r_queryOnBind?: string;
-  r_queryOnInit?: string;
-  r_queryRows?: number;
-  r_queryWithNullParentKeys?: string;
-  r_service?: string;
-  r_serviceType?: string;
-  r_staticData?: any[];
-  r_storeState?: string;
-  r_updateMethod?: string;
-  r_showButtonsText?: string;
-  r_quickFilterPlaceholder?: string;
-  r_insertButton?: string;
-  r_refreshButton?: string;
-  r_fixedHeader?: string;
-  r_controls?: string;
-  r_title?: string;
-  r_quickFilter?: string;
-  r_quickFilterAppearance?: string;
-  r_quickFilterColumns?: string;
-  r_recursiveDetail?: string;
-  r_recursiveEdit?: string;
-  r_recursiveInsert?: string;
-  r_detailFormRoute?: string;
-  r_paginationControls?: string;
-  r_insertFormRoute?: string;
-  r_filterCaseSensitive?: string;
-  r_deleteButton?: string;
+  @Input('grid-config') gridConfig?: GridConfig;
 
   r_table_detailButtonInRow?: string;
   r_table_detailButtonInRowIcon?: string;
@@ -185,9 +205,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   ngOnInit(): void {
     if (!this.defaultView) this.defaultView = 'table';
-    this.showToggleOnToolbar = Util.parseBoolean(this.toggleOnToolbar, false);
-    this.showToggleFloatable = Util.parseBoolean(this.toggleFloatable, false);
-    this.showToggleButton = Util.parseBoolean(this.toggleButton, true);
   }
 
   ngAfterViewInit(): void {
@@ -219,12 +236,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
       // Detect changes to ensure nodes are fully initialized
       this.columnsView.detectChanges();
-       setTimeout(() => {
-         this.table.parseVisibleColumns(true);
-         if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
-           this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
-         }
-       }, 0);
+      setTimeout(() => {
+        this.table.parseVisibleColumns(true);
+        if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
+          this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
+        }
+      }, 0);
 
     } catch (error) {
       console.error('Error registering table columns:', error);
@@ -247,50 +264,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   ngOnChanges(): void {
-    this.resolveCommonInputs();
     this.resolveTableInputs();
     this.resolveGridInputs();
-  }
-
-  private resolveCommonInputs(): void {
-    this.r_columns = this.setDefaultValue(this.columns, '');
-    this.r_keys = this.setDefaultValue(this.keys, '');
-    this.r_attr = this.setDefaultValue(this.attr, '');
-    this.r_entity = this.setDefaultValue(this.entity, '');
-    this.r_service = this.setDefaultValue(this.service, '');
-    this.r_serviceType = this.setDefaultValue(this.serviceType, '');
-    this.r_paginatedQueryMethod = this.setDefaultValue(this.paginatedQueryMethod, Codes.PAGINATED_QUERY_METHOD);
-    this.r_parentKeys = this.setDefaultValue(this.parentKeys, '');
-    this.r_queryMethod = this.setDefaultValue(this.queryMethod, Codes.QUERY_METHOD);
-    this.r_configureServiceArgs = this.configureServiceArgs;
-    this.r_queryFallbackFunction = this.queryFallbackFunction;
-    this.r_staticData = this.staticData;
-    this.r_pageable = this.setDefaultValue(this.pageable, 'no');
-    this.r_queryOnInit = this.setDefaultValue(this.queryOnInit, 'yes');
-    this.r_queryOnBind = this.setDefaultValue(this.queryOnBind, 'yes');
-    this.r_queryWithNullParentKeys = this.setDefaultValue(this.queryWithNullParentKeys, 'no');
-    this.r_storeState = this.setDefaultValue(this.storeState, 'yes');
-    this.r_queryRows = this.setDefaultNumber(this.queryRows, Codes.DEFAULT_QUERY_ROWS);
-    this.r_deleteMethod = this.setDefaultValue(this.deleteMethod, Codes.DELETE_METHOD);
-    this.r_insertMethod = this.setDefaultValue(this.insertMethod, Codes.INSERT_METHOD);
-    this.r_updateMethod = this.setDefaultValue(this.updateMethod, Codes.UPDATE_METHOD);
-    this.r_showButtonsText = this.setDefaultValue(this.showButtonsText, 'yes');
-    this.r_quickFilterPlaceholder = this.setDefaultValue(this.quickFilterPlaceholder, '');
-    this.r_insertButton = this.setDefaultValue(this.insertButton, 'yes');
-    this.r_refreshButton = this.setDefaultValue(this.refreshButton, 'yes');
-    this.r_fixedHeader = this.setDefaultValue(this.fixedHeader, 'yes');
-    this.r_controls = this.setDefaultValue(this.controls, 'yes');
-    this.r_detailFormRoute = this.setDefaultValue(this.detailFormRoute, '');
-    this.r_filterCaseSensitive = this.setDefaultValue(this.filterCaseSensitive, 'no');
-    this.r_paginationControls = this.setDefaultValue(this.paginationControls, 'yes');
-    this.r_quickFilter = this.setDefaultValue(this.quickFilter, 'yes');
-    this.r_recursiveDetail = this.setDefaultValue(this.recursiveDetail, 'no');
-    this.r_recursiveEdit = this.setDefaultValue(this.recursiveEdit, 'no');
-    this.r_recursiveInsert = this.setDefaultValue(this.recursiveInsert, 'no');
-    this.r_insertFormRoute = this.setDefaultValue(this.insertFormRoute, Codes.DEFAULT_INSERT_ROUTE);
-    this.r_title = this.setDefaultValue(this.title, '');
-    this.r_quickFilterAppearance = this.setDefaultValue(this.quickFilterAppearance, 'outline');
-    this.r_deleteButton = this.setDefaultValue(this.deleteButton, 'yes');
   }
 
   private resolveTableInputs(): void {
@@ -364,7 +339,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, '');
     this.r_grid_detailMode = this.setDefaultValue(cfg.detailMode, Codes.DETAIL_MODE_CLICK);
     this.r_grid_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [8, 16, 24, 32, 64]);
-    this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.r_columns);
+    this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.columns);
   }
 
   private setDefaultValue(v: string | undefined | null, def: string | undefined): string | undefined {

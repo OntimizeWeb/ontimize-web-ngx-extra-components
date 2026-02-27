@@ -5,7 +5,7 @@
 
   <o-data-view #dv attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;duration;score"
     [table-config]="tableCfg" [grid-config]="gridCfg" quick-filter-placeholder="test" refresh-button="no" toggle-on-toolbar="yes"
-    show-buttons-text="no" title="Data View Example">
+    show-buttons-text="no" title="Data View Example" pagination-controls="no">
 
     <ng-template oDataViewTableColumns>
       <!-- filter by columns -->
@@ -25,8 +25,6 @@
       <!-- Table context menu -->
       <o-table-context-menu [context-menu]="contextMenu" insert="no" edit="no" view-detail="no"></o-table-context-menu>
 
-      <!-- Table paginator -->
-      <o-table-paginator page-size-options="5;10;15"></o-table-paginator>
     </ng-template>
 
     <o-context-menu #contextMenu>
