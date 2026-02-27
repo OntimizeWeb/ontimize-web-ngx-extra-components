@@ -1,11 +1,17 @@
-<div class="o-image-editor bg-level-1" fxLayout="column" fxFlexFill>
-
+<ng-template #actionsTpl>
   <div *ngIf="selectedFile" fxLayout="row" fxFlex="32px" fxLayoutGap="16px" fxLayoutAlign="end end">
     <o-button attr="reset" type="STROKED" icon="undo" label="RESET" (onClick)="reset()">
     </o-button>
     <o-button attr="save" type="STROKED" color="primary" icon="save" label="SAVE" (onClick)="save()">
     </o-button>
   </div>
+</ng-template>
+
+<div class="o-image-editor bg-level-1" fxLayout="column" fxFlexFill>
+
+  <ng-container *ngIf="selectedFile && actionsPosition === 'top'">
+    <ng-container *ngTemplateOutlet="actionsTpl"></ng-container>
+  </ng-container>
 
   <div class="o-image-editor-content" fxLayout="row" fxFlex="1 1 auto" fxLayoutAlign="space-between">
 
@@ -74,8 +80,8 @@
           [canvasRotation]="canvasRotation" [(transform)]="transform" [imageQuality]="95" format="jpeg" (imageCropped)="onImageCropped($event)"
           (imageLoaded)="onImageLoaded($event)" (loadImageFailed)="onLoadImageFailed()" [containWithinAspectRatio]="true"
           [resetCropOnAspectRatioChange]="true" [roundCropper]="roundCropper" [cropperStaticWidth]=" cropperStaticWidth"
-          [cropperStaticHeight]="cropperStaticHeight" [hideResizeSquares]="resizeLocked" [cropper]="cropperPosition" [imageBase64]="cropperImageBase64"
-          (cropperReady)="onCropperReady($event)" (cropperChange)="onCropperChange($event)">
+          [cropperStaticHeight]="cropperStaticHeight" [hideResizeSquares]="resizeLocked" [cropper]="cropperPosition"
+          [imageBase64]="cropperImageBase64" (cropperReady)="onCropperReady($event)" (cropperChange)="onCropperChange($event)">
         </image-cropper>
 
         <div *ngIf="activeTool === 'crop' && !cropperLoading" class="oie-adjust-bar">
@@ -197,4 +203,7 @@
     </div>
     <div *ngIf="selectedFile" fxLayout="column" fxFlex="82px"></div>
   </div>
+  <ng-container *ngIf="selectedFile && actionsPosition === 'bottom'">
+    <ng-container *ngTemplateOutlet="actionsTpl"></ng-container>
+  </ng-container>
 </div>

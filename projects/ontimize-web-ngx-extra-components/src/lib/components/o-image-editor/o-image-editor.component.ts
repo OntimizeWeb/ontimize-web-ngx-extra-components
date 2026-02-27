@@ -1,5 +1,23 @@
-import { ChangeDetectorRef, Component, ElementRef, Injector, Input, NgZone, ViewChild, ViewEncapsulation } from '@angular/core';
-import { base64ToFile, CropperPosition, ImageCroppedEvent, ImageCropperComponent, ImageTransform, LoadedImage } from 'ngx-image-cropper';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Injector,
+  Input,
+  NgZone,
+  Output,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
+import {
+  base64ToFile,
+  CropperPosition,
+  ImageCroppedEvent,
+  ImageCropperComponent,
+  ImageTransform,
+  LoadedImage
+} from 'ngx-image-cropper';
 import { DialogService, ODialogConfig } from 'ontimize-web-ngx';
 import { take } from 'rxjs';
 import { TranslateExtraComponentsService } from '../../services';
@@ -8,6 +26,9 @@ type EditorTool = 'crop' | 'resize';
 type ToolsUI = EditorTool | 'upload';
 type ResizePreset = 'horizontal' | 'vertical' | 'avatar';
 type ResizeRatioPreset = 'custom' | '1:1' | '2:1' | '3:2' | '4:3' | '5:4' | '16:9';
+type CropperReadyDim = { width?: number; height?: number };
+export type OImageEditorSaveTarget = 'download' | 'base64';
+export type OImageEditorActionsPosition = 'top' | 'bottom';
 
 @Component({
   selector: 'o-image-editor',
@@ -17,11 +38,12 @@ type ResizeRatioPreset = 'custom' | '1:1' | '2:1' | '3:2' | '4:3' | '5:4' | '16:
 })
 export class OImageEditorComponent {
 
+  /* ----------------------VIEW / INPUTS / OUTPUTS-----------------------*/
+
   @ViewChild('fileInput', { static: false }) fileInput?: ElementRef<HTMLInputElement>;
   @ViewChild('cropper') private readonly cropperComp?: ImageCropperComponent;
 
   private _imageBase64?: string | null;
-
   cropperImageBase64?: string;
 
   @Input('image')
@@ -33,32 +55,54 @@ export class OImageEditorComponent {
     return this._imageBase64;
   }
 
+  @Input('save-target') saveTarget: OImageEditorSaveTarget = 'download';
+  @Input('actions-position') actionsPosition: OImageEditorActionsPosition = 'top';
+  @Output() onSaveBase64 = new EventEmitter<string>();
+
+  /* ----------------------PUBLIC STATE (TEMPLATE)-----------------------*/
+
   activeTool: EditorTool = 'crop';
   uploadOverlay = false;
   selectedFile: File | null = null;
   dragOver = false;
   cropperLoading = false;
+
   maintainAspectRatio = false;
   aspectRatio: number | null = null;
+
   canvasRotation = 0;
   transform: ImageTransform = { scale: 1, rotate: 0, flipH: false, flipV: false };
   lastCropped?: ImageCroppedEvent;
+
   rotationDeg = 0;
   cropAdjustMode: 'rotation' | 'scale' = 'rotation';
+
   resizeLocked = false;
-  private lockedW: number | null = null;
-  private lockedH: number | null = null;
   resizePreset: ResizePreset | null = null;
   resizeRatioPreset: ResizeRatioPreset | null = 'custom';
   roundCropper = false;
+
   scalePercent = 0;
   minScale = 1;
   maxScale = 3;
+
   dotsTape = Array.from({ length: 80 });
+
+  resizeWidth: number | null = null;
+  resizeHeight: number | null = null;
+
+  cropperPosition: CropperPosition = { x1: 0, y1: 0, x2: 10_000_000, y2: 10_000_000 };
+
+  /* ----------------------PRIVATE STATE / CONSTANTS----------------------*/
+
+  private lockedW: number | null = null;
+  private lockedH: number | null = null;
+
   private readonly VIEWPORT_W = 135;
   private readonly GAP = 4;
   private readonly SMALL = 4;
   private readonly BIG = 6;
+
   private readonly INIT_CROPPER: CropperPosition = {
     x1: 0,
     y1: 0,
@@ -66,14 +110,12 @@ export class OImageEditorComponent {
     y2: 10_000_000
   };
 
-  cropperPosition: CropperPosition = { ...this.INIT_CROPPER };
-
   private cropperIsReady = false;
 
+  // OJO: estas dos variables parecen “stubs” (siempre false / null). No las toco para no cambiar comportamiento.
   private readonly commitTarget: { w: number; h: number } | null = null;
   private commitTry = 0;
   private committingResize = false;
-
 
   private loadedImg?: LoadedImage;
   private maxSizeW: number | null = null;
@@ -82,157 +124,36 @@ export class OImageEditorComponent {
   private readonly applyingCropperFromInputs = false;
   private hasManualResizeTarget = false;
 
-  resizeWidth: number | null = null;
-  resizeHeight: number | null = null;
-
   private naturalWidth: number | null = null;
   private naturalHeight: number | null = null;
 
+  private readonly ALLOWED_MIMES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'] as const;
+
   protected translateService: TranslateExtraComponentsService;
 
-  constructor(private readonly dialogService: DialogService, protected injector: Injector, private readonly cdr: ChangeDetectorRef,
-    private readonly ngZone: NgZone,) {
+  constructor(
+    private readonly dialogService: DialogService,
+    protected injector: Injector,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly ngZone: NgZone
+  ) {
     this.translateService = this.injector.get(TranslateExtraComponentsService);
+    // Garantiza INIT_CROPPER como estado inicial real (sin cambiar nada)
+    this.cropperPosition = { ...this.INIT_CROPPER };
   }
 
-  private loadFromBase64(base64: string | null): void {
-    // Reset “suave” para forzar recarga del cropper cuando cambie la imagen
-    this.cropperImageBase64 = undefined;
-
-    if (!base64) {
-      // si quieres volver a la zona de carga cuando no haya imagen:
-      this.selectedFile = null;
-      return;
-    }
-
-    // Si al setear base64 quieres “pisar” cualquier imagen previa (upload):
-    this.selectedFile = this.selectedFile ?? ({} as any); // o pon tu flag hasImage=true
-
-    // En el siguiente tick para que el cropper detecte el cambio siempre
-    queueMicrotask(() => {
-      this.cropperImageBase64 = base64;
-    });
-  }
-
-
-  setResizePreset(preset: ResizePreset | null): void {
-    if (this.resizeLocked) return;
-
-    this.resizePreset = preset;
-
-    if (preset === 'avatar') {
-      this.resizeRatioPreset = '1:1';
-    } else if (!this.resizeRatioPreset) {
-      this.resizeRatioPreset = '16:9';
-    }
-
-    this.applyResizeAspectFromState();
-  }
-
-  setResizeRatioPreset(preset: ResizeRatioPreset | null): void {
-    if (this.resizeLocked) return;
-
-    this.resizeRatioPreset = preset;
-
-    if (!this.resizePreset) {
-      this.resizePreset = 'horizontal';
-    }
-
-    this.applyResizeAspectFromState();
-  }
-
-  private getBaseRatio(preset: ResizeRatioPreset): number | null {
-    switch (preset) {
-      case '1:1': return 1;
-      case '2:1': return 2;
-      case '3:2': return 3 / 2;
-      case '4:3': return 4 / 3;
-      case '5:4': return 5 / 4;
-      case '16:9': return 16 / 9;
-    }
-  }
-
-  onCropperChange(pos: CropperPosition): void {
-    if (this.applyingCropperFromInputs) return;
-
-    this.cropperPosition = pos;
-
-    if (this.activeTool === 'resize' && !this.resizeLocked) {
-      this.resizeWidth = Math.round(pos.x2 - pos.x1);
-      this.resizeHeight = Math.round(pos.y2 - pos.y1);
-    }
-  }
-
-  private applyResizeAspectFromState(): void {
-    if (this.resizePreset == null || this.resizeRatioPreset == null) {
-      this.roundCropper = false;
-      this.setCropRatio(null);
-      return;
-    }
-
-    if (this.resizePreset === 'avatar') {
-      this.roundCropper = true;
-      this.setCropRatio(1);
-      return;
-    }
-
-    this.roundCropper = false;
-
-    if (this.resizeRatioPreset === 'custom') {
-      this.setCropRatio(null);
-      return;
-    }
-
-    const base = this.getBaseRatio(this.resizeRatioPreset);
-    if (base == null) return;
-
-    const ratio = this.resizePreset === 'vertical' ? (1 / base) : base;
-    this.setCropRatio(ratio);
-  }
-
-  toggleResizeLock(): void {
-    this.resizeLocked = !this.resizeLocked;
-
-    if (this.resizeLocked) {
-      const w = this.resizeWidth ?? this.lastCropped?.width ?? this.naturalWidth;
-      const h = this.resizeHeight ?? this.lastCropped?.height ?? this.naturalHeight;
-
-      this.lockedW = w ?? null;
-      this.lockedH = h ?? null;
-    } else {
-      this.lockedW = null;
-      this.lockedH = null;
-    }
-  }
+  /* ----------------------GETTERS (TEMPLATE)----------------------------*/
 
   get cropperStaticWidth(): number {
     return this.resizeLocked && this.lockedW ? this.lockedW : 0;
   }
+
   get cropperStaticHeight(): number {
     return this.resizeLocked && this.lockedH ? this.lockedH : 0;
   }
 
   get toolsValue(): ToolsUI {
     return this.uploadOverlay ? 'upload' : this.activeTool;
-  }
-
-  isBig(i: number): boolean {
-    return (i + 1) % 5 === 0;
-  }
-
-  private dotWidth(i: number): number {
-    return this.isBig(i) ? this.BIG : this.SMALL;
-  }
-
-  private tapeWidthPx(count: number): number {
-    let w = 0;
-    for (let i = 0; i < count; i++) w += this.dotWidth(i);
-    w += (count - 1) * this.GAP;
-    return w;
-  }
-
-  private clamp(v: number, min: number, max: number): number {
-    return Math.max(min, Math.min(max, v));
   }
 
   get rotateDotsTranslatePx(): number {
@@ -267,71 +188,71 @@ export class OImageEditorComponent {
     return -t * extra;
   }
 
-  private normalizeDeg(v: number): number {
-    while (v > 180) v -= 360;
-    while (v < -180) v += 360;
-    return v;
+  get adjustMin(): number {
+    return this.cropAdjustMode === 'rotation' ? -180 : 0;
+  }
+  get adjustMax(): number {
+    return this.cropAdjustMode === 'rotation' ? 180 : 100;
+  }
+  get adjustStep(): number {
+    return 1;
+  }
+  get adjustValue(): number {
+    return this.cropAdjustMode === 'rotation' ? this.rotationDeg : this.scalePercent;
+  }
+  get adjustPercent(): number {
+    if (this.cropAdjustMode === 'scale') {
+      return 50 + (this.scalePercent / 100) * 50;
+    }
+    return ((this.rotationDeg + 180) / 360) * 100;
+  }
+  get adjustLabel(): string {
+    return this.cropAdjustMode === 'rotation'
+      ? `${this.rotationDeg}°`
+      : `${this.scalePercent}%`;
   }
 
-  private applyRotation(deg: number): void {
-    this.canvasRotation = 0;
-    this.rotationDeg = this.normalizeDeg(deg);
-    this.transform = { ...this.transform, rotate: this.rotationDeg };
-  }
+  /* ----------------------TOOL ACTIONS (CROP/RESIZE/TRANSFORM)----------*/
 
-  private applyScalePercent(p: number): void {
-    const pct = Math.min(100, Math.max(0, Math.round(p)));
-    this.scalePercent = pct;
+  setResizePreset(preset: ResizePreset | null): void {
+    if (this.resizeLocked) return;
 
-    const scale = this.minScale + (this.maxScale - this.minScale) * (pct / 100);
-    this.transform = { ...this.transform, scale: Number(scale.toFixed(3)) };
-  }
+    this.resizePreset = preset;
 
-  rotate(): void {
-    this.canvasRotation = (this.canvasRotation + 1) % 4;
-  }
-
-  onCropperReady(dim: any): void {
-    this.cropperIsReady = true;
-    this.maxSizeW = typeof dim?.width === 'number' ? dim.width : null;
-    this.maxSizeH = typeof dim?.height === 'number' ? dim.height : null;
-  }
-
-  private async resizeBlobToExact(
-    src: Blob,
-    targetW: number,
-    targetH: number,
-    opts?: { onlyScaleDown?: boolean }
-  ): Promise<Blob> {
-    const img = await this.blobToHtmlImage(src);
-
-    const srcW = img.naturalWidth || img.width;
-    const srcH = img.naturalHeight || img.height;
-
-    let w = Math.max(1, Math.round(targetW));
-    let h = Math.max(1, Math.round(targetH));
-
-    if (opts?.onlyScaleDown) {
-      w = Math.min(w, srcW);
-      h = Math.min(h, srcH);
+    if (preset === 'avatar') {
+      this.resizeRatioPreset = '1:1';
+    } else if (!this.resizeRatioPreset) {
+      this.resizeRatioPreset = '16:9';
     }
 
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
+    this.applyResizeAspectFromState();
+  }
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas 2D context not available');
+  setResizeRatioPreset(preset: ResizeRatioPreset | null): void {
+    if (this.resizeLocked) return;
 
-    ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(img, 0, 0, w, h);
+    this.resizeRatioPreset = preset;
 
-    const mime = src.type || 'image/png';
-    const quality = (mime === 'image/jpeg' || mime === 'image/webp') ? 0.95 : undefined;
+    if (!this.resizePreset) {
+      this.resizePreset = 'horizontal';
+    }
 
-    return await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(b => (b ? resolve(b) : reject(new Error('canvas.toBlob returned null'))), mime, quality as any);
-    });
+    this.applyResizeAspectFromState();
+  }
+
+  toggleResizeLock(): void {
+    this.resizeLocked = !this.resizeLocked;
+
+    if (this.resizeLocked) {
+      const w = this.resizeWidth ?? this.lastCropped?.width ?? this.naturalWidth;
+      const h = this.resizeHeight ?? this.lastCropped?.height ?? this.naturalHeight;
+
+      this.lockedW = w ?? null;
+      this.lockedH = h ?? null;
+    } else {
+      this.lockedW = null;
+      this.lockedH = null;
+    }
   }
 
   onResizeBoxCommit(changed: 'w' | 'h'): void {
@@ -363,13 +284,6 @@ export class OImageEditorComponent {
     this.hasManualResizeTarget = true;
   }
 
-  private toPx(v: any): number | null {
-    const n = Number(v);
-    if (!Number.isFinite(n)) return null;
-    const r = Math.round(n);
-    return r > 0 ? r : null;
-  }
-
   onAdjustInput(raw: string): void {
     const v = Number(raw);
 
@@ -380,28 +294,8 @@ export class OImageEditorComponent {
     }
   }
 
-  get adjustMin(): number {
-    return this.cropAdjustMode === 'rotation' ? -180 : 0;
-  }
-  get adjustMax(): number {
-    return this.cropAdjustMode === 'rotation' ? 180 : 100;
-  }
-  get adjustStep(): number {
-    return 1;
-  }
-  get adjustValue(): number {
-    return this.cropAdjustMode === 'rotation' ? this.rotationDeg : this.scalePercent;
-  }
-  get adjustPercent(): number {
-    if (this.cropAdjustMode === 'scale') {
-      return 50 + (this.scalePercent / 100) * 50;
-    }
-    return ((this.rotationDeg + 180) / 360) * 100;
-  }
-  get adjustLabel(): string {
-    return this.cropAdjustMode === 'rotation'
-      ? `${this.rotationDeg}°`
-      : `${this.scalePercent}%`;
+  rotate(): void {
+    this.canvasRotation = (this.canvasRotation + 1) % 4;
   }
 
   flip(): void {
@@ -418,17 +312,10 @@ export class OImageEditorComponent {
     }
   }
 
+  /* ----------------------UPLOAD (INPUT/DRAG&DROP)----------------------*/
+
   openFilePicker(): void {
     this.fileInput?.nativeElement.click();
-  }
-
-  private refreshCropperLayout(): void {
-    this.cdr.detectChanges();
-
-    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
-      this.cropperComp?.onResize();
-      globalThis.dispatchEvent(new Event('resize'));
-    });
   }
 
   onToolChange(value: ToolsUI): void {
@@ -487,8 +374,7 @@ export class OImageEditorComponent {
 
   private loadFile(file: File): boolean {
     if (!file.type?.startsWith('image/')) return false;
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!allowed.includes(file.type)) return false;
+    if (!this.ALLOWED_MIMES.includes(file.type as any)) return false;
 
     this.resetEditorState();
     this.selectedFile = file;
@@ -496,27 +382,42 @@ export class OImageEditorComponent {
     return true;
   }
 
-  private resetEditorState(): void {
-    this.lastCropped = undefined;
-    this.canvasRotation = 0;
-    this.transform = { scale: 1, rotate: 0, flipH: false, flipV: false };
-    this.aspectRatio = null;
-    this.maintainAspectRatio = false;
-    this.rotationDeg = 0;
-    this.scalePercent = 0;
-    this.resizeWidth = null;
-    this.resizeHeight = null;
-    this.naturalWidth = null;
-    this.naturalHeight = null;
-    this.roundCropper = false;
-    this.resizePreset = null;
-    this.resizeLocked = false;
-    this.lockedW = null;
-    this.lockedH = null;
-    this.resizeRatioPreset = 'custom';
-    this.cropperPosition = { ...this.INIT_CROPPER };
-    this.cropperIsReady = false;
-    this.hasManualResizeTarget = false;
+  private loadFromBase64(base64: string | null): void {
+    // Reset “suave” para forzar recarga del cropper cuando cambie la imagen
+    this.cropperImageBase64 = undefined;
+
+    if (!base64) {
+      // si quieres volver a la zona de carga cuando no haya imagen:
+      this.selectedFile = null;
+      return;
+    }
+
+    // Si al setear base64 quieres “pisar” cualquier imagen previa (upload):
+    this.selectedFile = this.selectedFile ?? ({} as any); // o pon tu flag hasImage=true
+
+    // En el siguiente tick para que el cropper detecte el cambio siempre
+    queueMicrotask(() => {
+      this.cropperImageBase64 = base64;
+    });
+  }
+
+  /* ----------------------CROPPER EVENTS (NGX-IMAGE-CROPPER)------------*/
+
+  onCropperReady(dim: CropperReadyDim): void {
+    this.cropperIsReady = true;
+    this.maxSizeW = typeof dim?.width === 'number' ? dim.width : null;
+    this.maxSizeH = typeof dim?.height === 'number' ? dim.height : null;
+  }
+
+  onCropperChange(pos: CropperPosition): void {
+    if (this.applyingCropperFromInputs) return;
+
+    this.cropperPosition = pos;
+
+    if (this.activeTool === 'resize' && !this.resizeLocked) {
+      this.resizeWidth = Math.round(pos.x2 - pos.x1);
+      this.resizeHeight = Math.round(pos.y2 - pos.y1);
+    }
   }
 
   onImageCropped(e: ImageCroppedEvent): void {
@@ -565,58 +466,6 @@ export class OImageEditorComponent {
     }
   }
 
-  private getScreenToOutputRatios(): { rx: number; ry: number } | null {
-    const maxW = this.maxSizeW;
-    const maxH = this.maxSizeH;
-    const tW = this.loadedImg?.transformed?.size?.width ?? this.naturalWidth;
-    const tH = this.loadedImg?.transformed?.size?.height ?? this.naturalHeight;
-
-    if (!maxW || !maxH || !tW || !tH) return null;
-
-    return { rx: tW / maxW, ry: tH / maxH };
-  }
-
-  private applyCropperForOutput(targetOutW: number, targetOutH: number): void {
-    if (!this.cropperIsReady) return;
-
-    const ratios = this.getScreenToOutputRatios();
-    if (!ratios) return;
-
-    const { rx, ry } = ratios;
-
-    const desiredScreenW = Math.max(1, Math.round(targetOutW / rx));
-    const desiredScreenH = Math.max(1, Math.round(targetOutH / ry));
-
-    const cur = this.cropperPosition;
-    const imgW = this.maxSizeW;
-    const imgH = this.maxSizeH;
-    const isInit = cur.x2 > 1_000_000 || cur.y2 > 1_000_000;
-
-    const cx = isInit ? imgW / 2 : (cur.x1 + cur.x2) / 2;
-    const cy = isInit ? imgH / 2 : (cur.y1 + cur.y2) / 2;
-
-    const w = Math.min(desiredScreenW, imgW);
-    const h = Math.min(desiredScreenH, imgH);
-
-    let x1 = cx - w / 2;
-    let y1 = cy - h / 2;
-
-    x1 = Math.max(0, Math.min(x1, imgW - w));
-    y1 = Math.max(0, Math.min(y1, imgH - h));
-
-    const x1i = Math.round(x1);
-    const y1i = Math.round(y1);
-
-    this.cropperPosition = {
-      x1: x1i,
-      y1: y1i,
-      x2: x1i + w,
-      y2: y1i + h
-    };
-
-    this.refreshCropperLayout();
-  }
-
   onImageLoaded(img?: any): void {
     this.cropperLoading = false;
 
@@ -634,22 +483,12 @@ export class OImageEditorComponent {
     this.refreshCropperLayout();
   }
 
-  private syncResizeInputsFromCurrent(): void {
-    if (this.resizeLocked) return;
-    if (this.hasManualResizeTarget) return;
-
-    const w = this.lastCropped?.width ?? this.naturalWidth;
-    const h = this.lastCropped?.height ?? this.naturalHeight;
-    if (!w || !h) return;
-
-    this.resizeWidth ??= w;
-    this.resizeHeight ??= h;
-  }
-
   onLoadImageFailed(): void {
     this.cropperLoading = false;
     console.error('[o-image-editor] loadImageFailed');
   }
+
+  /* ----------------------SAVE METHODS----------------------------------*/
 
   async save(): Promise<void> {
     const blob = await this.getFinalBlob();
@@ -658,14 +497,24 @@ export class OImageEditorComponent {
       return;
     }
 
-    const suggestedName = this.buildSuggestedFileName(blob.type || 'image/png');
-
-    const saved = await this.persistBlobToDisk(blob, suggestedName);
-    if (!saved) {
+    if (this.saveTarget === 'base64') {
+      await this.emitBase64(blob);
       return;
     }
 
+    await this.persistAndConfirm(blob);
+  }
+
+  private async persistAndConfirm(blob: Blob): Promise<void> {
+    const suggestedName = this.buildSuggestedFileName(blob.type || 'image/png');
+    const saved = await this.persistBlobToDisk(blob, suggestedName);
+    if (!saved) return;
     this.askLoadNewOrContinue();
+  }
+
+  private async emitBase64(blob: Blob): Promise<void> {
+    const dataUrl = await this.blobToDataUrl(blob);
+    this.onSaveBase64.emit(dataUrl);
   }
 
   private getCroppedBlob(): Blob | null {
@@ -751,18 +600,9 @@ export class OImageEditorComponent {
         const handle = await g.showSaveFilePicker({
           suggestedName,
           types: [
-            {
-              description: 'PNG image',
-              accept: { 'image/png': ['.png'] }
-            },
-            {
-              description: 'JPEG image',
-              accept: { 'image/jpeg': ['.jpg', '.jpeg'] }
-            },
-            {
-              description: 'WebP image',
-              accept: { 'image/webp': ['.webp'] }
-            }
+            { description: 'PNG image', accept: { 'image/png': ['.png'] } },
+            { description: 'JPEG image', accept: { 'image/jpeg': ['.jpg', '.jpeg'] } },
+            { description: 'WebP image', accept: { 'image/webp': ['.webp'] } }
           ]
         });
 
@@ -790,6 +630,212 @@ export class OImageEditorComponent {
     return true;
   }
 
+  private askLoadNewOrContinue(): void {
+    const actionNew = this.getText('UPLOAD_NEW');
+    const actionEdit = this.getText('KEEP_EDITING');
+    const saveMessage = this.getText('SAVE_CONFIRM');
+    const question = this.getText('QUESTION');
+
+    const config: ODialogConfig = {
+      icon: 'save',
+      okButtonText: actionNew,
+      cancelButtonText: actionEdit
+    };
+
+    this.dialogService.confirm(saveMessage, question, config);
+
+    this.dialogService.dialogRef.afterClosed().pipe(take(1)).subscribe((loadNew: boolean) => {
+      if (loadNew) {
+        this.resetEditorState();
+        this.selectedFile = null;
+      }
+    });
+  }
+
+  /* ----------------------RESET METHODS---------------------------------*/
+
+  reset(): void {
+    this.resetEditsState();
+    this.cdr.detectChanges();
+
+    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+      this.cropperComp?.resetCropperPosition();
+    });
+  }
+
+  private resetEditorState(): void {
+    this.lastCropped = undefined;
+    this.canvasRotation = 0;
+    this.transform = { scale: 1, rotate: 0, flipH: false, flipV: false };
+    this.aspectRatio = null;
+    this.maintainAspectRatio = false;
+    this.rotationDeg = 0;
+    this.scalePercent = 0;
+
+    this.resizeWidth = null;
+    this.resizeHeight = null;
+    this.naturalWidth = null;
+    this.naturalHeight = null;
+
+    this.roundCropper = false;
+    this.resizePreset = null;
+
+    this.resizeLocked = false;
+    this.lockedW = null;
+    this.lockedH = null;
+
+    this.resizeRatioPreset = 'custom';
+
+    this.cropperPosition = { ...this.INIT_CROPPER };
+    this.cropperIsReady = false;
+    this.hasManualResizeTarget = false;
+  }
+
+  private resetEditsState(): void {
+    this.lastCropped = undefined;
+    this.canvasRotation = 0;
+    this.transform = { scale: 1, rotate: 0, flipH: false, flipV: false };
+    this.rotationDeg = 0;
+    this.scalePercent = 0;
+
+    this.resizeLocked = false;
+    this.lockedW = null;
+    this.lockedH = null;
+
+    this.resizePreset = null;
+    this.resizeRatioPreset = 'custom';
+    this.roundCropper = false;
+    this.applyResizeAspectFromState();
+
+    if (this.naturalWidth && this.naturalHeight) {
+      this.resizeWidth = this.naturalWidth;
+      this.resizeHeight = this.naturalHeight;
+    } else {
+      this.resizeWidth = null;
+      this.resizeHeight = null;
+    }
+
+    this.cropperPosition = { ...this.INIT_CROPPER };
+    this.cropperIsReady = false;
+    this.hasManualResizeTarget = false;
+  }
+
+  /* ----------------------LAYOUT / CD HELPERS---------------------------*/
+
+  private refreshCropperLayout(): void {
+    this.cdr.detectChanges();
+
+    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+      this.cropperComp?.onResize();
+      globalThis.dispatchEvent(new Event('resize'));
+    });
+  }
+
+  /* ----------------------CROPPER / RESIZE INTERNAL HELPERS-------------*/
+
+  private syncResizeInputsFromCurrent(): void {
+    if (this.resizeLocked) return;
+    if (this.hasManualResizeTarget) return;
+
+    const w = this.lastCropped?.width ?? this.naturalWidth;
+    const h = this.lastCropped?.height ?? this.naturalHeight;
+    if (!w || !h) return;
+
+    this.resizeWidth ??= w;
+    this.resizeHeight ??= h;
+  }
+
+  private getScreenToOutputRatios(): { rx: number; ry: number } | null {
+    const maxW = this.maxSizeW;
+    const maxH = this.maxSizeH;
+    const tW = this.loadedImg?.transformed?.size?.width ?? this.naturalWidth;
+    const tH = this.loadedImg?.transformed?.size?.height ?? this.naturalHeight;
+
+    if (!maxW || !maxH || !tW || !tH) return null;
+
+    return { rx: tW / maxW, ry: tH / maxH };
+  }
+
+  private applyCropperForOutput(targetOutW: number, targetOutH: number): void {
+    if (!this.cropperIsReady) return;
+
+    const ratios = this.getScreenToOutputRatios();
+    if (!ratios) return;
+
+    const { rx, ry } = ratios;
+
+    const desiredScreenW = Math.max(1, Math.round(targetOutW / rx));
+    const desiredScreenH = Math.max(1, Math.round(targetOutH / ry));
+
+    const cur = this.cropperPosition;
+    const imgW = this.maxSizeW!;
+    const imgH = this.maxSizeH!;
+    const isInit = cur.x2 > 1_000_000 || cur.y2 > 1_000_000;
+
+    const cx = isInit ? imgW / 2 : (cur.x1 + cur.x2) / 2;
+    const cy = isInit ? imgH / 2 : (cur.y1 + cur.y2) / 2;
+
+    const w = Math.min(desiredScreenW, imgW);
+    const h = Math.min(desiredScreenH, imgH);
+
+    let x1 = cx - w / 2;
+    let y1 = cy - h / 2;
+
+    x1 = Math.max(0, Math.min(x1, imgW - w));
+    y1 = Math.max(0, Math.min(y1, imgH - h));
+
+    const x1i = Math.round(x1);
+    const y1i = Math.round(y1);
+
+    this.cropperPosition = {
+      x1: x1i,
+      y1: y1i,
+      x2: x1i + w,
+      y2: y1i + h
+    };
+
+    this.refreshCropperLayout();
+  }
+
+  /* ----------------------IMAGE/FILE HELPERS----------------------------*/
+
+  private async resizeBlobToExact(
+    src: Blob,
+    targetW: number,
+    targetH: number,
+    opts?: { onlyScaleDown?: boolean }
+  ): Promise<Blob> {
+    const img = await this.blobToHtmlImage(src);
+
+    const srcW = img.naturalWidth || img.width;
+    const srcH = img.naturalHeight || img.height;
+
+    let w = Math.max(1, Math.round(targetW));
+    let h = Math.max(1, Math.round(targetH));
+
+    if (opts?.onlyScaleDown) {
+      w = Math.min(w, srcW);
+      h = Math.min(h, srcH);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D context not available');
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+
+    const mime = src.type || 'image/png';
+    const quality = (mime === 'image/jpeg' || mime === 'image/webp') ? 0.95 : undefined;
+
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(b => (b ? resolve(b) : reject(new Error('canvas.toBlob returned null'))), mime, quality as any);
+    });
+  }
+
   private mimeFromFilename(name?: string): string | null {
     if (!name) return null;
     const ext = name.split('.').pop()?.toLowerCase();
@@ -800,6 +846,15 @@ export class OImageEditorComponent {
       case 'webp': return 'image/webp';
       default: return null;
     }
+  }
+
+  private blobToDataUrl(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => resolve(String(reader.result));
+      reader.readAsDataURL(blob);
+    });
   }
 
   private blobToHtmlImage(blob: Blob): Promise<HTMLImageElement> {
@@ -814,8 +869,7 @@ export class OImageEditorComponent {
 
       img.onerror = (err) => {
         URL.revokeObjectURL(url);
-        const error =
-          err instanceof Error ? err : new Error('Failed to load image from Blob');
+        const error = err instanceof Error ? err : new Error('Failed to load image from Blob');
         reject(error);
       };
 
@@ -872,75 +926,97 @@ export class OImageEditorComponent {
     URL.revokeObjectURL(url);
   }
 
-  private askLoadNewOrContinue(): void {
-    const actionNew = this.getText('UPLOAD_NEW');
-    const actionEdit = this.getText('KEEP_EDITING');
-    const saveMessage = this.getText('SAVE_CONFIRM');
-    const question = this.getText('QUESTION');
+  /* ----------------------MATH / UI HELPERS-----------------------------*/
 
-    const config: ODialogConfig = {
-      icon: 'save',
-      okButtonText: actionNew,
-      cancelButtonText: actionEdit
-    };
-
-    this.dialogService.confirm(
-      saveMessage,
-      question,
-      config
-    );
-
-    this.dialogService.dialogRef.afterClosed().pipe(take(1)).subscribe((loadNew: boolean) => {
-      if (loadNew) {
-        this.resetEditorState();
-        this.selectedFile = null;
-      }
-    });
+  isBig(i: number): boolean {
+    return (i + 1) % 5 === 0;
   }
 
-  reset(): void {
-    this.resetEditsState();
-    this.cdr.detectChanges();
-
-    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
-      this.cropperComp?.resetCropperPosition();
-    });
+  private dotWidth(i: number): number {
+    return this.isBig(i) ? this.BIG : this.SMALL;
   }
 
-  private resetEditsState(): void {
-    this.lastCropped = undefined;
-    this.canvasRotation = 0;
-    this.transform = { scale: 1, rotate: 0, flipH: false, flipV: false };
-    this.rotationDeg = 0;
-    this.scalePercent = 0;
+  private tapeWidthPx(count: number): number {
+    let w = 0;
+    for (let i = 0; i < count; i++) w += this.dotWidth(i);
+    w += (count - 1) * this.GAP;
+    return w;
+  }
 
-    this.resizeLocked = false;
-    this.lockedW = null;
-    this.lockedH = null;
+  private clamp(v: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, v));
+  }
 
-    this.resizePreset = null;
-    this.resizeRatioPreset = 'custom';
+  private toPx(v: any): number | null {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return null;
+    const r = Math.round(n);
+    return r > 0 ? r : null;
+  }
+
+  /* ----------------------INTERNAL STATE HELPERS------------------------*/
+
+  private getBaseRatio(preset: ResizeRatioPreset): number | null {
+    switch (preset) {
+      case '1:1': return 1;
+      case '2:1': return 2;
+      case '3:2': return 3 / 2;
+      case '4:3': return 4 / 3;
+      case '5:4': return 5 / 4;
+      case '16:9': return 16 / 9;
+    }
+  }
+
+  private applyResizeAspectFromState(): void {
+    if (this.resizePreset == null || this.resizeRatioPreset == null) {
+      this.roundCropper = false;
+      this.setCropRatio(null);
+      return;
+    }
+
+    if (this.resizePreset === 'avatar') {
+      this.roundCropper = true;
+      this.setCropRatio(1);
+      return;
+    }
+
     this.roundCropper = false;
-    this.applyResizeAspectFromState();
 
-    if (this.naturalWidth && this.naturalHeight) {
-      this.resizeWidth = this.naturalWidth;
-      this.resizeHeight = this.naturalHeight;
-    } else {
-      this.resizeWidth = null;
-      this.resizeHeight = null;
+    if (this.resizeRatioPreset === 'custom') {
+      this.setCropRatio(null);
+      return;
     }
 
-    this.cropperPosition = { ...this.INIT_CROPPER };
-    this.cropperIsReady = false;
-    this.hasManualResizeTarget = false;
+    const base = this.getBaseRatio(this.resizeRatioPreset);
+    if (base == null) return;
+
+    const ratio = this.resizePreset === 'vertical' ? (1 / base) : base;
+    this.setCropRatio(ratio);
   }
 
-  private getText(text: string): string {
-    if (this.translateService) {
-      return this.translateService.get(text);
-    }
-    return text;
+  private normalizeDeg(v: number): number {
+    while (v > 180) v -= 360;
+    while (v < -180) v += 360;
+    return v;
   }
 
+  private applyRotation(deg: number): void {
+    this.canvasRotation = 0;
+    this.rotationDeg = this.normalizeDeg(deg);
+    this.transform = { ...this.transform, rotate: this.rotationDeg };
+  }
+
+  private applyScalePercent(p: number): void {
+    const pct = Math.min(100, Math.max(0, Math.round(p)));
+    this.scalePercent = pct;
+
+    const scale = this.minScale + (this.maxScale - this.minScale) * (pct / 100);
+    this.transform = { ...this.transform, scale: Number(scale.toFixed(3)) };
+  }
+
+  /* ----------------------I18N------------------------------------------*/
+
+  private getText(key: string): string {
+    return this.translateService?.get(key) ?? key;
+  }
 }
