@@ -57,7 +57,7 @@ export class OImageEditorComponent {
 
   @Input('save-target') saveTarget: OImageEditorSaveTarget = 'download';
   @Input('actions-position') actionsPosition: OImageEditorActionsPosition = 'top';
-  @Output() oSaveBase64 = new EventEmitter<string>();
+  @Output() onSaveBase64 = new EventEmitter<string>();
 
   /* ----------------------PUBLIC STATE (TEMPLATE)-----------------------*/
 
@@ -514,7 +514,7 @@ export class OImageEditorComponent {
 
   private async emitBase64(blob: Blob): Promise<void> {
     const dataUrl = await this.blobToDataUrl(blob);
-    this.oSaveBase64.emit(dataUrl);
+    this.onSaveBase64.emit(dataUrl);
   }
 
   private getCroppedBlob(): Blob | null {
