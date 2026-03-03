@@ -8,7 +8,8 @@ import { OExtraComponentsModule } from 'ontimize-web-ngx-extra-components';
 import { APP_CONFIG, ONTIMIZE_PROVIDERS, OntimizeWebModule } from 'ontimize-web-ngx';
 import { CONFIG } from './app.config';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HomeModule } from './home/home.module';
+import { DataViewTestModule } from './data-view/data-view-test.module';
+import { ImageEditorTestModule } from './image-editor/image-editor-test.module';
 @NgModule({
   declarations: [
     AppComponent
@@ -20,7 +21,8 @@ import { HomeModule } from './home/home.module';
     OExtraComponentsModule,
     OntimizeWebModule,
     OntimizeWebModule.forRoot(CONFIG),
-    HomeModule
+    DataViewTestModule,
+    ImageEditorTestModule
   ],
   providers: [
     { provide: APP_CONFIG, useValue: CONFIG },

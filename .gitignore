@@ -46,4 +46,4 @@ testem.log
 .DS_Store
 Thumbs.db
 reports/ut_report.xml
-projects/data-view-app-test/src/assets/.gitkeep
+projects/app-test/src/assets/.gitkeep
