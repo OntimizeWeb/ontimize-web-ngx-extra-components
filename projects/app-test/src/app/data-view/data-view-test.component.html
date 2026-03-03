@@ -1,10 +1,10 @@
 <o-app-layout>
-  <!--
-  <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
+
+  <!-- <button mat-button (click)="dv.changeView('grid')">Vista grid</button>
   <button mat-button (click)="dv.changeView('table')">Vista tabla</button> -->
 
   <o-data-view #dv attr="dataView" service-type="packs" entity="packs" keys="id" columns="id;name;location;price;duration;score"
-    [table-config]="tableCfg" [grid-config]="gridCfg" quick-filter-placeholder="test" refresh-button="no" toggle-on-toolbar="yes"
+    [table-config]="tableCfg" [grid-config]="gridCfg" quick-filter-placeholder="test" refresh-button="no" toggle-button="yes"
     show-buttons-text="no" title="Data View Example" pagination-controls="no">
 
     <ng-template oDataViewTableColumns>

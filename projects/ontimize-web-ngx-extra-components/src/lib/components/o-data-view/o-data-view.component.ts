@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
+import { BooleanInputConverter, Codes, FilterExpression, LocalStorageService, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -18,10 +18,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @ViewChild('grid') grid: OGridComponent;
   @ViewChild('toggleGroup') toggleGroup: OButtonToggleGroupComponent;
 
-  @ContentChild(ODataViewGridItemDirective)
+  @ContentChild(ODataViewGridItemDirective, { static: true })
   gridItemTpl?: ODataViewGridItemDirective;
 
-  @ContentChild(ODataViewTableColumnsDirective)
+  @ContentChild(ODataViewTableColumnsDirective, { static: true })
   tableTpl?: ODataViewTableColumnsDirective;
 
   @Input('default-view') defaultView?: ODataViewMode;
@@ -208,59 +208,115 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   ngAfterViewInit(): void {
-    // Initialize and synchronize table columns once the view and projected content are ready
     if (this.tableTpl && this.table) {
       this.syncTableColumnsWithTable();
     }
   }
 
   ngOnDestroy(): void {
-    // Clean up the created view to avoid memory leaks
+    if (this.defaultView === 'table') this.persistViewState(this.table);
+    else if (this.defaultView === 'grid') this.persistViewState(this.grid);
     if (this.columnsView) {
       this.columnsView.destroy();
       this.columnsView = null;
     }
   }
 
+  private forceUpdateState(comp: any): void {
+    if (!this.storeState || !comp?.updateStateStorage) return;
+
+    (comp as any).alreadyStored = false;
+    comp.updateStateStorage();
+  }
+
+  private flushCurrentViewState(): void {
+    if (!this.storeState) return;
+
+    const comp = this.defaultView === 'grid' ? this.grid : this.table;
+
+    this.ensureStorageUser(comp);      // <- clave
+    this.forceUpdateState(comp);
+  }
+
+  private persistViewState(comp: any): void {
+    if (!this.storeState || !comp?.injector) return;
+
+    const ls = comp.injector.get(LocalStorageService, null);
+    if (!ls) return;
+
+    ls.updateComponentStorage(comp, comp.getRouteKey?.());
+  }
+
+  private restoreViewState(comp: any): void {
+    if (!this.storeState || !comp) return;
+    comp.componentStateService?.initialize?.(comp);
+  }
+
+  private ensureStorageUser(comp: any): void {
+    if (!comp?.injector) return;
+
+    const ls = comp.injector.get(LocalStorageService, null);
+    if (!ls) return;
+
+    const data: any = ls.getStoredData();
+    data.session = data.session || {};
+
+    if (!data.session.user) {
+      data.session.user = 'demo';
+      ls.setLocalStorage(data);
+    }
+  }
+
   private syncTableColumnsWithTable(): void {
-    if (!this.tableTpl || !this.table?.injector) {
-      return;
-    }
-    try {
-      // Create the embedded view with the correct injector
-      this.columnsView = this.vcr.createEmbeddedView(
-        this.tableTpl.templateRef,
-        {},
-        { injector: this.table.injector }
-      );
+    if (!this.tableTpl || !this.table?.injector) return;
 
-      // Detect changes to ensure nodes are fully initialized
-      this.columnsView.detectChanges();
-      setTimeout(() => {
-        this.table.parseVisibleColumns(true);
-        if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
-          this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
-        }
-      }, 0);
-
-    } catch (error) {
-      console.error('Error registering table columns:', error);
+    if (this.columnsView) {
+      this.columnsView.destroy();
+      this.columnsView = null;
     }
+    this.vcr.clear();
+
+    this.columnsView = this.vcr.createEmbeddedView(
+      this.tableTpl.templateRef,
+      {},
+      { injector: this.table.injector }
+    );
+
+    this.columnsView.detectChanges();
+
+    setTimeout(() => {
+      this.table.parseVisibleColumns(true);
+
+      if (Util.isDefined((this.table as any).oTableColumnsGroupingComponent)) {
+        this.table.setGroupColumns((this.table as any).oTableColumnsGroupingComponent.columnsArray);
+      }
+
+      if (this.storeState) {
+        this.ensureStorageUser(this.table);
+        (this.table as any).componentStateService?.initialize?.(this.table);
+      }
+    }, 0);
   }
 
   public changeView(value: ODataViewMode): void {
     const previousView = this.defaultView;
+    const nextView = this.toggleGroup ? this.toggleGroup.getValue() : value;
 
-    if (this.toggleGroup) {
-      this.defaultView = this.toggleGroup.getValue();
-    } else {
-      this.defaultView = value;
-    }
+    Promise.resolve().then(() => {
+      if (previousView === 'table') this.persistViewState(this.table);
+      else if (previousView === 'grid') this.persistViewState(this.grid);
 
-    // If switching to table and columns aren't registered, register them
-    if (this.defaultView === 'table' && previousView !== 'table') {
-      setTimeout(() => this.syncTableColumnsWithTable(), 0);
-    }
+      this.defaultView = nextView;
+
+      if (this.defaultView === 'table') {
+        setTimeout(() => {
+          this.syncTableColumnsWithTable();
+          setTimeout(() => this.restoreViewState(this.table), 0);
+        }, 0);
+      } else if (this.defaultView === 'grid') {
+        setTimeout(() => this.restoreViewState(this.grid), 0);
+      }
+    });
   }
 
   ngOnChanges(): void {
@@ -284,7 +340,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_autoAlignTitles = this.resolveYesNoWithGlobal(cfg.autoAlignTitles, g?.autoAlignTitles, 'yes');
     this.r_table_collapseGroupedColumns = this.setDefaultValue(cfg.collapseGroupedColumns, 'no');
     this.r_table_columnsVisibilityButton = this.setDefaultValue(cfg.columnsVisibilityButton, 'yes');
-    this.r_table_defaultVisibleColumns = this.setDefaultValue(cfg.defaultVisibleColumns, '');
+    this.r_table_defaultVisibleColumns = this.optionalString(cfg.defaultVisibleColumns);
 
     this.r_table_editionMode = this.resolveStringWithGlobal(cfg.editionMode, g?.editionMode, Codes.EDITION_MODE_NONE);
     this.r_table_exportButton = this.setDefaultValue(cfg.exportButton, 'yes');
@@ -295,10 +351,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       'yes'
     );
     this.r_table_groupable = this.setDefaultValue(cfg.groupable, 'yes');
-    this.r_table_groupedColumns = this.setDefaultValue(cfg.groupedColumns, '');
+    this.r_table_groupedColumns = this.optionalString(cfg.groupedColumns);
     this.r_table_horizontalScroll = this.setDefaultValue(cfg.horizontalScroll, 'no');
     this.r_table_multipleSort = this.setDefaultValue(cfg.multipleSort, 'yes');
-    this.r_table_nonHidableColumns = this.setDefaultValue(cfg.nonHidableColumns, '');
+    this.r_table_nonHidableColumns = this.optionalString(cfg.nonHidableColumns);
     this.r_table_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, Codes.PAGE_SIZE_OPTIONS);
     this.r_table_resizable = this.setDefaultValue(cfg.resizable, 'yes');
     this.r_table_selectAllCheckbox = this.setDefaultValue(cfg.selectAllCheckbox, 'no');
@@ -310,9 +366,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_showChartsOnDemandOption = this.setDefaultValue(cfg.showChartsOnDemandOption, 'yes');
     this.r_table_showReportOnDemandOption = this.setDefaultValue(cfg.showReportOnDemandOption, 'yes');
     this.r_table_showResetWidthOption = this.setDefaultValue(cfg.showResetWidthOption, 'yes');
-    this.r_table_sortColumns = this.setDefaultValue(cfg.sortColumns, '');
+    this.r_table_sortColumns = this.optionalString(cfg.sortColumns);
     this.r_table_virtualScroll = this.setDefaultValue(cfg.virtualScroll, 'yes');
-    this.r_table_visibleColumns = this.setDefaultValue(cfg.visibleColumns, '');
+    this.r_table_visibleColumns = this.optionalString(cfg.visibleColumns);
     this.r_table_visibleExportDialogButtons = this.setDefaultValue(cfg.visibleExportDialogButtons, '');
     this.r_table_selectionOnRowClick = this.resolveYesNoWithGlobal(cfg.selectionOnRowClick, g?.selectionOnRowClick, 'yes');
     this.r_table_detailMode = this.resolveStringWithGlobal(cfg.detailMode, g?.detailMode, Codes.DETAIL_MODE_CLICK);
@@ -335,8 +391,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_grid_orderable = this.setDefaultValue(cfg.orderable, 'no');
     this.r_grid_showFooter = this.setDefaultValue(cfg.showFooter, 'yes');
     this.r_grid_showPageSize = this.setDefaultValue(cfg.showPageSize, 'no');
-    this.r_grid_sortColumn = this.setDefaultValue(cfg.sortColumn, '');
-    this.r_grid_sortableColumns = this.setDefaultValue(cfg.sortableColumns, '');
+    this.r_grid_sortColumn = this.optionalString(cfg.sortColumn);
+    this.r_grid_sortableColumns = this.optionalString(cfg.sortableColumns);
     this.r_grid_detailMode = this.setDefaultValue(cfg.detailMode, Codes.DETAIL_MODE_CLICK);
     this.r_grid_pageSizeOptions = this.setDefaultArray(cfg.pageSizeOptions, [8, 16, 24, 32, 64]);
     this.r_grid_quickFilterColumns = this.setDefaultValue(cfg.quickFilterColumns, this.columns);
@@ -390,6 +446,12 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (globalResolved !== undefined) return globalResolved;
 
     return defaultVal;
+  }
+
+  private optionalString(v?: string | null): string | undefined {
+    if (v === undefined || v === null) return undefined;
+    const s = String(v).trim();
+    return s.length ? s : undefined;
   }
 
 }
