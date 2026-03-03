@@ -221,23 +221,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.columnsView = null;
     }
   }
-
-  private forceUpdateState(comp: any): void {
-    if (!this.storeState || !comp?.updateStateStorage) return;
-
-    (comp as any).alreadyStored = false;
-    comp.updateStateStorage();
-  }
-
-  private flushCurrentViewState(): void {
-    if (!this.storeState) return;
-
-    const comp = this.defaultView === 'grid' ? this.grid : this.table;
-
-    this.ensureStorageUser(comp);      // <- clave
-    this.forceUpdateState(comp);
-  }
-
   private persistViewState(comp: any): void {
     if (!this.storeState || !comp?.injector) return;
 
