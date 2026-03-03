@@ -8,7 +8,7 @@
 
   <div class="o-data-view-component">
 
-    <o-table #table *ngIf="defaultView === 'table'" [attr]="attr" [columns]="columns" [configure-service-args]="configureServiceArgs"
+    <o-table #table *ngIf="defaultView === 'table'" [attr]="attr + '__table'" [columns]="columns" [configure-service-args]="configureServiceArgs"
       [entity]="entity" [keys]="keys" [pageable]="pageable" [paginated-query-method]="paginatedQueryMethod" [parent-keys]="parentKeys"
       [query-fallback-function]="queryFallbackFunction" [query-method]="queryMethod" [query-on-bind]="queryOnBind"
       [query-on-init]="queryOnInit" [query-rows]="queryRows" [query-with-null-parent-keys]="queryWithNullParentKeys" [service]="service"
@@ -45,7 +45,7 @@
 
     </o-table>
 
-    <o-grid #grid class="data-view-grid" *ngIf="defaultView === 'grid'" [attr]="attr" [columns]="columns" [configure-service-args]="configureServiceArgs"
+    <o-grid #grid class="data-view-grid" *ngIf="defaultView === 'grid'" [attr]="attr + '__grid'" [columns]="columns" [configure-service-args]="configureServiceArgs"
       [entity]="entity" [keys]="keys" [pageable]="pageable" [paginated-query-method]="paginatedQueryMethod" [parent-keys]="parentKeys"
       [query-fallback-function]="queryFallbackFunction" [query-method]="queryMethod" [query-on-bind]="queryOnBind"
       [query-on-init]="queryOnInit" [query-rows]="queryRows" [query-with-null-parent-keys]="queryWithNullParentKeys" [service]="service"

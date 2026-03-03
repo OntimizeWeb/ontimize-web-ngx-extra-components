@@ -18,10 +18,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @ViewChild('grid') grid: OGridComponent;
   @ViewChild('toggleGroup') toggleGroup: OButtonToggleGroupComponent;
 
-  @ContentChild(ODataViewGridItemDirective)
+  @ContentChild(ODataViewGridItemDirective, { static: true })
   gridItemTpl?: ODataViewGridItemDirective;
 
-  @ContentChild(ODataViewTableColumnsDirective)
+  @ContentChild(ODataViewTableColumnsDirective, { static: true })
   tableTpl?: ODataViewTableColumnsDirective;
 
   @Input('default-view') defaultView?: ODataViewMode;
@@ -215,10 +215,22 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   ngOnDestroy(): void {
+    this.flushCurrentViewState();
     // Clean up the created view to avoid memory leaks
     if (this.columnsView) {
       this.columnsView.destroy();
       this.columnsView = null;
+    }
+  }
+
+  private flushCurrentViewState(): void {
+    if (!this.storeState) return;
+
+    const comp = this.defaultView === 'grid' ? (this.grid as any) : (this.table as any);
+    if (comp?.updateStateStorage) {
+      // Forzar guardado aunque ya se haya guardado antes
+      comp.alreadyStored = false;
+      comp.updateStateStorage();
     }
   }
 
@@ -249,6 +261,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   public changeView(value: ODataViewMode): void {
+    this.flushCurrentViewState();
     const previousView = this.defaultView;
 
     if (this.toggleGroup) {
