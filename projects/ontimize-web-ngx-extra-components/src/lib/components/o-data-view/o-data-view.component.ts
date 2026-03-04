@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
+import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OFilterBuilderComponent, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -17,6 +17,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @ViewChild('table', { static: false }) table: OTableComponent;
   @ViewChild('grid') grid: OGridComponent;
   @ViewChild('toggleGroup') toggleGroup: OButtonToggleGroupComponent;
+
+  private filterBuilder?: OFilterBuilderComponent;
 
   @ContentChild(ODataViewGridItemDirective)
   gridItemTpl?: ODataViewGridItemDirective;
@@ -212,6 +214,8 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.tableTpl && this.table) {
       this.syncTableColumnsWithTable();
     }
+
+    this.applyFilterBuilderToChildren();
   }
 
   ngOnDestroy(): void {
@@ -220,6 +224,42 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.columnsView.destroy();
       this.columnsView = null;
     }
+  }
+
+  private getActiveCmp(): OTableComponent | OGridComponent | undefined {
+    return this.defaultView === 'grid' ? this.grid : this.table;
+  }
+
+  /** Re-apply the stored filterBuilder to current children (table/grid) */
+  private applyFilterBuilderToChildren(): void {
+    if (!this.filterBuilder) return;
+    this.table?.setFilterBuilder(this.filterBuilder);
+    this.grid?.setFilterBuilder(this.filterBuilder);
+  }
+
+  /** Method used by OFilterBuilderComponent when target.pageable === false */
+  public reloadData(): void {
+    const cmp: any = this.getActiveCmp();
+    cmp?.reloadData?.();
+  }
+
+  /** Method used by OFilterBuilderComponent when target.pageable === true */
+  public reloadPaginatedDataFromStart(): void {
+    const cmp: any = this.getActiveCmp();
+    // fallback just in case a view doesn't implement paginated reload
+    cmp?.reloadPaginatedDataFromStart?.() ?? cmp?.reloadData?.();
+  }
+
+  public setFilterBuilder(fb: OFilterBuilderComponent): void {
+    this.filterBuilder = fb;
+    this.applyFilterBuilderToChildren();
+  }
+
+  private parseColsList(v?: string | null): string[] {
+    return (v ?? '')
+      .split(';')
+      .map(s => s.trim())
+      .filter(Boolean);
   }
 
   private syncTableColumnsWithTable(): void {
@@ -260,6 +300,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     // If switching to table and columns aren't registered, register them
     if (this.defaultView === 'table' && previousView !== 'table') {
       setTimeout(() => this.syncTableColumnsWithTable(), 0);
+    }
+
+    if (this.defaultView !== previousView) {
+      setTimeout(() => this.applyFilterBuilderToChildren(), 0);
     }
   }
 
