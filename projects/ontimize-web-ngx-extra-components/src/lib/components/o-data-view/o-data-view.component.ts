@@ -222,6 +222,39 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }
   }
 
+  private parseColsList(v?: string | null): string[] {
+    return (v ?? '')
+      .split(';')
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  private applyInitialOrderFromVisibleColumns(): void {
+    const t: any = this.table;
+    const cols: any[] = t?.oTableOptions?.columns ?? [];
+    if (!cols.length) return;
+
+    const order = this.parseColsList(this.r_table_visibleColumns);
+    if (!order.length) return;
+
+    const byAttr = new Map(cols.map(c => [c.attr, c]));
+    const seed = new Set(order);
+
+    const ordered = order.map(a => byAttr.get(a)).filter(Boolean);
+    const rest = cols.filter(c => !seed.has(c.attr));
+
+    cols.splice(0, cols.length, ...ordered, ...rest);
+
+    const visibleSet = new Set(cols.filter(c => !!c.visible).map(c => c.attr));
+    t.visibleColArray = [
+      ...order.filter(a => visibleSet.has(a)),
+      ...cols.filter(c => c.visible && !seed.has(c.attr)).map(c => c.attr)
+    ];
+
+    t.onContentChange?.emit?.();
+    t.cd?.detectChanges?.();
+  }
+
   private syncTableColumnsWithTable(): void {
     if (!this.tableTpl || !this.table?.injector) {
       return;
@@ -238,6 +271,9 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.columnsView.detectChanges();
       setTimeout(() => {
         this.table.parseVisibleColumns(true);
+
+        this.applyInitialOrderFromVisibleColumns();
+
         if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
           this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
         }
