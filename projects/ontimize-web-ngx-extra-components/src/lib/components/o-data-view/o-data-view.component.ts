@@ -214,155 +214,53 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   ngOnDestroy(): void {
-    if (this.defaultView === 'table') this.persistViewState(this.table);
-    else if (this.defaultView === 'grid') this.persistViewState(this.grid);
     if (this.columnsView) {
       this.columnsView.destroy();
       this.columnsView = null;
     }
   }
-  private persistViewState(comp: any): void {
-    if (!this.storeState || !comp?.injector) return;
 
-    const ls = comp.injector.get(LocalStorageService, null);
-    if (!ls) return;
-
-    ls.updateComponentStorage(comp, comp.getRouteKey?.());
-  }
-
-  private restoreViewState(comp: any): void {
-    if (!this.storeState || !comp) return;
-    comp.componentStateService?.initialize?.(comp);
-  }
-
-  private ensureStorageUser(comp: any): void {
-    if (!comp?.injector) return;
-
-    const ls = comp.injector.get(LocalStorageService, null);
-    if (!ls) return;
-
-    const data: any = ls.getStoredData();
-    data.session = data.session || {};
-
-    if (!data.session.user) {
-      data.session.user = 'demo';
-      ls.setLocalStorage(data);
-    }
-  }
-
-  private applyStoredTableColumnsDisplay(): void {
-    const t: any = this.table;
-    const state = t?.componentStateService?.state;
-    const display = state?.columnsDisplay;
-
-    if (!Array.isArray(display) || !t?.oTableOptions?.columns) return;
-
-    const cols: any[] = t.oTableOptions.columns;
-
-    const map = new Map<string, any>(cols.map(c => [c.attr, c]));
-
-    const ordered: any[] = display
-      .map((d: any) => map.get(d.attr))
-      .filter(Boolean);
-
-    for (const c of cols) {
-      if (!display.some((d: any) => d.attr === c.attr)) ordered.push(c);
-    }
-
-    cols.splice(0, cols.length, ...ordered);
-
-    for (const d of display) {
-      const c = map.get(d.attr);
-      if (!c) continue;
-
-      c.visible = !!d.visible;
-      if (d.width) c.width = d.width;
-    }
-
-    t.visibleColArray = cols.filter(c => c.visible).map(c => c.attr);
-
-    if (typeof state?.selectColumnVisible === 'boolean' && t.oTableOptions?.selectColumn) {
-      t.oTableOptions.selectColumn.visible = state.selectColumnVisible;
-    }
-
-    t.refreshColumnsWidthFromLocalStorage?.();
-
-    t.onContentChange?.emit?.();
-    t.cd?.detectChanges?.();
-  }
-
-  private applyGroupingRespectingVisibility(): void {
-    const t: any = this.table;
-    const groupingComp = t?.oTableColumnsGroupingComponent;
-    const cols: any[] = t?.oTableOptions?.columns ?? [];
-
-    if (!groupingComp || !Array.isArray(cols) || !Array.isArray(groupingComp.columnsArray)) return;
-
-    const visible = new Set<string>(cols.filter(c => c?.visible).map(c => c.attr));
-    const wanted: string[] = groupingComp.columnsArray.map(String);
-
-    const effective = wanted.filter(attr => visible.has(attr));
-
-    if (effective.length !== wanted.length) {
-      groupingComp.columnsArray = effective;
-    }
-
-    t.setGroupColumns?.(effective);
-  }
 
   private syncTableColumnsWithTable(): void {
-    if (!this.tableTpl || !this.table?.injector) return;
-
-    if (this.columnsView) {
-      this.columnsView.destroy();
-      this.columnsView = null;
+    if (!this.tableTpl || !this.table?.injector) {
+      return;
     }
-    this.vcr.clear();
+    try {
+      // Create the embedded view with the correct injector
+      this.columnsView = this.vcr.createEmbeddedView(
+        this.tableTpl.templateRef,
+        {},
+        { injector: this.table.injector }
+      );
 
-    this.columnsView = this.vcr.createEmbeddedView(
-      this.tableTpl.templateRef,
-      {},
-      { injector: this.table.injector }
-    );
+      // Detect changes to ensure nodes are fully initialized
+      this.columnsView.detectChanges();
+      setTimeout(() => {
+        this.table.parseVisibleColumns(true);
+        if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
+          this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
+        }
+      }, 0);
 
-    this.columnsView.detectChanges();
-
-    setTimeout(() => {
-      this.table.parseVisibleColumns(true);
-
-      if (Util.isDefined((this.table as any).oTableColumnsGroupingComponent)) {
-        this.table.setGroupColumns((this.table as any).oTableColumnsGroupingComponent.columnsArray);
-      }
-
-      if (this.storeState) {
-        this.ensureStorageUser(this.table);
-        (this.table as any).componentStateService?.initialize?.(this.table);
-      }
-
-      this.applyStoredTableColumnsDisplay();
-      this.applyGroupingRespectingVisibility();
-    }, 0);
+    } catch (error) {
+      console.error('Error registering table columns:', error);
+    }
   }
 
   public changeView(value: ODataViewMode): void {
     const previousView = this.defaultView;
-    const nextView = this.toggleGroup ? this.toggleGroup.getValue() : value;
 
-    Promise.resolve().then(() => {
-      if (previousView === 'table') this.persistViewState(this.table);
-      else if (previousView === 'grid') this.persistViewState(this.grid);
+    if (this.toggleGroup) {
+      this.defaultView = this.toggleGroup.getValue();
+    } else {
+      this.defaultView = value;
+    }
 
-      this.defaultView = nextView;
-
-      if (this.defaultView === 'table') {
-        setTimeout(() => {
-          this.syncTableColumnsWithTable();
-          setTimeout(() => this.restoreViewState(this.table), 0);
-        }, 0);
-      } else if (this.defaultView === 'grid') {
-        setTimeout(() => this.restoreViewState(this.grid), 0);
-      }
-    });
+    this.defaultView === 'grid' ? this.table.updateStateStorage() : this.grid.updateStateStorage();
+    // If switching to table and columns aren't registered, register them
+    if (this.defaultView === 'table' && previousView !== 'table') {
+      setTimeout(() => this.syncTableColumnsWithTable(), 0);
+    }
   }
 
   ngOnChanges(): void {
