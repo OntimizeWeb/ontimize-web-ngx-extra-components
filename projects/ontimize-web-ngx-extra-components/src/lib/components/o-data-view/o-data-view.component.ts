@@ -236,10 +236,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       // Detect changes to ensure nodes are fully initialized
       this.columnsView.detectChanges();
       setTimeout(() => {
-        this.table.parseVisibleColumns(true);
-        if (Util.isDefined(this.table.oTableColumnsGroupingComponent)) {
-          this.table.setGroupColumns(this.table.oTableColumnsGroupingComponent.columnsArray);
-        }
+        this.table.initializeParams();
+        this.table.parseVisibleColumns();
+        this.table.parseGroupedColumns();
+        this.table.setFiltersConfiguration();
       }, 0);
 
     } catch (error) {
