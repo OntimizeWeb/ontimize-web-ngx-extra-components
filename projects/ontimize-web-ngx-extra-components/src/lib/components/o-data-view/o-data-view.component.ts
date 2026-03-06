@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { BooleanInputConverter, Codes, FilterExpression, LocalStorageService, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
+import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig, Util } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
