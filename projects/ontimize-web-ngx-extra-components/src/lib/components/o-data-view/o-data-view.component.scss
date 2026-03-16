@@ -1,0 +1,66 @@
+.button-toggle-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+  margin-right: 8px;
+  margin-top: 8px;
+
+  .mat-button-toggle-standalone,
+  .mat-button-toggle-group {
+    height: 30px;
+
+    .o-button-toggle .mat-button-toggle {
+      height: 30px;
+      width: 32px;
+
+      span.mat-button-toggle-label-content {
+        display: flex;
+        padding: 0;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+.toggle-floatable {
+  position: absolute;
+  left: calc(50% - 32px);
+  bottom: 10px;
+  z-index: 1000;
+}
+
+.toggle-toolbar {
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.o-data-view-container {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.o-data-view-component {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.data-view-grid {
+  overflow: auto;
+
+  .o-grid-container {
+    padding: 0 .5%;
+  }
+}
