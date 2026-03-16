@@ -32,9 +32,10 @@
       [selection-mode]="r_table_selectionMode" [show-buttons-text]="showButtonsText" [show-configuration-option]="r_table_showConfigurationOption"
       [show-expandable-icon-function]="r_table_showExpandableIconFunction" [show-filter-option]="r_table_showFilterOption"
       [show-paginator-first-last-buttons]="r_table_showPaginatorFirstLastButtons" [show-report-on-demand-option]="r_table_showReportOnDemandOption"
-      [show-reset-width-option]="r_table_showResetWidthOption" [sort-columns]="r_table_sortColumns" [virtual-scroll]="r_table_virtualScroll"
-      [visible-columns]="r_table_visibleColumns" [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons"
-      [show-charts-on-demand-option]="r_table_showChartsOnDemandOption" show-title="yes" [filter-builder-function]="filterBuilderFn">
+      [show-reset-width-option]="r_table_showResetWidthOption" [sort-columns]="r_table_sortColumns"
+      [virtual-scroll]="r_table_virtualScroll" [visible-columns]="r_table_visibleColumns"
+      [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons" [show-charts-on-demand-option]="r_table_showChartsOnDemandOption" show-title="yes"
+      [show-header-tooltip]="r_table_showHeaderTooltip" [filter-builder-function]="filterBuilderFn">
 
       <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && toggleOnToolbar" class="button-toggle-group toggle-toolbar"
         attr="toggleGroup" o-table-toolbar position="end" multiple="no" [value]="defaultView" (onChange)="changeView($event)">

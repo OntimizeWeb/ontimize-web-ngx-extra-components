@@ -47,4 +47,5 @@ export interface TableConfig {
   visibleColumns?: string;
   visibleExportDialogButtons?: string;
   selectionOnRowClick?: CustomBoolean;
+  showHeaderTooltip?: CustomBoolean
 };
