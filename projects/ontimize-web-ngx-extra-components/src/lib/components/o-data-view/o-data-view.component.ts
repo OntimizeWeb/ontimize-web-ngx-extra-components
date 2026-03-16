@@ -3,7 +3,7 @@ import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, 
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
-import { ODataViewMode } from '../../types/data-view.types';
+import { CustomBoolean, ODataViewMode } from '../../types/data-view.types';
 
 @Component({
   selector: 'o-data-view',
@@ -179,6 +179,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_table_showExpandableIconFunction?: Function;
   r_table_selectionOnRowClick?: string;
   r_table_pageSizeOptions?: any[];
+  r_table_showHeaderTooltip: CustomBoolean;
 
   r_grid_detailMode?: string;
   r_grid_enabled?: string;
@@ -320,6 +321,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_quickFilterFunction = cfg.quickFilterFunction;
     this.r_table_rowClass = cfg.rowClass;
     this.r_table_showExpandableIconFunction = cfg.showExpandableIconFunction;
+    this.r_table_showHeaderTooltip = cfg.showHeaderTooltip
   }
 
   private resolveGridInputs(): void {

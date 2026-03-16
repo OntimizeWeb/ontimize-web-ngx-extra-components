@@ -35,7 +35,8 @@
       [show-paginator-first-last-buttons]="r_table_showPaginatorFirstLastButtons" [show-report-on-demand-option]="r_table_showReportOnDemandOption"
       [show-reset-width-option]="r_table_showResetWidthOption" [sort-columns]="r_table_sortColumns"
       [virtual-scroll]="r_table_virtualScroll" [visible-columns]="r_table_visibleColumns"
-      [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons" [show-charts-on-demand-option]="r_table_showChartsOnDemandOption" show-title="yes">
+      [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons" [show-charts-on-demand-option]="r_table_showChartsOnDemandOption" show-title="yes"
+      [show-header-tooltip]="r_table_showHeaderTooltip">
 
       <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && toggleOnToolbar" class="button-toggle-group toggle-toolbar" attr="toggleGroup" o-table-toolbar position="end"
         multiple="no" [value]="defaultView" (onChange)="changeView($event)">
