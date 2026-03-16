@@ -1,6 +1,6 @@
 {
   "name": "ontimize-web-ngx-extra-components",
-  "version": "15.0.0-SNAPSHOT-0",
+  "version": "15.1.0-SNAPSHOT-0",
   "description": "The Ontimize Web Extra components is a library with an extra set of components for using into OntimizeWeb web applications.",
   "keywords": [
     "angular",
