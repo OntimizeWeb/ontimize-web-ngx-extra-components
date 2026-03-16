@@ -1,7 +1,7 @@
 <div class="o-data-view-container bg-level-1">
 
-  <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && !toggleOnToolbar" class="button-toggle-group"
-    attr="toggleGroup" multiple="no" [value]="defaultView" (onChange)="changeView($event)">
+  <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && !toggleOnToolbar" class="button-toggle-group" attr="toggleGroup"
+    multiple="no" [value]="defaultView" (onChange)="changeView($event)">
     <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
     <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
   </o-button-toggle-group>
@@ -10,14 +10,13 @@
 
     <o-table #table *ngIf="defaultView === 'table'" [attr]="'table_'+attr" [columns]="columns" [configure-service-args]="configureServiceArgs"
       [entity]="entity" [keys]="keys" [pageable]="pageable" [paginated-query-method]="paginatedQueryMethod" [parent-keys]="parentKeys"
-      [query-fallback-function]="queryFallbackFunction" [query-method]="queryMethod" [query-on-bind]="queryOnBind"
-      [query-on-init]="queryOnInit" [query-rows]="queryRows" [query-with-null-parent-keys]="queryWithNullParentKeys" [service]="service"
-      [service-type]="serviceType" [static-data]="staticData" [store-state]="storeState" [delete-method]="deleteMethod"
-      [insert-method]="insertMethod" [update-method]="updateMethod" [controls]="controls"
-      [detail-button-in-row]="r_table_detailButtonInRow" [detail-button-in-row-icon]="r_table_detailButtonInRowIcon"
-      [detail-form-route]="detailFormRoute" [detail-mode]="r_table_detailMode" [edit-button-in-row]="r_table_editButtonInRow"
-      [edit-button-in-row-icon]="r_table_editButtonInRowIcon" [edit-form-route]="r_table_editFormRoute" [enabled]="r_table_enabled"
-      [filter-case-sensitive]="filterCaseSensitive" [insert-button]="insertButton" [insert-form-route]="insertFormRoute"
+      [query-fallback-function]="queryFallbackFunction" [query-method]="queryMethod" [query-on-bind]="queryOnBind" [query-on-init]="queryOnInit"
+      [query-rows]="queryRows" [query-with-null-parent-keys]="queryWithNullParentKeys" [service]="service" [service-type]="serviceType"
+      [static-data]="staticData" [store-state]="storeState" [delete-method]="deleteMethod" [insert-method]="insertMethod"
+      [update-method]="updateMethod" [controls]="controls" [detail-button-in-row]="r_table_detailButtonInRow"
+      [detail-button-in-row-icon]="r_table_detailButtonInRowIcon" [detail-form-route]="detailFormRoute" [detail-mode]="r_table_detailMode"
+      [edit-button-in-row]="r_table_editButtonInRow" [edit-button-in-row-icon]="r_table_editButtonInRowIcon" [edit-form-route]="r_table_editFormRoute"
+      [enabled]="r_table_enabled" [filter-case-sensitive]="filterCaseSensitive" [insert-button]="insertButton" [insert-form-route]="insertFormRoute"
       [page-size-options]="r_table_pageSizeOptions" [pagination-controls]="paginationControls" [quick-filter]="quickFilter"
       [quick-filter-placeholder]="quickFilterPlaceholder" [recursive-detail]="recursiveDetail" [recursive-edit]="recursiveEdit"
       [recursive-insert]="recursiveInsert" [row-height]="r_table_rowHeight" [title]="title" [visible]="r_table_visible"
@@ -36,33 +35,33 @@
       [show-reset-width-option]="r_table_showResetWidthOption" [sort-columns]="r_table_sortColumns"
       [virtual-scroll]="r_table_virtualScroll" [visible-columns]="r_table_visibleColumns"
       [visible-export-dialog-buttons]="r_table_visibleExportDialogButtons" [show-charts-on-demand-option]="r_table_showChartsOnDemandOption" show-title="yes"
-      [show-header-tooltip]="r_table_showHeaderTooltip">
+      [show-header-tooltip]="r_table_showHeaderTooltip" [filter-builder-function]="filterBuilderFn">
 
-      <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && toggleOnToolbar" class="button-toggle-group toggle-toolbar" attr="toggleGroup" o-table-toolbar position="end"
-        multiple="no" [value]="defaultView" (onChange)="changeView($event)">
+      <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && toggleOnToolbar" class="button-toggle-group toggle-toolbar"
+        attr="toggleGroup" o-table-toolbar position="end" multiple="no" [value]="defaultView" (onChange)="changeView($event)">
         <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
         <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
       </o-button-toggle-group>
 
     </o-table>
 
-    <o-grid #grid class="data-view-grid" *ngIf="defaultView === 'grid'" [attr]="'grid_'+attr" [columns]="columns" [configure-service-args]="configureServiceArgs"
-      [entity]="entity" [keys]="keys" [pageable]="pageable" [paginated-query-method]="paginatedQueryMethod" [parent-keys]="parentKeys"
-      [query-fallback-function]="queryFallbackFunction" [query-method]="queryMethod" [query-on-bind]="queryOnBind"
-      [query-on-init]="queryOnInit" [query-rows]="queryRows" [query-with-null-parent-keys]="queryWithNullParentKeys" [service]="service"
-      [service-type]="serviceType" [static-data]="staticData" [store-state]="storeState" [controls]="controls"
-      [detail-form-route]="detailFormRoute" [detail-mode]="r_grid_detailMode" [enabled]="r_grid_enabled" [quick-filter]="quickFilter"
-      [quick-filter-placeholder]="quickFilterPlaceholder" [quick-filter-appearance]="quickFilterAppearance"
-      [recursive-detail]="recursiveDetail" [title]="title" [visible]="r_grid_visible" [cols]="r_grid_cols"
-      [fixed-header]="fixedHeader" [grid-item-height]="r_grid_gridItemHeight" [gutter-size]="r_grid_gutterSize"
+    <o-grid #grid class="data-view-grid" *ngIf="defaultView === 'grid'" [attr]="'grid_'+attr" [columns]="columns"
+      [configure-service-args]="configureServiceArgs" [entity]="entity" [keys]="keys" [pageable]="pageable"
+      [paginated-query-method]="paginatedQueryMethod" [parent-keys]="parentKeys" [query-fallback-function]="queryFallbackFunction"
+      [query-method]="queryMethod" [query-on-bind]="queryOnBind" [query-on-init]="queryOnInit" [query-rows]="queryRows"
+      [query-with-null-parent-keys]="queryWithNullParentKeys" [service]="service" [service-type]="serviceType" [static-data]="staticData"
+      [store-state]="storeState" [controls]="controls" [detail-form-route]="detailFormRoute" [detail-mode]="r_grid_detailMode"
+      [enabled]="r_grid_enabled" [quick-filter]="quickFilter" [quick-filter-placeholder]="quickFilterPlaceholder"
+      [quick-filter-appearance]="quickFilterAppearance" [recursive-detail]="recursiveDetail" [title]="title" [visible]="r_grid_visible"
+      [cols]="r_grid_cols" [fixed-header]="fixedHeader" [grid-item-height]="r_grid_gridItemHeight" [gutter-size]="r_grid_gutterSize"
       [insert-button]="insertButton" [insert-button-floatable]="r_grid_insertButtonFloatable" [insert-button-position]="r_grid_insertButtonPosition"
       [orderable]="r_grid_orderable" [page-size-options]="r_grid_pageSizeOptions" [pagination-controls]="paginationControls"
       [quick-filter-columns]="r_grid_quickFilterColumns" [refresh-button]="refreshButton" [show-buttons-text]="showButtonsText"
       [show-footer]="r_grid_showFooter" [show-page-size]="r_grid_showPageSize" [sort-column]="r_grid_sortColumn"
-      [sortable-columns]="r_grid_sortableColumns">
+      [sortable-columns]="r_grid_sortableColumns" [filter-builder-function]="filterBuilderFn">
 
-      <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && toggleOnToolbar" class="button-toggle-group toggle-toolbar" attr="toggleGroup" o-grid-toolbar position="end"
-        multiple="no" [value]="defaultView" (onChange)="changeView($event)">
+      <o-button-toggle-group #toggleGroup *ngIf="toggleButton && !toggleFloatable && toggleOnToolbar" class="button-toggle-group toggle-toolbar"
+        attr="toggleGroup" o-grid-toolbar position="end" multiple="no" [value]="defaultView" (onChange)="changeView($event)">
         <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
         <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
       </o-button-toggle-group>
@@ -74,8 +73,8 @@
 
     </o-grid>
 
-    <o-button-toggle-group #toggleGroup *ngIf="toggleButton && toggleFloatable" class="button-toggle-group toggle-floatable" attr="toggleGroup" multiple="no"
-      [value]="defaultView" (onChange)="changeView($event)">
+    <o-button-toggle-group #toggleGroup *ngIf="toggleButton && toggleFloatable" class="button-toggle-group toggle-floatable" attr="toggleGroup"
+      multiple="no" [value]="defaultView" (onChange)="changeView($event)">
       <o-button-toggle attr="toggle1" value="table" icon="storage"></o-button-toggle>
       <o-button-toggle attr="toggle2" value="grid" icon="view_module"></o-button-toggle>
     </o-button-toggle-group>

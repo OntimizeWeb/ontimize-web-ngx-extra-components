@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig } from 'ontimize-web-ngx';
+import { BooleanInputConverter, Codes, FilterExpression, IServiceDataComponent, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OFilterBuilderComponent, OGridComponent, OQueryDataArgs, OTableComponent, OTableGlobalConfig } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -12,7 +12,7 @@ import { CustomBoolean, ODataViewMode } from '../../types/data-view.types';
   encapsulation: ViewEncapsulation.None
 })
 
-export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy, IServiceDataComponent {
 
   @ViewChild('table', { static: false }) table: OTableComponent;
   @ViewChild('grid') grid: OGridComponent;
@@ -198,11 +198,33 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
   r_grid_quickFilterColumns?: string;
 
   private columnsView: EmbeddedViewRef<any> | null = null;
+  protected filterBuilderFn = () => this.filterBuilder;
+  private filterBuilder?: OFilterBuilderComponent;
 
   constructor(
     private readonly vcr: ViewContainerRef,
     @Optional() @Inject(O_TABLE_GLOBAL_CONFIG) private readonly tableGlobalConfig?: OTableGlobalConfig
   ) { }
+
+  clearData(): void {
+    this.activeView?.clearData();
+  }
+
+  queryData(filter?: any, ovrrArgs?: OQueryDataArgs): void {
+    this.activeView?.queryData(filter, ovrrArgs);
+  }
+
+  reloadPaginatedDataFromStart(): void {
+    this.activeView?.reloadPaginatedDataFromStart();
+  }
+
+  reloadData(): void {
+    this.activeView?.reloadData();
+  }
+
+  get activeView(): OTableComponent | OGridComponent {
+    return this.defaultView === 'table' ? this.table : this.grid;
+  }
 
   ngOnInit(): void {
     if (!this.defaultView) this.defaultView = 'table';
@@ -219,6 +241,37 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.columnsView.destroy();
       this.columnsView = null;
     }
+  }
+
+  ngOnChanges(): void {
+    this.resolveTableInputs();
+    this.resolveGridInputs();
+  }
+
+  public changeView(value: ODataViewMode): void {
+    const previousView = this.defaultView;
+
+    if (this.toggleGroup) {
+      this.defaultView = this.toggleGroup.getValue();
+    } else {
+      this.defaultView = value;
+    }
+
+    this.defaultView === 'grid' ? this.table.updateStateStorage() : this.grid.updateStateStorage();
+    // If switching to table and columns aren't registered, register them
+    if (this.defaultView === 'table' && previousView !== 'table') {
+      setTimeout(() => this.syncTableColumnsWithTable(), 0);
+    }
+  }
+
+
+
+  /**
+   * Sets the filter builder component for this data view.
+   * @param fb - The OFilterBuilderComponent instance to be associated with this data view
+   */
+  setFilterBuilder(fb: OFilterBuilderComponent): void {
+    this.filterBuilder = fb;
   }
 
 
@@ -247,28 +300,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       console.error('Error registering table columns:', error);
     }
   }
-
-  public changeView(value: ODataViewMode): void {
-    const previousView = this.defaultView;
-
-    if (this.toggleGroup) {
-      this.defaultView = this.toggleGroup.getValue();
-    } else {
-      this.defaultView = value;
-    }
-
-    this.defaultView === 'grid' ? this.table.updateStateStorage() : this.grid.updateStateStorage();
-    // If switching to table and columns aren't registered, register them
-    if (this.defaultView === 'table' && previousView !== 'table') {
-      setTimeout(() => this.syncTableColumnsWithTable(), 0);
-    }
-  }
-
-  ngOnChanges(): void {
-    this.resolveTableInputs();
-    this.resolveGridInputs();
-  }
-
   private resolveTableInputs(): void {
     const cfg = this.tableConfig ?? {};
     const g = this.tableGlobalConfig;
@@ -399,5 +430,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const s = String(v).trim();
     return s.length ? s : undefined;
   }
+
+
 
 }
