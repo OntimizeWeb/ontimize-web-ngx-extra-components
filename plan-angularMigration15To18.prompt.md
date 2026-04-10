@@ -70,9 +70,33 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 - `ontimize-web-ngx` → `file:../ontimize-web-ngx/dist/ontimize-web-ngx-18.0.0-SNAPSHOT-0.tgz`
 - Actualizar `peerDependencies` a `ontimize-web-ngx ^18.0.0`
 
+### Standalone migration ⏳ PENDIENTE
+
+El framework `ontimize-web-ngx@18` ya tiene **201 componentes con `standalone: true`** en su rama `migration/18.x.x`. Los componentes de este addon aún no están migrados.
+
+**Inventario de componentes a migrar:**
+| Componente / Directiva | Archivo |
+|---|---|
+| `OImageEditorComponent` | `o-image-editor/o-image-editor.component.ts` |
+| `ODataViewComponent` | `o-data-view/o-data-view.component.ts` |
+| `OSkeletonComponent` | `o-skeleton/o-skeleton.component.ts` |
+| `ODataViewTableColumnsDirective` | `directives/o-data-view-table-columns.directive.ts` |
+| `ODataViewGridItemDirective` | `directives/o-data-view-grid-item.directive.ts` |
+
+**Módulos wrapper a mantener por backward compatibility:**
+- `OntimizeWebNgxExtraComponentsModule` → re-exportar standalone components
+- `OImageEditorModule`, `ODataViewModule` → mantener como wrappers deprecated
+
+**Pasos:**
+1. Añadir `standalone: true` a cada componente/directiva
+2. Mover sus `imports` de NgModule al array `imports` del decorador `@Component`
+3. Mantener los NgModule wrapper re-exportando los standalone components
+4. Verificar build y consumo desde playground
+
+**Bloqueo**: Esperar a que el framework publique la API standalone completa para alinear la migración de este addon con la del framework.
+
 ### No aplica en este addon
 - **M3 theming migration**: sin archivos SCSS de theming propios — el theming lo gestiona `ontimize-web-ngx`
-- **Standalone migration completa** (equivalente a 3.3 del framework): los componentes de este addon no tienen standalone components propios; cuando el framework migre a standalone API, los módulos de este addon se actualizarán como consumidores
 - **Typed Forms**: sin uso de `UntypedFormGroup`/`UntypedFormControl` propios
 - **Guards funcionales**: sin guards propios
 
@@ -91,6 +115,6 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 - **ontimize-web-ngx**: Usada `^15.9.0` en Fases 1-2; en Fase 3 apunta al tgz local `^18.0.0` ✅
 - **ngx-image-cropper**: Migrado a standalone en Fase 1 (`ImageCropperModule` → `ImageCropperComponent`) ✅
 - **luxon**: Añadido en Fase 3 como dependencia directa (peer transitivo de `ngx-material-timepicker` que viene del framework) ✅
-- **Standalone**: No hay standalone components propios en el addon — no requiere migración de DI
+- **Standalone**: Pendiente ⏳ — 5 componentes/directivas a migrar (ver Fase 3). Bloqueado hasta que el framework publique su API standalone completa
 - **M3 theming**: Sin theming propio — depende del framework; se actualizará cuando `ontimize-web-ngx` publique su nueva API de theming
 - **Control flow / inject() / Guards**: No aplica — addon sin templates propios ni guards ni DI complejo propio
