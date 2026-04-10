@@ -70,7 +70,7 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 - `ontimize-web-ngx` → `file:../ontimize-web-ngx/dist/ontimize-web-ngx-18.0.0-SNAPSHOT-0.tgz`
 - Actualizar `peerDependencies` a `ontimize-web-ngx ^18.0.0`
 
-### Standalone migration ⏳ PENDIENTE
+### Standalone migration ✅ COMPLETADO (commit `8b294f4`)
 
 El framework `ontimize-web-ngx@18` ya tiene **201 componentes con `standalone: true`** en su rama `migration/18.x.x`. Los componentes de este addon aún no están migrados.
 
@@ -115,6 +115,6 @@ El framework `ontimize-web-ngx@18` ya tiene **201 componentes con `standalone: t
 - **ontimize-web-ngx**: Usada `^15.9.0` en Fases 1-2; en Fase 3 apunta al tgz local `^18.0.0` ✅
 - **ngx-image-cropper**: Migrado a standalone en Fase 1 (`ImageCropperModule` → `ImageCropperComponent`) ✅
 - **luxon**: Añadido en Fase 3 como dependencia directa (peer transitivo de `ngx-material-timepicker` que viene del framework) ✅
-- **Standalone**: Pendiente ⏳ — 5 componentes/directivas a migrar (ver Fase 3). Sin bloqueo técnico — puede hacerse en paralelo al framework
+- **Standalone**: ✅ Completado — 5 componentes/directivas migrados (`8b294f4`). Módulos wrapper mantienen backward compatibility
 - **M3 theming**: Sin theming propio — depende del framework; se actualizará cuando `ontimize-web-ngx` publique su nueva API de theming
 - **Control flow / inject() / Guards**: No aplica — addon sin templates propios ni guards ni DI complejo propio
