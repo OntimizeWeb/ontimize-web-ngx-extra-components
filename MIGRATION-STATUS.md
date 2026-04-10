@@ -98,6 +98,23 @@ Sin cambios en código fuente.
 
 ---
 
+## FASE 4: Standalone migration — commit `8b294f4` (10 abril 2026)
+
+**Rama**: `migration/18.x.x`
+
+| Componente / Directiva | Cambio |
+|---|---|
+| `OSkeletonComponent` | `standalone: true`, imports `NgxSkeletonLoaderModule` |
+| `OImageEditorComponent` | `standalone: true`, imports `CommonModule`, `ImageCropperComponent`, `OntimizeWebModule` |
+| `ODataViewComponent` | `standalone: true`, imports `CommonModule`, `OTableModule`, `OGridModule`, `OButtonToggleModule`, directivas propias |
+| `ODataViewTableColumnsDirective` | `standalone: true` |
+| `ODataViewGridItemDirective` | `standalone: true` |
+| `OImageEditorModule` | Convertido a wrapper NgModule (`imports: [OImageEditorComponent]`) |
+| `ODataViewModule` | Convertido a wrapper NgModule (`imports/exports` standalone components) |
+| `OExtraComponentsModule` | `declarations: []`, `OSkeletonComponent` movido a `imports` y `exports` |
+
+---
+
 ## PENDIENTE
 
 Ninguno — migración completa ✅
