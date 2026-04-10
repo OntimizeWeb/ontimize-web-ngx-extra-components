@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OGridComponent, OTableComponent, OTableGlobalConfig } from 'ontimize-web-ngx';
+import { CommonModule } from '@angular/common';
+import { BooleanInputConverter, Codes, FilterExpression, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OButtonToggleModule, OConfigureServiceArgs, OGridComponent, OGridModule, OTableComponent, OTableGlobalConfig, OTableModule } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -9,6 +10,8 @@ import { ODataViewMode } from '../../types/data-view.types';
   selector: 'o-data-view',
   templateUrl: './o-data-view.component.html',
   styleUrls: ['./o-data-view.component.scss'],
+  standalone: true,
+  imports: [CommonModule, OTableModule, OGridModule, OButtonToggleModule, ODataViewTableColumnsDirective, ODataViewGridItemDirective],
   encapsulation: ViewEncapsulation.None
 })
 

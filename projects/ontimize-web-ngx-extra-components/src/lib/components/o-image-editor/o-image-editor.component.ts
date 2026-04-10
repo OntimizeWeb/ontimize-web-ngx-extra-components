@@ -10,6 +10,7 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
   base64ToFile,
   CropperPosition,
@@ -18,6 +19,7 @@ import {
   ImageTransform,
   LoadedImage
 } from 'ngx-image-cropper';
+import { OntimizeWebModule } from 'ontimize-web-ngx';
 import { DialogService, ODialogConfig } from 'ontimize-web-ngx';
 import { take } from 'rxjs';
 import { TranslateExtraComponentsService } from '../../services';
@@ -34,6 +36,8 @@ export type OImageEditorActionsPosition = 'top' | 'bottom';
   selector: 'o-image-editor',
   templateUrl: './o-image-editor.component.html',
   styleUrls: ['./o-image-editor.component.scss'],
+  standalone: true,
+  imports: [CommonModule, ImageCropperComponent, OntimizeWebModule],
   encapsulation: ViewEncapsulation.None
 })
 export class OImageEditorComponent {
