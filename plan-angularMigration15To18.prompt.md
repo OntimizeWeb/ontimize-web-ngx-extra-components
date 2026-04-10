@@ -93,7 +93,7 @@ El framework `ontimize-web-ngx@18` ya tiene **201 componentes con `standalone: t
 3. Mantener los NgModule wrapper re-exportando los standalone components
 4. Verificar build y consumo desde playground
 
-**Bloqueo**: Esperar a que el framework publique la API standalone completa para alinear la migración de este addon con la del framework.
+**Nota**: No hay bloqueo técnico — los componentes de este addon pueden migrarse a standalone independientemente del framework. La API `provideOntimizeWeb()` solo es necesaria para la playground (bootstrap de la app).
 
 ### No aplica en este addon
 - **M3 theming migration**: sin archivos SCSS de theming propios — el theming lo gestiona `ontimize-web-ngx`
@@ -115,6 +115,6 @@ El framework `ontimize-web-ngx@18` ya tiene **201 componentes con `standalone: t
 - **ontimize-web-ngx**: Usada `^15.9.0` en Fases 1-2; en Fase 3 apunta al tgz local `^18.0.0` ✅
 - **ngx-image-cropper**: Migrado a standalone en Fase 1 (`ImageCropperModule` → `ImageCropperComponent`) ✅
 - **luxon**: Añadido en Fase 3 como dependencia directa (peer transitivo de `ngx-material-timepicker` que viene del framework) ✅
-- **Standalone**: Pendiente ⏳ — 5 componentes/directivas a migrar (ver Fase 3). Bloqueado hasta que el framework publique su API standalone completa
+- **Standalone**: Pendiente ⏳ — 5 componentes/directivas a migrar (ver Fase 3). Sin bloqueo técnico — puede hacerse en paralelo al framework
 - **M3 theming**: Sin theming propio — depende del framework; se actualizará cuando `ontimize-web-ngx` publique su nueva API de theming
 - **Control flow / inject() / Guards**: No aplica — addon sin templates propios ni guards ni DI complejo propio
