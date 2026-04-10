@@ -51,6 +51,12 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 - `ontimize-web-ngx` → mantenido en `^15.9.0` (no hay versión 16/17 publicada)
 - Sin cambios en código fuente
 
+### No aplica en este addon
+- **Control flow migration** (`*ngIf` → `@if`): no hay templates propios en este addon
+- **Migración `inject()`**: sin inyectores propios complejos — todo el DI va a través de `OntimizeWebModule`
+- **Guards funcionales**: sin guards propios
+- **Standalone gradual**: no hay componentes que requieran migración parcial — se gestiona en Fase 3
+
 ---
 
 ## FASE 3: Angular 17 → 18 — Rama `migration/18.x.x` ✅ COMPLETADO
@@ -63,6 +69,12 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 - Eliminar `FlexLayoutModule` de `o-components.ts` (import y array `OEXTRACOMPONENTS_IMPORTS_MODULES`)
 - `ontimize-web-ngx` → `file:../ontimize-web-ngx/dist/ontimize-web-ngx-18.0.0-SNAPSHOT-0.tgz`
 - Actualizar `peerDependencies` a `ontimize-web-ngx ^18.0.0`
+
+### No aplica en este addon
+- **M3 theming migration**: sin archivos SCSS de theming propios — el theming lo gestiona `ontimize-web-ngx`
+- **Standalone migration completa** (equivalente a 3.3 del framework): los componentes de este addon no tienen standalone components propios; cuando el framework migre a standalone API, los módulos de este addon se actualizarán como consumidores
+- **Typed Forms**: sin uso de `UntypedFormGroup`/`UntypedFormControl` propios
+- **Guards funcionales**: sin guards propios
 
 ---
 
@@ -80,3 +92,5 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 - **ngx-image-cropper**: Migrado a standalone en Fase 1 (`ImageCropperModule` → `ImageCropperComponent`) ✅
 - **luxon**: Añadido en Fase 3 como dependencia directa (peer transitivo de `ngx-material-timepicker` que viene del framework) ✅
 - **Standalone**: No hay standalone components propios en el addon — no requiere migración de DI
+- **M3 theming**: Sin theming propio — depende del framework; se actualizará cuando `ontimize-web-ngx` publique su nueva API de theming
+- **Control flow / inject() / Guards**: No aplica — addon sin templates propios ni guards ni DI complejo propio
