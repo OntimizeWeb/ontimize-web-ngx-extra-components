@@ -1,4 +1,3 @@
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { CommonModule } from '@angular/common';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { OSkeletonComponent } from '../components/o-skeleton/o-skeleton.component';
@@ -13,7 +12,6 @@ export const OEXTRACOMPONENTS_DECLARATION_MODULES: any = [
 export const OEXTRACOMPONENTS_IMPORTS_MODULES: any = [
   CommonModule,
   NgxSkeletonLoaderModule,
-  FlexLayoutModule,
   OntimizeWebModule
 ];
 export const OEXTRACOMPONENTS_PROVIDERS: any = [
