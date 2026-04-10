@@ -1,6 +1,6 @@
 {
   "name": "ontimize-web-ngx-extra-components",
-  "version": "15.0.0-SNAPSHOT-0",
+  "version": "18.0.0-SNAPSHOT-0",
   "description": "Authomatic reports implementation for Ontimize Web",
   "keywords": [
     "angular",
@@ -20,8 +20,7 @@
     "test-watch": "karma start --singleRun=false --autoWatch=true"
   },
   "peerDependencies": {
-    "ontimize-web-ngx": "^15.9.0",
-    "@angular/flex-layout": "^15.0.0-beta.42"
+    "ontimize-web-ngx": "^18.0.0"
   },
   "dependencies": {
     "ngx-extended-pdf-viewer": "^19.0.0",
