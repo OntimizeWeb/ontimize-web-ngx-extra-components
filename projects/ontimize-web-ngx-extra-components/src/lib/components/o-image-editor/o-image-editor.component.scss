@@ -172,7 +172,7 @@
 }
 
 .tools-toggle .mat-button-toggle.mat-button-toggle-checked {
-  background: #1464A5;
-  color: #fff;
+  background: var(--o-primary-500);
+  color: var(--o-primary-contrast-500);
   border-color: transparent;
 }
