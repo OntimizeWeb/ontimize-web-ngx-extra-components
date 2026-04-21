@@ -1,6 +1,6 @@
 # Migración Angular 15 → 18 — Estado actual — ontimize-web-ngx-extra-components
 
-> Última actualización: 10 abril 2026 (sesión 2)
+> Última actualización: 21 abril 2026 (adopción del framework M3 — rama `theming/m3`)
 
 ## Repositorio y ramas
 
@@ -23,6 +23,8 @@
 | Fase 1: Angular 15→16 | ✅ Completado | `ded1691` |
 | Fase 2: Angular 16→17 | ✅ Completado | `3c29244` |
 | Fase 3: Angular 17→18 | ✅ Completado | `9b92ca1` |
+| Fase 4: Standalone components | ✅ Completado | `8b294f4` |
+| Fase 5: Adopción framework M3 | ✅ Completado | `9f83a96` |
 
 ---
 
@@ -112,6 +114,35 @@ Sin cambios en código fuente.
 | `OImageEditorModule` | Convertido a wrapper NgModule (`imports: [OImageEditorComponent]`) |
 | `ODataViewModule` | Convertido a wrapper NgModule (`imports/exports` standalone components) |
 | `OExtraComponentsModule` | `declarations: []`, `OSkeletonComponent` movido a `imports` y `exports` |
+
+---
+
+### Fase 5: Adopción del framework M3 — commit `9f83a96` (21 abril 2026)
+
+**Rama**: `migration/18.x.x`
+
+Tras la migración Material M2→M3 del framework (rama `theming/m3`,
+commits `fdcb42da` → `ee7f3534`), el addon se actualizó para consumir
+el nuevo tgz y adoptar los tokens runtime `--o-*`.
+
+#### Cambios
+
+| Fichero | Cambio |
+|---|---|
+| `projects/ontimize-web-ngx-extra-components/src/lib/components/o-image-editor/o-image-editor.component.scss` | Color hardcoded `#1464A5` sustituido por `var(--o-primary-500)` y `var(--o-primary-contrast-500)` en la regla `.tools-toggle .mat-button-toggle.mat-button-toggle-checked`. Ahora el componente sigue el color primary del tema activo (light/dark). |
+| `projects/app-test/src/styles.scss` | Import actualizado de `themes/ontimize.scss` (legacy eliminado en Fase 1 del framework M3) a `themes/oxygen.scss`. |
+| `projects/ontimize-web-ngx-extra-components/src/lib/components/o-skeleton/o-skeleton.component.spec.ts` | `OSkeletonComponent` movido de `declarations` a `imports` (era standalone pero TestBed lo rechazaba). |
+| `package-lock.json` | Regenerado al reinstalar `ontimize-web-ngx-18.0.0-SNAPSHOT-0.tgz` del framework (rama `theming/m3`). |
+
+#### Validación
+
+- `npx ng build ontimize-web-ngx-extra-components`: ✅ 0 errores.
+- `npx ng test --watch=false`: ✅ `TOTAL: 5 SUCCESS + 1 SUCCESS`, 0 fallos.
+
+#### Notas
+
+- El resto de SCSS del addon (`o-data-view.component.scss`, `o-skeleton.component.scss`) no necesitó cambios — no usaban APIs M2 ni tenían colores hardcoded.
+- El addon queda listo para ser re-empaquetado (`npm pack` desde `dist/`) y consumido por la playground con el framework M3.
 
 ---
 
