@@ -44,6 +44,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.V18_NODE_VERSION }}
+          cache: 'npm'
 
       - name: Setup Node registry
         if: (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'snapshot')) ||
