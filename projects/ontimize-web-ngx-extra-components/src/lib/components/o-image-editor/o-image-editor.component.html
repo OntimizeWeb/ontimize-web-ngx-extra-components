@@ -19,7 +19,7 @@
 
     @if (selectedFile) {
       <div class="tools o-flex-column" style="align-items:center; justify-content:center">
-        <mat-button-toggle-group class="tools-toggle o-flex-column" style="align-items:center; justify-content:center; gap:8px" [value]="toolsValue"
+        <mat-button-toggle-group class="tools-toggle" style="align-items:center; justify-content:center; gap:8px" [value]="toolsValue"
           (change)="onToolChange($event.value)">
 
           <mat-button-toggle value="upload" matTooltip="{{ 'UPLOAD_IMAGE' | oTranslate }}">
