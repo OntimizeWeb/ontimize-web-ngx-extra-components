@@ -1,5 +1,8 @@
 @use 'ontimize-web-ngx/theming/themes/oxygen.scss' as theme;
 @use 'ontimize-web-ngx/theming/ontimize-style.scss' as ontimize-style;
 
-/* Incluye el tema de Ontimize */
 @include ontimize-style.ontimize-theme-styles(theme.$theme);
+
+.o-dark {
+  @include ontimize-style.ontimize-theme-all-component-color(theme.$dark-theme);
+}
