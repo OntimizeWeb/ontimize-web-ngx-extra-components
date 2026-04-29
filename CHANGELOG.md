@@ -1,4 +1,17 @@
-## 15.0.0 (2026-03-16)
+## 18.0.0-next.0 (2026-04-29)
+
 ### Features
-* **o-data-view**: new component that combines `o-table` and `o-grid` in a single switchable view, supporting toggle button, toolbar toggle and floatable toggle modes, and forwarding common service and layout inputs to both inner components ([ebd80c2](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/ebd80c264d4417483d6fa16b0cd724923dfab5d2)) ([09d4538](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/09d45389a7eea326e71ff383a36f6606835e324f)) ([4e43854](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/4e43854a87d9a1e6761275856ced21ecd435c68f)) ([5efae79](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/5efae7929df74ec371d0cf0780ca96ab8f599cba)) ([30e550d](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/30e550d2d85c83276f65eeae835a6b6319d0dc65)) ([9e6881a](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/9e6881a)) ([f7edaad](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/f7edaad)) Closes [#5](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/5) [#7](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/7) [#12](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/12) [#13](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/13) [#17](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/17) [#19](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/19) [#21](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/21)
-* **o-image-editor**: new component that allows the user to crop, resize and save images, with configurable width, height, action button position and save option ([e9ac531](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/commit/e9ac53196664f3cc1513bb1b06e917570f10fa34)) Closes [#3](https://github.com/OntimizeWeb/ontimize-web-ngx-extra-components/pull/3)
+* **migration**: migrate to Angular 18 — standalone components, control flow syntax (`@if`/`@for`/`@switch`), flex-layout removal
+* **theming**: adopt Material 3 tokens from `ontimize-web-ngx` 18 — `--o-*` CSS custom properties for colors, backgrounds, typography
+
+### Bug Fixes
+* **o-image-editor**: fix `tools-toggle` flex direction — `mat-button-toggle-group` column layout overrides Material specificity
+* **o-image-editor**: remove border-radius from `tools-toggle` group
+* **o-image-editor**: hide `mat-pseudo-checkbox` inside `tools-toggle`
+* **o-image-editor**: anchor `ngx-ic-overlay` to `image-cropper` via `position: relative` to prevent overlay offset
+* **o-data-view**: migrate `*ngIf`/`*ngFor` to Angular 17+ control flow syntax
+* **app-test**: apply Angular 18 migration guide — Material Symbols Outlined, `.o-dark` dark theme mixin, remove duplicate `OntimizeWebModule` import
+
+### Miscellaneous
+* **deps**: align devDependencies with framework — `@angular-eslint` 18.4.3, `@typescript-eslint` ^7, `eslint` ^8.56, `jasmine-core` ~5.1, `ts-node` ~10.9, `@types/node` ^18
+* **deps**: bump `ngx-extended-pdf-viewer` to `^20.0.0` for Angular 18 support
