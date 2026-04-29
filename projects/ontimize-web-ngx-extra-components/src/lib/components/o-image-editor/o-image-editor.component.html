@@ -84,7 +84,7 @@
 
         </div>
 
-        <image-cropper #cropper [imageFile]="selectedFile!" [maintainAspectRatio]="maintainAspectRatio" [aspectRatio]="aspectRatio || 1"
+        <image-cropper #cropper alignImage="center" [imageFile]="selectedFile!" [maintainAspectRatio]="maintainAspectRatio" [aspectRatio]="aspectRatio || 1"
           [canvasRotation]="canvasRotation" [(transform)]="transform" [imageQuality]="95" format="jpeg" (imageCropped)="onImageCropped($event)"
           (imageLoaded)="onImageLoaded($event)" (loadImageFailed)="onLoadImageFailed()" [containWithinAspectRatio]="true"
           [resetCropOnAspectRatioChange]="true" [roundCropper]="roundCropper" [cropperStaticWidth]=" cropperStaticWidth"
