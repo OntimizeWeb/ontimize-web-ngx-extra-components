@@ -1,6 +1,6 @@
 # Migración Angular 15 → 18 — Estado actual — ontimize-web-ngx-extra-components
 
-> Última actualización: 21 abril 2026 (adopción del framework M3 — rama `theming/m3`)
+> Última actualización: 29 abril 2026 (fixes post-migración o-image-editor, deps alineadas, changelog 18.0.0-next.0)
 
 ## Repositorio y ramas
 
@@ -25,6 +25,7 @@
 | Fase 3: Angular 17→18 | ✅ Completado | `9b92ca1` |
 | Fase 4: Standalone components | ✅ Completado | `8b294f4` |
 | Fase 5: Adopción framework M3 | ✅ Completado | `9f83a96` |
+| Fase 6: Fixes post-migración + deps | ✅ Completado | `187f32d` → `510df53` |
 
 ---
 
@@ -143,6 +144,40 @@ el nuevo tgz y adoptar los tokens runtime `--o-*`.
 
 - El resto de SCSS del addon (`o-data-view.component.scss`, `o-skeleton.component.scss`) no necesitó cambios — no usaban APIs M2 ni tenían colores hardcoded.
 - El addon queda listo para ser re-empaquetado (`npm pack` desde `dist/`) y consumido por la playground con el framework M3.
+
+---
+
+### Fase 6: Fixes post-migración + deps — commits `187f32d` → `510df53` (29 abril 2026)
+
+**Rama**: `migration/18.x.x`
+
+#### Templates
+
+| Commit | Fichero | Cambio |
+|--------|---------|--------|
+| `187f32d` | `o-image-editor.component.html` | Migrar 23 directivas flex-layout → clases `o-flex-*` + inline styles; `*ngIf`/`*ngFor` → `@if`/`@for` |
+| `187f32d` | `o-data-view.component.html` | `*ngIf`/`*ngFor` → `@if`/`@for` |
+
+#### o-image-editor layout fixes
+
+| Commit | Cambio |
+|--------|--------|
+| `a3d0e61` | `.tools-toggle.mat-button-toggle-group`: `flex-direction:column` con doble selector para ganar especificidad sobre Material |
+| `4dc33af` | `.tools-toggle`: `border-radius:0`; ocultar `.mat-pseudo-checkbox` |
+| `510df53` | `alignImage="center"` en `image-cropper` — overlay y cropper comparten el mismo `margin-left`; `flex:1 1 0` + `min-height:0` para respetar altura del padre; `box-sizing:border-box` en `.o-image-editor` para que `padding:32px` no cause overflow |
+
+#### app-test
+
+| Commit | Cambio |
+|--------|--------|
+| `4a77c0d` | `index.html`: Material Icons → Material Symbols Outlined; `styles.scss`: añadir `.o-dark` mixin; `app.module.ts`: eliminar `OntimizeWebModule` duplicado |
+
+#### Dependencias
+
+| Commit | Cambio |
+|--------|--------|
+| `89d5ff1` | `@angular-eslint/*`: `^18.0.0` → `18.4.3`; `@typescript-eslint`: `^5.43.0` → `^7.0.0`; `eslint`: `^8.28.0` → `^8.56.0`; `@types/node`: `^12` → `^18`; `jasmine-core`: `~4.5` → `~5.1`; `ts-node`: `~7.0` → `~10.9`; `ngx-extended-pdf-viewer`: `^19.0.0` → `^20.0.0` (soporte Angular 18) |
+| `4bbadc8` (CI) | Build CI actualizado |
 
 ---
 
