@@ -69,6 +69,8 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 - Eliminar `FlexLayoutModule` de `o-components.ts` (import y array `OEXTRACOMPONENTS_IMPORTS_MODULES`)
 - `ontimize-web-ngx` → `file:../ontimize-web-ngx/dist/ontimize-web-ngx-18.0.0-SNAPSHOT-0.tgz`
 - Actualizar `peerDependencies` a `ontimize-web-ngx ^18.0.0`
+- **`projects/ontimize-web-ngx-extra-components/tsconfig.lib.json`**: añadir `"compilationMode": "partial"` en `angularCompilerOptions`
+  > ⚠️ `tsconfig.lib.prod.json` ya lo tiene, pero `tsconfig.lib.json` (usado por `npm run build` sin `-c production`) no. Sin esto el dist se compila en modo full y produce errores `NG0203` / `ɵɵconditional not found` en el consumidor.
 
 ### Standalone migration ✅ COMPLETADO (commit `8b294f4`)
 
