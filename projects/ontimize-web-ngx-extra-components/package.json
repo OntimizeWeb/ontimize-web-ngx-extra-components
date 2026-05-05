@@ -1,6 +1,6 @@
 {
   "name": "ontimize-web-ngx-extra-components",
-  "version": "18.0.0-next.0",
+  "version": "18.0.0-next.1",
   "description": "Authomatic reports implementation for Ontimize Web",
   "keywords": [
     "angular",
@@ -20,6 +20,9 @@
     "test-watch": "karma start --singleRun=false --autoWatch=true"
   },
   "peerDependencies": {
+    "@angular/common": "^18.2.0",
+    "@angular/core": "^18.2.0",
+    "@angular/material": "^18.2.0",
     "ontimize-web-ngx": "^18.0.0-next.0"
   },
   "dependencies": {
