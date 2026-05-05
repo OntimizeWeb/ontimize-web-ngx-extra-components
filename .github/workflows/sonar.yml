@@ -46,7 +46,7 @@ jobs:
           npm set _auth=$NPM_AUTH_TOKEN
 
       - name: npm install and npm run test-ci
-        rtest-ciun: |
+        run: |
           npm i
           npm run
 
