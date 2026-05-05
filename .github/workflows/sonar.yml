@@ -48,7 +48,7 @@ jobs:
       - name: npm install and npm run test-ci
         run: |
           npm i
-          npm run
+          npm run test-ci
 
       - name: coverage .lcov workaround
         run: |
