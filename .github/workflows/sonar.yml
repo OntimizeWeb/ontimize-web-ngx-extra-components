@@ -10,9 +10,9 @@ env:
 on:
   push:
     branches:
-      - main.15.x
-      - 15.x.x
-      - hotfix/15.*
+      - main.18.x
+      - 18.x.x
+      - hotfix/18.*
   pull_request:
     types: [opened, synchronize, reopened, labeled]
 jobs:
@@ -32,10 +32,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Node 18.x
+      - name: Configure Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18.10.0
+          node-version: ${{ vars.V18_NODE_VERSION }}
 
       - name: Setup Node registry
         if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'snapshot')
@@ -46,9 +46,9 @@ jobs:
           npm set _auth=$NPM_AUTH_TOKEN
 
       - name: npm install and npm run test-ci
-        run: |
+        rtest-ciun: |
           npm i
-          npm run test-ci
+          npm run
 
       - name: coverage .lcov workaround
         run: |
