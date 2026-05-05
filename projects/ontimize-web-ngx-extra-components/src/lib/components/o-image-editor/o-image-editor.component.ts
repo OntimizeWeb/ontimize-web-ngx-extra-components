@@ -19,8 +19,7 @@ import {
   ImageTransform,
   LoadedImage
 } from 'ngx-image-cropper';
-import { OntimizeWebModule } from 'ontimize-web-ngx';
-import { DialogService, ODialogConfig } from 'ontimize-web-ngx';
+import { DialogService, ODialogConfig, OntimizeWebModule } from 'ontimize-web-ngx';
 import { take } from 'rxjs';
 import { TranslateExtraComponentsService } from '../../services';
 
