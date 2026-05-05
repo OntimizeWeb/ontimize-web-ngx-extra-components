@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ImageCropperModule } from 'ngx-image-cropper';
+import { ImageCropperComponent } from 'ngx-image-cropper';
 import { OImageEditorComponent } from './o-image-editor.component';
 import { OntimizeWebModule } from 'ontimize-web-ngx';
 
@@ -8,7 +8,7 @@ import { OntimizeWebModule } from 'ontimize-web-ngx';
   declarations: [OImageEditorComponent],
   imports: [
     CommonModule,
-    ImageCropperModule,
+    ImageCropperComponent,
     OntimizeWebModule
   ],
   exports: [OImageEditorComponent]
