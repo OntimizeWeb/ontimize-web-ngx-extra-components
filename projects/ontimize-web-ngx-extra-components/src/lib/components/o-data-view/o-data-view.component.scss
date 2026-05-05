@@ -1,26 +1,6 @@
 .button-toggle-group {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  margin-bottom: 8px;
   margin-right: 8px;
-  margin-top: 8px;
-
-  .mat-button-toggle-standalone,
-  .mat-button-toggle-group {
-    height: 30px;
-
-    .o-button-toggle .mat-button-toggle {
-      height: 30px;
-      width: 32px;
-
-      span.mat-button-toggle-label-content {
-        display: flex;
-        padding: 0;
-        justify-content: center;
-      }
-    }
-  }
+  margin-left: 8px;
 }
 
 .toggle-floatable {
