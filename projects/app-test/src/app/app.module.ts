@@ -19,7 +19,6 @@ import { ImageEditorTestModule } from './image-editor/image-editor-test.module';
     BrowserAnimationsModule,
     AppRoutingModule,
     OExtraComponentsModule,
-    OntimizeWebModule,
     OntimizeWebModule.forRoot(CONFIG),
     DataViewTestModule,
     ImageEditorTestModule

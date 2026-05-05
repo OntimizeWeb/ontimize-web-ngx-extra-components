@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
-
 .o-image-editor {
   padding: 32px;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
@@ -146,8 +145,14 @@
   opacity: 0.45;
 }
 
-.tools-toggle {
+.tools-toggle.mat-button-toggle-group {
   border: 0;
+  border-radius: 0;
+  flex-direction: column;
+
+  .mat-pseudo-checkbox {
+    display: none;
+  }
 
   .mat-button-toggle {
     width: 72px;
@@ -172,7 +177,7 @@
 }
 
 .tools-toggle .mat-button-toggle.mat-button-toggle-checked {
-  background: #1464A5;
-  color: #fff;
+  background: var(--o-primary-500);
+  color: var(--o-primary-contrast-500);
   border-color: transparent;
 }
