@@ -8,6 +8,7 @@
     "ngx-extended-pdf-viewer",
     "ngx-skeleton-loader",
     "zone.js",
-    "ngx-image-cropper"
+    "ngx-image-cropper",
+    "angular-calendar"
   ]
 }

@@ -10,6 +10,7 @@ import { CONFIG } from './app.config';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DataViewTestModule } from './data-view/data-view-test.module';
 import { ImageEditorTestModule } from './image-editor/image-editor-test.module';
+import { CalendarTestModule } from './calendar/calendar-test.module';
 @NgModule({
   declarations: [
     AppComponent
@@ -21,7 +22,8 @@ import { ImageEditorTestModule } from './image-editor/image-editor-test.module';
     OExtraComponentsModule,
     OntimizeWebModule.forRoot(CONFIG),
     DataViewTestModule,
-    ImageEditorTestModule
+    ImageEditorTestModule,
+    CalendarTestModule
   ],
   providers: [
     { provide: APP_CONFIG, useValue: CONFIG },

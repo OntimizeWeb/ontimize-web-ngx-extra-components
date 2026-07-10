@@ -177,7 +177,7 @@
 }
 
 .tools-toggle .mat-button-toggle.mat-button-toggle-checked {
-  background: var(--o-primary-500);
-  color: var(--o-primary-contrast-500);
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
   border-color: transparent;
 }

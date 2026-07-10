@@ -56,7 +56,12 @@
           "options": {
             "allowedCommonJsDependencies": [
               "moment",
-              "google-libphonenumber"
+              "google-libphonenumber",
+              "angular-calendar",
+              "calendar-utils",
+              "angular-draggable-droppable",
+              "angular-resizable-element",
+              "positioning"
             ],
             "outputPath": "dist/app-test",
             "index": "projects/app-test/src/index.html",
@@ -82,7 +87,8 @@
             ],
             "styles": [
               "projects/app-test/src/styles.scss",
-              "node_modules/ontimize-web-ngx/ontimize.scss"
+              "node_modules/ontimize-web-ngx/ontimize.scss",
+              "node_modules/angular-calendar/css/angular-calendar.css"
             ],
             "scripts": []
           },

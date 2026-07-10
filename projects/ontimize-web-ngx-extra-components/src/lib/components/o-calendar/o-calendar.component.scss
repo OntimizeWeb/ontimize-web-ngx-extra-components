@@ -1,0 +1,370 @@
+o-calendar {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  /* ----------------------------------------------------------------------
+   * Theme tokens. Colors are inherited from the Ontimize / Angular Material
+   * theme (`--mat-sys-*`). The fallbacks only apply outside a themed app.
+   * -------------------------------------------------------------------- */
+  --o-cal-primary: var(--mat-sys-primary, #2e7d32);
+  --o-cal-on-primary: var(--mat-sys-on-primary, #ffffff);
+  --o-cal-surface: var(--mat-sys-surface, #ffffff);
+  --o-cal-text: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
+  --o-cal-muted: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.55));
+  --o-cal-border: var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
+
+  --o-cal-today-tint: color-mix(in srgb, var(--o-cal-primary) 8%, transparent);
+  --o-cal-pill-bg: color-mix(in srgb, var(--o-cal-primary) 6%, var(--o-cal-surface));
+  --o-cal-hover: color-mix(in srgb, var(--o-cal-text) 4%, transparent);
+  --o-cal-out-month: color-mix(in srgb, var(--o-cal-text) 3%, transparent);
+
+  .o-calendar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    background: var(--o-cal-surface);
+    color: var(--o-cal-text);
+    font-family: var(--o-font-family, Roboto, "Helvetica Neue", sans-serif);
+  }
+
+  /* ---------------- Toolbar ---------------- */
+  .o-calendar-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px 16px;
+  }
+
+  .o-calendar-header-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--o-cal-text);
+    white-space: nowrap;
+  }
+
+  .o-calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .o-calendar-nav-btn {
+      color: var(--o-cal-muted);
+    }
+  }
+
+  /* The toolbar date is a button that opens the date picker menu. */
+  .o-calendar-title {
+    appearance: none;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--o-cal-muted);
+    text-transform: capitalize;
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    &:hover {
+      background: var(--o-cal-hover);
+    }
+  }
+
+  .o-calendar-spacer {
+    flex: 1 1 auto;
+  }
+
+  /* View switch: separate rounded pills, active one filled with primary. */
+  .o-calendar-view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .o-calendar-view-btn {
+      appearance: none;
+      cursor: pointer;
+      border: 1px solid var(--o-cal-border);
+      background: var(--o-cal-surface);
+      color: var(--o-cal-text);
+      border-radius: 999px;
+      padding: 5px 16px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      line-height: 1.2;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+      &:hover {
+        background: var(--o-cal-hover);
+      }
+
+      &.o-calendar-view-btn--active {
+        background: var(--o-cal-primary);
+        border-color: var(--o-cal-primary);
+        color: var(--o-cal-on-primary);
+      }
+    }
+  }
+
+  /* ---------------- Body ---------------- */
+  .o-calendar-body {
+    flex: 1 1 auto;
+    overflow: auto;
+  }
+
+  .cal-month-view,
+  .cal-week-view,
+  .cal-day-view {
+    background: transparent;
+  }
+
+  /* ---------------- Month view ---------------- */
+  .cal-month-view {
+
+    .cal-header .cal-cell {
+      color: var(--o-cal-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.6875rem;
+      letter-spacing: 0.04em;
+      text-align: left;
+      padding: 8px 10px;
+    }
+
+    .cal-days {
+      border: 1px solid var(--o-cal-border);
+      border-bottom: 0;
+    }
+
+    .cal-cell-row {
+      border-color: var(--o-cal-border);
+    }
+
+    /* The base css tints the whole hovered row (#fafafa) and the hovered cell
+     * (#ededed) with hard-coded light grays, unreadable on dark themes. The
+     * cell selector needs the row class to win over the base specificity. */
+    .cal-cell-row:hover {
+      background-color: transparent;
+    }
+
+    .cal-day-cell {
+      min-height: 108px;
+      /* Flex item: without this the cell refuses to shrink below the event
+       * text width (min-width: auto), making day columns uneven. With it,
+       * columns stay equal and the pill text ellipsizes instead. */
+      min-width: 0;
+      border-color: var(--o-cal-border) !important;
+    }
+
+    .cal-cell-row .cal-day-cell:hover,
+    .cal-day-cell.cal-has-events.cal-open {
+      background-color: var(--o-cal-hover);
+    }
+
+    /* Days outside the current month: faded background + muted number. */
+    .cal-day-cell.cal-out-month {
+      background-color: var(--o-cal-out-month);
+
+      .o-cal-day-number {
+        color: var(--o-cal-muted);
+        opacity: 0.6;
+      }
+    }
+
+    /* Today: green outline on the cell + filled circle on the day number. */
+    .cal-day-cell.cal-today {
+      background-color: transparent;
+      box-shadow: inset 0 0 0 1.5px var(--o-cal-primary);
+
+      .o-cal-day-number {
+        background: var(--o-cal-primary);
+        color: var(--o-cal-on-primary);
+        border-radius: 50%;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+
+  /* Custom month cell content */
+  .o-cal-cell-top {
+    padding: 6px 8px 2px;
+  }
+
+  .o-cal-day-number {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--o-cal-text);
+    line-height: 1.4;
+  }
+
+  .o-cal-cell-events {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0 6px 6px;
+  }
+
+  .o-cal-event-pill {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+    cursor: pointer;
+    background: var(--o-cal-pill-bg);
+    border-left: 3px solid var(--o-cal-primary);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    line-height: 1.35;
+
+    .o-cal-event-title {
+      font-weight: 600;
+      color: var(--o-cal-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .o-cal-event-desc {
+      color: var(--o-cal-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /* Wrapper of the custom (projected) event template. */
+  .o-cal-event-custom {
+    min-width: 0;
+    cursor: pointer;
+  }
+
+  .o-cal-event-more {
+    display: inline-block;
+    margin-top: 1px;
+    padding: 1px 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--o-cal-primary);
+    cursor: pointer;
+  }
+
+  /* ---------------- Week / Day views ---------------- */
+  .cal-week-view,
+  .cal-day-view {
+
+    .cal-header,
+    .cal-day-headers,
+    .cal-hour-odd,
+    .cal-time-events,
+    .cal-all-day-events,
+    .cal-hour:not(:last-child) .cal-hour-segment,
+    .cal-hour:last-child :not(:last-child) .cal-hour-segment {
+      border-color: var(--o-cal-border);
+    }
+
+    .cal-day-headers {
+      .cal-header {
+        color: var(--o-cal-muted);
+
+        b {
+          display: block;
+          text-transform: uppercase;
+          font-size: 0.6875rem;
+          letter-spacing: 0.04em;
+          font-weight: 600;
+        }
+
+        span {
+          font-size: 1rem;
+          color: var(--o-cal-text);
+        }
+      }
+
+      /* Base css hovers the day header with a hard-coded #ededed. Declared
+       * before the .cal-today rule so the today tint wins while hovering. */
+      .cal-header:hover,
+      .cal-drag-over {
+        background-color: var(--o-cal-hover);
+      }
+
+      /* Today column header: tint + circled day number. */
+      .cal-header.cal-today {
+        background-color: var(--o-cal-today-tint);
+
+        span {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: var(--o-cal-primary);
+          color: var(--o-cal-on-primary);
+        }
+      }
+    }
+
+    /* Tint the whole "today" column body. */
+    .cal-day-columns .cal-day-column.cal-today,
+    .cal-time-events .cal-day-columns > :is(.cal-today) {
+      background-color: var(--o-cal-today-tint);
+    }
+
+    /* Alternating hour rows: the base css hard-codes #fafafa, unreadable on dark themes. */
+    .cal-hour-odd {
+      background-color: var(--o-cal-out-month);
+    }
+
+    .cal-hour-segment:hover,
+    .cal-drag-over .cal-hour-segment,
+    .cal-time-events .cal-day-columns:not(.cal-resize-active) .cal-hour-segment:hover {
+      background-color: var(--o-cal-hover);
+    }
+
+    /* Event pills reuse the month look; theme tint + primary accent. */
+    .cal-event {
+      background-color: var(--o-cal-pill-bg) !important;
+      border: 0 !important;
+      border-left: 3px solid var(--o-cal-primary) !important;
+      border-radius: 3px !important;
+      color: var(--o-cal-text) !important;
+    }
+  }
+}
+
+/* Default card look of the custom tooltip template wrapper. Tooltips may be
+ * appended to the body (week/day views), outside the o-calendar element, so
+ * this rule is global and relies on theme tokens with fallbacks. */
+.o-cal-tooltip {
+  background: var(--mat-sys-surface-container-high, #ffffff);
+  color: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
+  border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  max-width: 260px;
+}
+
+/* Toolbar date picker: the mat-menu panel is attached to the CDK overlay
+ * container, outside the o-calendar element, so it cannot be nested above. */
+.mat-mdc-menu-panel.o-calendar-datepicker-panel {
+  max-width: none;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+
+  mat-calendar {
+    width: 300px;
+  }
+}

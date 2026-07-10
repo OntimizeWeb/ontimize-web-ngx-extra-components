@@ -1,0 +1,159 @@
+<div class="o-calendar-container">
+  @if (showToolbar) {
+    <div class="o-calendar-toolbar">
+
+      @if (hasTitle()) {
+        <span class="o-calendar-header-title">{{ title | oTranslate }}</span>
+      }
+
+      <div class="o-calendar-nav">
+        <button mat-icon-button type="button" class="o-calendar-nav-btn"
+          mwlCalendarPreviousView [view]="calendarView" [viewDate]="viewDate"
+          (viewDateChange)="onViewDateChanged($event)"
+          [attr.aria-label]="'PREVIOUS' | oTranslate">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <button type="button" class="o-calendar-title" [matMenuTriggerFor]="oCalendarDatePicker">
+          {{ toolbarTitle }}
+        </button>
+
+        <button mat-icon-button type="button" class="o-calendar-nav-btn"
+          mwlCalendarNextView [view]="calendarView" [viewDate]="viewDate"
+          (viewDateChange)="onViewDateChanged($event)"
+          [attr.aria-label]="'NEXT' | oTranslate">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <!-- Date picker opened from the toolbar title to jump to any year/month/day. -->
+      <mat-menu #oCalendarDatePicker="matMenu" class="o-calendar-datepicker-panel">
+        <mat-calendar [selected]="viewDate" [startAt]="viewDate" (click)="$event.stopPropagation()"
+          (selectedChange)="onPickerDateSelected($event)">
+        </mat-calendar>
+      </mat-menu>
+
+      <span class="o-calendar-spacer"></span>
+
+      @if (views.length > 1) {
+        <div class="o-calendar-view-toggle">
+          @for (v of views; track v) {
+            <button type="button" class="o-calendar-view-btn"
+              [class.o-calendar-view-btn--active]="view === v"
+              (click)="setView(v)">
+              {{ getViewLabel(v) | oTranslate }}
+            </button>
+          }
+        </div>
+      }
+
+    </div>
+  }
+
+  <div class="o-calendar-body">
+
+    @switch (calendarView) {
+      @case (CalendarView.Month) {
+        <mwl-calendar-month-view
+          [viewDate]="viewDate"
+          [events]="events"
+          [locale]="locale"
+          [weekStartsOn]="weekStartsOn"
+          [refresh]="refresh$"
+          [cellTemplate]="monthCellTemplate"
+          (dayClicked)="handleDayClicked($event.day)"
+          (eventClicked)="handleEventClicked($event.event)">
+        </mwl-calendar-month-view>
+      }
+      @case (CalendarView.Week) {
+        <mwl-calendar-week-view
+          [viewDate]="viewDate"
+          [events]="events"
+          [locale]="locale"
+          [weekStartsOn]="weekStartsOn"
+          [refresh]="refresh$"
+          [eventTemplate]="eventTemplate ? oCalWeekEventAdapter : $any(null)"
+          [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+          (hourSegmentClicked)="handleHourSegmentClicked($event.date)"
+          (eventClicked)="handleEventClicked($event.event)">
+        </mwl-calendar-week-view>
+      }
+      @case (CalendarView.Day) {
+        <mwl-calendar-day-view
+          [viewDate]="viewDate"
+          [events]="events"
+          [locale]="locale"
+          [refresh]="refresh$"
+          [eventTemplate]="eventTemplate ? oCalWeekEventAdapter : $any(null)"
+          [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+          (hourSegmentClicked)="handleHourSegmentClicked($event.date)"
+          (eventClicked)="handleEventClicked($event.event)">
+        </mwl-calendar-day-view>
+      }
+    }
+
+  </div>
+
+</div>
+
+<!-- Custom month day cell: day number + event pills (title + description) + "+N more". -->
+<ng-template #monthCellTemplate let-day="day" let-locale="locale">
+  <div class="o-cal-cell-top">
+    <span class="o-cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
+  </div>
+
+  @if (day.events.length > 0) {
+    <div class="o-cal-cell-events">
+      @for (event of visibleEvents(day); track event) {
+        @if (eventTemplate) {
+          <div class="o-cal-event-custom"
+            [mwlCalendarTooltip]="getEventTooltip(event)"
+            [tooltipEvent]="event"
+            [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+            (click)="handleEventClicked(event); $event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
+          </div>
+        } @else {
+          <div class="o-cal-event-pill"
+            [style.borderLeftColor]="getEventColor(event)"
+            [mwlCalendarTooltip]="getEventTooltip(event)"
+            [tooltipEvent]="event"
+            [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+            (click)="handleEventClicked(event); $event.stopPropagation()">
+            <span class="o-cal-event-title">{{ event.title }}</span>
+            @if (getEventDescription(event)) {
+              <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
+            }
+          </div>
+        }
+      }
+      @if (hiddenEventsCount(day) > 0) {
+        <span class="o-cal-event-more">+{{ hiddenEventsCount(day) }} {{ 'MORE' | oTranslate }}</span>
+      }
+    </div>
+  }
+</ng-template>
+
+<!-- Adapts angular-calendar's tooltip context ({ contents, placement, event })
+     to the Ontimize-style one ($implicit = CalendarEvent, row = source row). -->
+<ng-template #oCalTooltipAdapter let-event="event">
+  <div class="o-cal-tooltip">
+    <ng-container *ngTemplateOutlet="tooltipTemplate; context: { $implicit: event, row: event?.meta }"></ng-container>
+  </div>
+</ng-template>
+
+<!-- Custom event wrapper for the week/day views: keeps the positioned .cal-event
+     container plus the tooltip and click wiring around the projected template. -->
+<ng-template #oCalWeekEventAdapter let-weekEvent="weekEvent" let-tooltipPlacement="tooltipPlacement"
+  let-tooltipTemplate="tooltipTemplate" let-tooltipAppendToBody="tooltipAppendToBody" let-tooltipDelay="tooltipDelay">
+  <div class="cal-event o-cal-event-custom"
+    [mwlCalendarTooltip]="getEventTooltip(weekEvent.event)"
+    [tooltipPlacement]="tooltipPlacement"
+    [tooltipEvent]="weekEvent.event"
+    [tooltipTemplate]="tooltipTemplate"
+    [tooltipAppendToBody]="tooltipAppendToBody"
+    [tooltipDelay]="tooltipDelay"
+    (click)="handleEventClicked(weekEvent.event); $event.stopPropagation()">
+    <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: weekEvent.event, row: weekEvent.event.meta }"></ng-container>
+  </div>
+</ng-template>

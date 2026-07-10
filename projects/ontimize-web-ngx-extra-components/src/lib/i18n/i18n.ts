@@ -24,7 +24,14 @@ export const MAP = {
     'HORIZONTAL': 'Horizontal',
     'VERTICAL': 'Vertical',
     'AVATAR': 'Avatar',
-    'CUSTOM': 'Custom'
+    'CUSTOM': 'Custom',
+    'TODAY': 'Today',
+    'PREVIOUS': 'Previous',
+    'NEXT': 'Next',
+    'MONTH': 'Month',
+    'WEEK': 'Week',
+    'DAY': 'Day',
+    'MORE': 'more'
   },
 
   // Spanish
@@ -51,7 +58,14 @@ export const MAP = {
     'HORIZONTAL': 'Horizontal',
     'VERTICAL': 'Vertical',
     'AVATAR': 'Avatar',
-    'CUSTOM': 'Custom'
+    'CUSTOM': 'Custom',
+    'TODAY': 'Hoy',
+    'PREVIOUS': 'Anterior',
+    'NEXT': 'Siguiente',
+    'MONTH': 'Mes',
+    'WEEK': 'Semana',
+    'DAY': 'Día',
+    'MORE': 'más'
   }
 
 };
