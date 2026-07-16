@@ -38,7 +38,7 @@ o-calendar {
   }
 
   .o-calendar-header-title {
-    font-size: 1rem;
+    font-size: var(--mat-sys-title-medium-size, 1rem);
     font-weight: 600;
     color: var(--o-cal-text);
     white-space: nowrap;
@@ -61,7 +61,7 @@ o-calendar {
     background: none;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.8125rem;
+    font-size: var(--mat-sys-label-large-size, 0.8125rem);
     font-weight: 400;
     color: var(--o-cal-muted);
     text-transform: capitalize;
@@ -92,7 +92,7 @@ o-calendar {
       color: var(--o-cal-text);
       border-radius: 999px;
       padding: 5px 16px;
-      font-size: 0.8125rem;
+      font-size: var(--mat-sys-label-large-size, 0.8125rem);
       font-weight: 500;
       line-height: 1.2;
       transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
@@ -115,6 +115,91 @@ o-calendar {
     overflow: auto;
   }
 
+  /* ---------------- Week / Day agenda (show-hours="no") ---------------- */
+  .o-cal-agenda-week {
+    display: flex;
+    height: 100%;
+    border: 1px solid var(--o-cal-border);
+    border-bottom: 0;
+  }
+
+  .o-cal-agenda-day-column {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--o-cal-border);
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  .o-cal-agenda-day-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--o-cal-border);
+  }
+
+  .o-cal-agenda-weekday {
+    font-size: var(--mat-sys-label-small-size, 0.6875rem);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--o-cal-muted);
+  }
+
+  /* Fixed-size box regardless of today/not-today, so every column's header
+   * is the same height and their bottom borders stay aligned. Same 24px
+   * circle size as the week/day grid view's own .cal-today day number. */
+  .o-cal-agenda-day-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: var(--mat-sys-label-large-size, 0.8125rem);
+    font-weight: 500;
+    color: var(--o-cal-text);
+  }
+
+  /* Today: background tint (header, column and day-view list) + filled
+   * circle on the day number — same treatment as the week/day grid view's
+   * own .cal-today (.cal-header.cal-today / .cal-day-column.cal-today).
+   * Only `.o-cal-agenda-today-tint` paints the tint: in week view it sits on
+   * the day column, which already wraps the header, so the header itself
+   * must NOT repaint it too — that would stack two translucent layers and
+   * render visibly darker than every other "today" tint in the calendar. */
+  .o-cal-agenda-today-tint {
+    background-color: var(--o-cal-today-tint);
+  }
+
+  .o-cal-agenda-day-header--today .o-cal-agenda-day-number {
+    background: var(--o-cal-primary);
+    color: var(--o-cal-on-primary);
+  }
+
+  .o-cal-agenda-day-list {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    overflow-y: auto;
+  }
+
+  .o-cal-agenda-empty {
+    display: block;
+    color: var(--o-cal-muted);
+    font-size: var(--mat-sys-label-medium-size, 0.75rem);
+    text-align: center;
+    padding: 8px 0;
+  }
+
   .cal-month-view,
   .cal-week-view,
   .cal-day-view {
@@ -128,7 +213,7 @@ o-calendar {
       color: var(--o-cal-muted);
       font-weight: 600;
       text-transform: uppercase;
-      font-size: 0.6875rem;
+      font-size: var(--mat-sys-label-small-size, 0.6875rem);
       letter-spacing: 0.04em;
       text-align: left;
       padding: 8px 10px;
@@ -174,18 +259,17 @@ o-calendar {
       }
     }
 
-    /* Today: green outline on the cell + filled circle on the day number. */
+    /* Today: background tint + filled circle on the day number, same
+     * treatment as the week/day grid view's own .cal-today. */
     .cal-day-cell.cal-today {
-      background-color: transparent;
-      box-shadow: inset 0 0 0 1.5px var(--o-cal-primary);
+      background-color: var(--o-cal-today-tint);
 
       .o-cal-day-number {
         background: var(--o-cal-primary);
         color: var(--o-cal-on-primary);
         border-radius: 50%;
-        min-width: 22px;
-        height: 22px;
-        padding: 0 4px;
+        width: 24px;
+        height: 24px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -199,7 +283,7 @@ o-calendar {
   }
 
   .o-cal-day-number {
-    font-size: 0.8125rem;
+    font-size: var(--mat-sys-label-large-size, 0.8125rem);
     font-weight: 500;
     color: var(--o-cal-text);
     line-height: 1.4;
@@ -212,49 +296,23 @@ o-calendar {
     padding: 0 6px 6px;
   }
 
-  .o-cal-event-pill {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    min-width: 0;
-    cursor: pointer;
-    background: var(--o-cal-pill-bg);
-    border-left: 3px solid var(--o-cal-primary);
-    border-radius: 3px;
-    padding: 2px 6px;
-    font-size: 0.75rem;
-    line-height: 1.35;
-
-    .o-cal-event-title {
-      font-weight: 600;
-      color: var(--o-cal-text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .o-cal-event-desc {
-      color: var(--o-cal-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  }
-
-  /* Wrapper of the custom (projected) event template. */
-  .o-cal-event-custom {
-    min-width: 0;
-    cursor: pointer;
-  }
-
+  /* Opens the day events popover; reset to look like a plain text link. */
   .o-cal-event-more {
+    appearance: none;
+    border: 0;
+    background: none;
     display: inline-block;
     margin-top: 1px;
     padding: 1px 6px;
-    font-size: 0.75rem;
+    font-family: inherit;
+    font-size: var(--mat-sys-label-medium-size, 0.75rem);
     font-weight: 600;
     color: var(--o-cal-primary);
     cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   /* ---------------- Week / Day views ---------------- */
@@ -278,13 +336,16 @@ o-calendar {
         b {
           display: block;
           text-transform: uppercase;
-          font-size: 0.6875rem;
+          font-size: var(--mat-sys-label-small-size, 0.6875rem);
           letter-spacing: 0.04em;
           font-weight: 600;
         }
 
+        /* Same size as .o-cal-day-number (month) / .o-cal-agenda-day-number
+         * (agenda), so the day number reads the same everywhere, today or not. */
         span {
-          font-size: 1rem;
+          font-size: var(--mat-sys-label-large-size, 0.8125rem);
+          font-weight: 500;
           color: var(--o-cal-text);
         }
       }
@@ -304,11 +365,12 @@ o-calendar {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 24px;
+          width: 24px;
           height: 24px;
           border-radius: 50%;
           background: var(--o-cal-primary);
           color: var(--o-cal-on-primary);
+          opacity: 1;
         }
       }
     }
@@ -341,17 +403,79 @@ o-calendar {
   }
 }
 
+/* Week view today circle: sized for a bare day number ('D', the default
+ * week-header-day-format). Any other format renders longer text (e.g. 'MMM D'
+ * -> "Jul 16") that wouldn't fit a 24px circle without clipping or stretching
+ * it into an oval, so it becomes a rounded-rect pill instead. Needs to live
+ * outside the `o-calendar { }` block to prefix the host with its own class
+ * (`:host` doesn't apply under ViewEncapsulation.None). Higher specificity
+ * (5 classes) than the plain `.cal-header.cal-today span` circle rule (4
+ * classes), so it wins regardless of source order. */
+o-calendar.o-cal-week-header-wide .cal-week-view .cal-day-headers .cal-header.cal-today span {
+  width: auto;
+  min-width: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+}
+
+/* Event pill / custom event wrapper. Global (not nested under `o-calendar`)
+ * because the day-events popover below renders in the CDK overlay, outside
+ * the <o-calendar> subtree, so the --o-cal-* custom properties scoped to the
+ * host are not inherited there; every var falls back to the plain Material
+ * system token, which is what --o-cal-* itself resolves to by default anyway. */
+.o-cal-event-pill {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  cursor: pointer;
+  background: var(--o-cal-pill-bg, color-mix(in srgb, var(--mat-sys-primary, #2e7d32) 6%, var(--mat-sys-surface, #ffffff)));
+  border-left: 3px solid var(--o-cal-primary, var(--mat-sys-primary, #2e7d32));
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: var(--mat-sys-label-medium-size, 0.75rem);
+  line-height: 1.35;
+
+  .o-cal-event-title {
+    font-weight: 600;
+    color: var(--o-cal-text, var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87)));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .o-cal-event-desc {
+    color: var(--o-cal-muted, var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.55)));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Wrapper of the custom (projected) event template. */
+.o-cal-event-custom {
+  min-width: 0;
+  cursor: pointer;
+}
+
 /* Default card look of the custom tooltip template wrapper. Tooltips may be
  * appended to the body (week/day views), outside the o-calendar element, so
  * this rule is global and relies on theme tokens with fallbacks. */
 .o-cal-tooltip {
+  /* angular-calendar positions the tooltip by setting inline top/left via JS
+   * (positionElements), which only has any effect on a positioned element —
+   * its own default .cal-tooltip class sets position: absolute for exactly
+   * this reason. Without it, this custom tooltip renders in normal document
+   * flow at the end of <body> instead of anchored next to the hovered event. */
+  position: absolute;
+  z-index: 1070;
   background: var(--mat-sys-surface-container-high, #ffffff);
   color: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
   border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   padding: 8px 10px;
-  font-size: 0.75rem;
+  font-size: var(--mat-sys-label-medium-size, 0.75rem);
   max-width: 260px;
 }
 
@@ -367,4 +491,37 @@ o-calendar {
   mat-calendar {
     width: 300px;
   }
+}
+
+/* "+N more" day events popover: also attached to the CDK overlay. */
+.mat-mdc-menu-panel.o-calendar-day-events-menu {
+  max-width: 360px;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}
+
+.o-cal-day-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  min-width: 220px;
+  max-height: 320px;
+}
+
+.o-cal-day-menu-title {
+  font-size: var(--mat-sys-label-large-size, 0.8125rem);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
+}
+
+.o-cal-day-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
 }

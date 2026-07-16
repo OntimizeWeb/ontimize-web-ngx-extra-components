@@ -5,6 +5,7 @@ import {
   ContentChild,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Injector,
   Input,
   OnDestroy,
@@ -25,6 +26,9 @@ import {
   BooleanInputConverter,
   ComponentStateServiceProvider,
   DefaultServiceComponentStateService,
+  Expression,
+  FilterExpressionUtils,
+  ODateValueType,
   OFormComponent,
   OntimizeWebModule, O_COMPONENT_STATE_SERVICE,
   Util
@@ -183,6 +187,26 @@ export class OCalendarComponent
    */
   @Input('map-function') mapFunction: OCalendarEventMapper;
 
+  /**
+   * Wire format of `start-column`/`end-column` as actually stored in the
+   * entity, used to build the server-side view-range filter (see
+   * `getComponentFilter`) with values comparable to those columns: `timestamp`
+   * (epoch ms, the same default used by `o-date-input`/`o-table` date
+   * filters), `iso-8601`, `date` (JS `Date`) or `string` (formatted with
+   * `value-format`).
+   */
+  @Input('value-type')
+  set valueType(value: ODateValueType) {
+    this._valueType = Util.convertToODateValueType(value);
+  }
+  get valueType(): ODateValueType {
+    return this._valueType;
+  }
+  protected _valueType: ODateValueType = 'timestamp';
+
+  /** Moment format used to build the range filter when `value-type="string"`. */
+  @Input('value-format') valueFormat: string = 'L';
+
   /** BCP 47 locale. Defaults to the current application language. */
   @Input('locale')
   set locale(value: string) {
@@ -213,6 +237,8 @@ export class OCalendarComponent
     // triggers (the week view does), so poke the refresh subject to re-render.
     // Deferred to a microtask so the new value reaches the view binding first.
     Promise.resolve().then(() => this.refresh$.next());
+    // The visible range shifts with the week padding, so re-query too.
+    this.refreshQueryForView();
   }
   get weekStartsOn(): number | undefined {
     return this._weekStartsOn;
@@ -239,9 +265,38 @@ export class OCalendarComponent
     return this.dateFormatter.columnSubHeaderFormat;
   }
 
+  /**
+   * The week view's today circle is sized for a bare day number ('D'). Any
+   * other format (e.g. 'MMM D') renders longer text that a 24px circle would
+   * either clip or stretch into an oval, so it switches to a rounded-rect pill.
+   */
+  @HostBinding('class.o-cal-week-header-wide')
+  get isWeekHeaderFormatWide(): boolean {
+    return this.weekHeaderDayFormat !== 'D';
+  }
+
   @Input('show-toolbar')
   @BooleanInputConverter()
   showToolbar: boolean = true;
+
+  /**
+   * Shows the hourly time grid in the week/day views. Set to `no` when events
+   * are all-day (or hours are not relevant) to render an agenda-style list of
+   * event cards per day instead of an (otherwise empty) hour-by-hour grid.
+   */
+  @Input('show-hours')
+  @BooleanInputConverter()
+  showHours: boolean = true;
+
+  /** Shows Saturday/Sunday columns in the month and week views. */
+  @Input('show-weekends')
+  @BooleanInputConverter()
+  showWeekends: boolean = true;
+
+  /** Day-of-week numbers excluded from the month/week grids, derived from `show-weekends`. */
+  protected get excludeDays(): number[] {
+    return this.showWeekends ? [] : [0, 6];
+  }
 
   /** Shows a tooltip on event hover (month, week and day views). */
   @Input('show-tooltip')
@@ -259,6 +314,15 @@ export class OCalendarComponent
     return this._showTooltip;
   }
   protected _showTooltip: boolean = true;
+
+  /**
+   * Function that computes the tooltip text for an event from its source row,
+   * taking precedence over the default title/description text. Mirrors
+   * `o-table-column`'s own `tooltip-function` input. Has no effect when a
+   * custom `oCalendarTooltip` template is provided, since that replaces the
+   * tooltip's markup entirely rather than just its text.
+   */
+  @Input('tooltip-function') tooltipFunction: (row: any) => string;
 
   /** Custom event template; replaces the default event pill in every view. */
   @ContentChild(OCalendarEventTemplateDirective, { read: TemplateRef })
@@ -298,6 +362,14 @@ export class OCalendarComponent
   protected dateFormatter: OCalendarDateFormatter;
   protected titleFormatter: OCalendarEventTitleFormatter;
   protected matDateAdapter: MatDateAdapter<Date>;
+  protected dateAdapter: DateAdapter;
+
+  /** Day behind the currently open "+N more" popover, if any. */
+  protected activeDay: { title: string; events: CalendarEvent[] } | null = null;
+  private activeDayTrigger: MatMenuTrigger | null = null;
+
+  /** Guards the view/date-driven re-query so it only runs after the initial one. */
+  private initialized: boolean = false;
 
   @ViewChild(MatMenuTrigger) protected datePickerTrigger: MatMenuTrigger;
 
@@ -311,6 +383,7 @@ export class OCalendarComponent
     this.dateFormatter = this.injector.get(OCalendarDateFormatter);
     this.titleFormatter = this.injector.get(OCalendarEventTitleFormatter);
     this.matDateAdapter = this.injector.get(MatDateAdapter);
+    this.dateAdapter = this.injector.get(DateAdapter);
   }
 
   ngOnInit(): void {
@@ -322,6 +395,7 @@ export class OCalendarComponent
     if (this.queryOnInit) {
       this.queryData();
     }
+    this.initialized = true;
   }
 
   ngOnDestroy(): void {
@@ -333,6 +407,82 @@ export class OCalendarComponent
     super.initialize();
     if (!Util.isDefined(this.locale)) {
       this.locale = this.translateService.getCurrentLang() || 'en';
+    }
+  }
+
+  /**
+   * Restricts the outgoing query (service/entity mode) to the events visible
+   * in the active view (month/week/day), so the backend only returns what the
+   * calendar is about to render instead of the whole entity. Skipped in
+   * static-data mode (queryData() never reaches this point) and when a
+   * map-function is used, since there is no known start/end column to filter.
+   */
+  public override getComponentFilter(existingFilter: any = {}): any {
+    const filter: any = super.getComponentFilter(existingFilter);
+    const rangeExpr = this.buildViewRangeExpression();
+    if (!rangeExpr) {
+      return filter;
+    }
+    const key = FilterExpressionUtils.FILTER_EXPRESSION_KEY;
+    filter[key] = filter[key]
+      ? FilterExpressionUtils.buildComplexExpression(filter[key], rangeExpr, FilterExpressionUtils.OP_AND)
+      : rangeExpr;
+    return filter;
+  }
+
+  /**
+   * Expression matching rows whose start/end overlaps the active view's date
+   * range. The boundary values are converted to `value-type` first (default
+   * `timestamp`, epoch ms — the same default Ontimize date filters use) so
+   * they compare correctly against the actual `start-column`/`end-column`
+   * values, whatever wire format those are stored in.
+   */
+  protected buildViewRangeExpression(): Expression | undefined {
+    if (!Util.isDefined(this.startColumn) || typeof this.mapFunction === 'function') {
+      return undefined;
+    }
+    const { start, end } = this.getViewRange();
+    const rangeStart = Util.parseByValueType(start, this.valueType, this.valueFormat);
+    const rangeEnd = Util.parseByValueType(end, this.valueType, this.valueFormat);
+    const startsBeforeViewEnd = FilterExpressionUtils.buildExpressionLessEqual(this.startColumn, rangeEnd);
+    if (!Util.isDefined(this.endColumn)) {
+      const startsAfterViewStart = FilterExpressionUtils.buildExpressionMoreEqual(this.startColumn, rangeStart);
+      return FilterExpressionUtils.buildComplexExpression(startsAfterViewStart, startsBeforeViewEnd, FilterExpressionUtils.OP_AND);
+    }
+    const endsAfterViewStart = FilterExpressionUtils.buildExpressionMoreEqual(this.endColumn, rangeStart);
+    return FilterExpressionUtils.buildComplexExpression(startsBeforeViewEnd, endsAfterViewStart, FilterExpressionUtils.OP_AND);
+  }
+
+  /**
+   * Date range actually rendered by the active view. Mirrors calendar-utils'
+   * own month view boundaries (week-padded month) so the query matches
+   * exactly what angular-calendar is about to display.
+   */
+  protected getViewRange(): { start: Date; end: Date } {
+    const weekStartsOn = this.weekStartsOn;
+    switch (this.calendarView) {
+      case CalendarView.Week:
+        return {
+          start: this.dateAdapter.startOfWeek(this.viewDate, { weekStartsOn }),
+          end: this.dateAdapter.endOfWeek(this.viewDate, { weekStartsOn })
+        };
+      case CalendarView.Day:
+        return {
+          start: this.dateAdapter.startOfDay(this.viewDate),
+          end: this.dateAdapter.endOfDay(this.viewDate)
+        };
+      default:
+        return {
+          start: this.dateAdapter.startOfWeek(this.dateAdapter.startOfMonth(this.viewDate), { weekStartsOn }),
+          end: this.dateAdapter.endOfWeek(this.dateAdapter.endOfMonth(this.viewDate), { weekStartsOn })
+        };
+    }
+  }
+
+  /** Re-queries the service once the view/date changes, skipped during initial setup. */
+  private refreshQueryForView(): void {
+    if (this.initialized) {
+      this.queryData();
     }
   }
 
@@ -400,6 +550,7 @@ export class OCalendarComponent
     }
     this.calendarView = target;
     this.onViewChange.emit(this.fromCalendarView(target));
+    this.refreshQueryForView();
   }
 
   /** i18n key for the toolbar view switch label (month -> 'MONTH', ...). */
@@ -409,7 +560,11 @@ export class OCalendarComponent
 
   /** Long, localized title shown in the toolbar, e.g. "Viernes, 8 mayo 2026". */
   get toolbarTitle(): string {
-    const formatted = moment(this.viewDate).locale(this.locale).format('dddd, D MMMM YYYY');
+    return this.formatLongDate(this.viewDate);
+  }
+
+  private formatLongDate(date: Date): string {
+    const formatted = moment(date).locale(this.locale).format('dddd, D MMMM YYYY');
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }
 
@@ -425,6 +580,24 @@ export class OCalendarComponent
   hiddenEventsCount(day: { events?: CalendarEvent[] }): number {
     const total = day?.events?.length ?? 0;
     return Math.max(0, total - this.maxEventsPerCell);
+  }
+
+  /**
+   * Prepares and marks as active the day behind a "+N more" link, right before
+   * its own `MatMenuTrigger` (passed in from the template) opens the shared
+   * `dayEventsMenu` popover. Anchored to the clicked link, the CDK overlay
+   * flips the popover to whichever side (right/left/top/bottom) fits the
+   * viewport, instead of a centered modal.
+   */
+  prepareDayEventsMenu(day: { date: Date; events?: CalendarEvent[] }, trigger: MatMenuTrigger): void {
+    this.activeDay = { title: this.formatLongDate(day.date), events: day?.events ?? [] };
+    this.activeDayTrigger = trigger;
+  }
+
+  /** Event clicked from inside the day events popover: close it and re-emit `onEventClick`. */
+  onDayEventMenuClick(event: CalendarEvent): void {
+    this.activeDayTrigger?.closeMenu();
+    this.handleEventClicked(event);
   }
 
   /** Secondary/muted text of an event pill, taken from descriptionColumn. */
@@ -446,14 +619,63 @@ export class OCalendarComponent
     if (!this.showTooltip) {
       return '';
     }
+    if (typeof this.tooltipFunction === 'function') {
+      return String(this.tooltipFunction(event?.meta) ?? '');
+    }
     const title = String(event?.title ?? '');
     const description = this.getEventDescription(event);
     return description ? `${title} · ${description}` : title;
   }
 
+  /* -------------------- AGENDA (show-hours="no") VIEW HELPERS -------------------- */
+
+  private weekDaysCacheKey: string | null = null;
+  private weekDaysCache: Date[] = [];
+
+  /**
+   * Days of the visible week, respecting weekStartsOn and show-weekends.
+   * Memoized by (viewDate, weekStartsOn, show-weekends): the `@for` in the
+   * template tracks each day by its own identity, and this getter is
+   * re-evaluated on every change detection run, so returning a fresh array of
+   * fresh Date instances every time would give the loop a "new" collection on
+   * every check — Angular can never match old vs new days, tearing down and
+   * rebuilding the whole row and (observed in practice) leaving stale, unbound
+   * copies of the previous render behind. Reusing the same array/Date
+   * instances while nothing actually changed keeps the tracked identities
+   * stable across checks.
+   */
+  get weekDays(): Date[] {
+    const key = `${this.viewDate.getTime()}|${this.weekStartsOn}|${this.showWeekends}`;
+    if (key === this.weekDaysCacheKey) {
+      return this.weekDaysCache;
+    }
+    const start = this.dateAdapter.startOfWeek(this.viewDate, { weekStartsOn: this.weekStartsOn });
+    const days: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const day = this.dateAdapter.addDays(start, i);
+      if (this.excludeDays.indexOf(day.getDay()) === -1) {
+        days.push(day);
+      }
+    }
+    this.weekDaysCacheKey = key;
+    this.weekDaysCache = days;
+    return days;
+  }
+
+  /** Events occurring on the given day, used by the agenda week/day list. */
+  eventsForDay(date: Date): CalendarEvent[] {
+    return this.events.filter(event => this.sameDay(event.start, date));
+  }
+
+  /** Whether the given date is today, used to highlight the agenda day header. */
+  isToday(date: Date): boolean {
+    return this.sameDay(date, new Date());
+  }
+
   onViewDateChanged(date: Date): void {
     this.viewDate = date;
     this.onViewDateChange.emit(date);
+    this.refreshQueryForView();
   }
 
   /** Toolbar date picker: jump the calendar to the picked date. */

@@ -59,6 +59,7 @@
           [events]="events"
           [locale]="locale"
           [weekStartsOn]="weekStartsOn"
+          [excludeDays]="excludeDays"
           [refresh]="refresh$"
           [cellTemplate]="monthCellTemplate"
           (dayClicked)="handleDayClicked($event.day)"
@@ -66,29 +67,64 @@
         </mwl-calendar-month-view>
       }
       @case (CalendarView.Week) {
-        <mwl-calendar-week-view
-          [viewDate]="viewDate"
-          [events]="events"
-          [locale]="locale"
-          [weekStartsOn]="weekStartsOn"
-          [refresh]="refresh$"
-          [eventTemplate]="eventTemplate ? oCalWeekEventAdapter : $any(null)"
-          [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-          (hourSegmentClicked)="handleHourSegmentClicked($event.date)"
-          (eventClicked)="handleEventClicked($event.event)">
-        </mwl-calendar-week-view>
+        @if (showHours) {
+          <mwl-calendar-week-view
+            [viewDate]="viewDate"
+            [events]="events"
+            [locale]="locale"
+            [weekStartsOn]="$any(weekStartsOn)"
+            [excludeDays]="excludeDays"
+            [refresh]="refresh$"
+            [eventTemplate]="eventTemplate ? oCalWeekEventAdapter : $any(null)"
+            [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+            [tooltipAppendToBody]="true"
+            (hourSegmentClicked)="handleHourSegmentClicked($event.date)"
+            (eventClicked)="handleEventClicked($event.event)">
+          </mwl-calendar-week-view>
+        } @else {
+          <!-- Agenda mode: one column per day, event cards instead of an hourly grid. -->
+          <div class="o-cal-agenda-week">
+            @for (day of weekDays; track day.getTime()) {
+              <div class="o-cal-agenda-day-column" [class.o-cal-agenda-today-tint]="isToday(day)">
+                <div class="o-cal-agenda-day-header" [class.o-cal-agenda-day-header--today]="isToday(day)">
+                  <span class="o-cal-agenda-weekday">{{ day | calendarDate:'monthViewColumnHeader':locale }}</span>
+                  <span class="o-cal-agenda-day-number">{{ day.getDate() }}</span>
+                </div>
+                <div class="o-cal-agenda-day-list">
+                  <ng-container *ngTemplateOutlet="agendaEventsTemplate; context: { events: eventsForDay(day) }"></ng-container>
+                </div>
+              </div>
+            }
+          </div>
+        }
       }
       @case (CalendarView.Day) {
-        <mwl-calendar-day-view
-          [viewDate]="viewDate"
-          [events]="events"
-          [locale]="locale"
-          [refresh]="refresh$"
-          [eventTemplate]="eventTemplate ? oCalWeekEventAdapter : $any(null)"
-          [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-          (hourSegmentClicked)="handleHourSegmentClicked($event.date)"
-          (eventClicked)="handleEventClicked($event.event)">
-        </mwl-calendar-day-view>
+        <!-- Day header (weekday + day number, today highlighted): kept regardless
+             of show-hours, above either the hourly grid or the agenda list. -->
+        <div class="o-cal-agenda-day-header"
+          [class.o-cal-agenda-day-header--today]="isToday(viewDate)"
+          [class.o-cal-agenda-today-tint]="isToday(viewDate)">
+          <span class="o-cal-agenda-weekday">{{ viewDate | calendarDate:'monthViewColumnHeader':locale }}</span>
+          <span class="o-cal-agenda-day-number">{{ viewDate.getDate() }}</span>
+        </div>
+        @if (showHours) {
+          <mwl-calendar-day-view
+            [viewDate]="viewDate"
+            [events]="events"
+            [locale]="locale"
+            [refresh]="refresh$"
+            [eventTemplate]="eventTemplate ? oCalWeekEventAdapter : $any(null)"
+            [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+            [tooltipAppendToBody]="true"
+            (hourSegmentClicked)="handleHourSegmentClicked($event.date)"
+            (eventClicked)="handleEventClicked($event.event)">
+          </mwl-calendar-day-view>
+        } @else {
+          <!-- Agenda mode: same look as the week agenda, with a single day column. -->
+          <div class="o-cal-agenda-day-list" [class.o-cal-agenda-today-tint]="isToday(viewDate)">
+            <ng-container *ngTemplateOutlet="agendaEventsTemplate; context: { events: eventsForDay(viewDate) }"></ng-container>
+          </div>
+        }
       }
     }
 
@@ -110,6 +146,7 @@
             [mwlCalendarTooltip]="getEventTooltip(event)"
             [tooltipEvent]="event"
             [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+            [tooltipAppendToBody]="true"
             (click)="handleEventClicked(event); $event.stopPropagation()">
             <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
           </div>
@@ -119,6 +156,7 @@
             [mwlCalendarTooltip]="getEventTooltip(event)"
             [tooltipEvent]="event"
             [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+            [tooltipAppendToBody]="true"
             (click)="handleEventClicked(event); $event.stopPropagation()">
             <span class="o-cal-event-title">{{ event.title }}</span>
             @if (getEventDescription(event)) {
@@ -128,7 +166,11 @@
         }
       }
       @if (hiddenEventsCount(day) > 0) {
-        <span class="o-cal-event-more">+{{ hiddenEventsCount(day) }} {{ 'MORE' | oTranslate }}</span>
+        <button type="button" class="o-cal-event-more" #moreTrigger="matMenuTrigger"
+          [matMenuTriggerFor]="dayEventsMenu"
+          (click)="prepareDayEventsMenu(day, moreTrigger); $event.stopPropagation()">
+          +{{ hiddenEventsCount(day) }} {{ 'MORE' | oTranslate }}
+        </button>
       }
     </div>
   }
@@ -141,6 +183,76 @@
     <ng-container *ngTemplateOutlet="tooltipTemplate; context: { $implicit: event, row: event?.meta }"></ng-container>
   </div>
 </ng-template>
+
+<!-- Event card list used by the agenda (show-hours="no") week/day views. -->
+<ng-template #agendaEventsTemplate let-events="events">
+  @if (!events.length) {
+    <span class="o-cal-agenda-empty">···</span>
+  }
+  @for (event of events; track event) {
+    @if (eventTemplate) {
+      <div class="o-cal-event-custom"
+        [mwlCalendarTooltip]="getEventTooltip(event)"
+        [tooltipEvent]="event"
+        [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+        [tooltipAppendToBody]="true"
+        (click)="handleEventClicked(event)">
+        <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
+      </div>
+    } @else {
+      <div class="o-cal-event-pill"
+        [style.borderLeftColor]="getEventColor(event)"
+        [mwlCalendarTooltip]="getEventTooltip(event)"
+        [tooltipEvent]="event"
+        [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+        [tooltipAppendToBody]="true"
+        (click)="handleEventClicked(event)">
+        <span class="o-cal-event-title">{{ event.title }}</span>
+        @if (getEventDescription(event)) {
+          <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
+        }
+      </div>
+    }
+  }
+</ng-template>
+
+<!-- Popover listing every event of a day, opened from its "+N more" link.
+     Anchored to the clicked link; the CDK overlay flips it to whichever side
+     (right/left/top/bottom) fits the viewport, instead of a centered modal. -->
+<mat-menu #dayEventsMenu="matMenu" class="o-calendar-day-events-menu">
+  @if (activeDay) {
+    <div class="o-cal-day-menu">
+      <div class="o-cal-day-menu-title">{{ activeDay.title }}</div>
+      <div class="o-cal-day-menu-list">
+        @for (event of activeDay.events; track event) {
+          @if (eventTemplate) {
+            <div class="o-cal-event-custom"
+              [mwlCalendarTooltip]="getEventTooltip(event)"
+              [tooltipEvent]="event"
+              [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+              [tooltipAppendToBody]="true"
+              (click)="onDayEventMenuClick(event)">
+              <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
+            </div>
+          } @else {
+            <div class="o-cal-event-pill"
+              [style.borderLeftColor]="getEventColor(event)"
+              [mwlCalendarTooltip]="getEventTooltip(event)"
+              [tooltipEvent]="event"
+              [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+              [tooltipAppendToBody]="true"
+              (click)="onDayEventMenuClick(event)">
+              <span class="o-cal-event-title">{{ event.title }}</span>
+              @if (getEventDescription(event)) {
+                <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</mat-menu>
 
 <!-- Custom event wrapper for the week/day views: keeps the positioned .cal-event
      container plus the tooltip and click wiring around the projected template. -->
