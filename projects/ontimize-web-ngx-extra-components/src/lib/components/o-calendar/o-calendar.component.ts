@@ -21,6 +21,7 @@ import { DateAdapter as MatDateAdapter, provideNativeDateAdapter } from '@angula
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import {
   AbstractOServiceComponent,
   BooleanInputConverter,
@@ -45,7 +46,7 @@ import {
   MOMENT
 } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/moment';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 
 import { TranslateExtraComponentsService } from '../../services';
 import {
@@ -109,7 +110,7 @@ const VIEW_LABELS: { [key in OCalendarView]: string } = {
   templateUrl: './o-calendar.component.html',
   styleUrls: ['./o-calendar.component.scss'],
   standalone: true,
-  imports: [CommonModule, CalendarModule, OntimizeWebModule, MatButtonModule, MatDatepickerModule, MatIconModule, MatMenuModule],
+  imports: [CommonModule, CalendarModule, OntimizeWebModule, MatButtonModule, MatDatepickerModule, MatIconModule, MatMenuModule, NgxSkeletonLoaderModule],
   encapsulation: ViewEncapsulation.None,
   providers: [
     ComponentStateServiceProvider,
@@ -275,6 +276,9 @@ export class OCalendarComponent
     return this.weekHeaderDayFormat !== 'D';
   }
 
+  /** Matches the component's own selector, same convention every ontimize-web-ngx component follows (e.g. o-form-navigation -> class.o-form-navigation). */
+  @HostBinding('class.o-calendar') readonly hostClass = true;
+
   @Input('show-toolbar')
   @BooleanInputConverter()
   showToolbar: boolean = true;
@@ -292,6 +296,9 @@ export class OCalendarComponent
   @Input('show-weekends')
   @BooleanInputConverter()
   showWeekends: boolean = true;
+
+  /** Text shown in place of a day's event list in the agenda (`show-hours="no"`) when it has no events. Set to `''` to show nothing. */
+  @Input('empty-cell-text') emptyCellText: string = '';
 
   /** Day-of-week numbers excluded from the month/week grids, derived from `show-weekends`. */
   protected get excludeDays(): number[] {
@@ -332,16 +339,21 @@ export class OCalendarComponent
   @ContentChild(OCalendarTooltipTemplateDirective, { read: TemplateRef })
   tooltipTemplate: TemplateRef<any>;
 
-  /** Max number of event pills rendered per month cell before the "+N more" link. */
-  @Input('max-events-per-cell')
-  set maxEventsPerCell(value: number | string) {
+  /** Max number of event pills rendered per month view day cell before the "+N more" link. */
+  @Input('max-events-per-month-cell')
+  set maxEventsPerMonthCell(value: number | string) {
     const parsed = Number(value);
-    this._maxEventsPerCell = isNaN(parsed) || parsed < 1 ? 3 : parsed;
+    this._maxEventsPerMonthCell = isNaN(parsed) || parsed < 1 ? 3 : parsed;
   }
-  get maxEventsPerCell(): number {
-    return this._maxEventsPerCell;
+  get maxEventsPerMonthCell(): number {
+    return this._maxEventsPerMonthCell;
   }
-  protected _maxEventsPerCell: number = 3;
+  protected _maxEventsPerMonthCell: number = 3;
+
+  /** Whether the "+N more" indicator opens the day events popover on click, or is just a static label. */
+  @Input('more-clickable')
+  @BooleanInputConverter()
+  moreClickable: boolean = true;
 
   /* -------------------- OUTPUTS -------------------- */
 
@@ -357,6 +369,40 @@ export class OCalendarComponent
   public events: CalendarEvent[] = [];
   public readonly refresh$ = new Subject<void>();
 
+  /** Placeholder items for the loading skeleton (month: a 7x5 grid; week: one per visible day). */
+  protected readonly skeletonMonthCells = Array.from({ length: 35 });
+  protected get skeletonWeekColumns(): unknown[] {
+    return Array.from({ length: this.weekDays.length || 7 });
+  }
+
+  /**
+   * `ngx-skeleton-loader` themes shaped like an actual agenda cell/column
+   * (a day-number circle, a weekday label in week/day, and a few event-card
+   * bars) instead of one flat, undifferentiated block.
+   */
+  protected readonly skeletonDayNumberTheme = {
+    width: '18px',
+    height: '18px',
+    margin: '0',
+    'background-color': 'var(--o-cal-hover)'
+  };
+  protected readonly skeletonWeekdayTheme = {
+    width: '32px',
+    height: '8px',
+    margin: '0 0 6px',
+    'border-radius': '4px',
+    'background-color': 'var(--o-cal-hover)'
+  };
+  /** Varying widths so the stacked event bars don't all look identical. */
+  protected readonly skeletonEventThemes = [
+    { width: '90%', height: '14px', margin: '0', 'border-radius': '3px', 'background-color': 'var(--o-cal-hover)' },
+    { width: '65%', height: '14px', margin: '0', 'border-radius': '3px', 'background-color': 'var(--o-cal-hover)' },
+    { width: '80%', height: '14px', margin: '0', 'border-radius': '3px', 'background-color': 'var(--o-cal-hover)' }
+  ];
+  /** Event bar rows per skeleton cell/column — month cells are compact (2), week/day columns have room for more (3). */
+  protected readonly skeletonMonthEventRows = Array.from({ length: 2 });
+  protected readonly skeletonColumnEventRows = Array.from({ length: 3 });
+
   protected availableViews: OCalendarView[] = [...O_CALENDAR_VIEWS];
   protected extraTranslate: TranslateExtraComponentsService;
   protected dateFormatter: OCalendarDateFormatter;
@@ -371,6 +417,10 @@ export class OCalendarComponent
   /** Guards the view/date-driven re-query so it only runs after the initial one. */
   private initialized: boolean = false;
 
+  /** Whether `locale` should follow the app's active language, same condition and pattern as `o-date-input`'s `updateLocaleOnChange`: only when no explicit `locale` input was bound. */
+  private updateLocaleOnChange: boolean = false;
+  private onLanguageChangeSubscription: Subscription;
+
   @ViewChild(MatMenuTrigger) protected datePickerTrigger: MatMenuTrigger;
 
   constructor(
@@ -384,6 +434,15 @@ export class OCalendarComponent
     this.titleFormatter = this.injector.get(OCalendarEventTitleFormatter);
     this.matDateAdapter = this.injector.get(MatDateAdapter);
     this.dateAdapter = this.injector.get(DateAdapter);
+    // AbstractOServiceComponent defaults this to true, which makes
+    // getPaginationDataFromArray() splice the response down to a single
+    // "page" (queryRows, 32 by default) starting at currentPage * queryRows.
+    // A calendar has no concept of pages — every event returned for the
+    // active view's date range must be shown, or events silently vanish
+    // whenever a range legitimately has more than queryRows of them (and,
+    // if the backend's ordering isn't stable across requests, *which*
+    // events make the cut can even change between identical queries).
+    this.paginationControls = false;
   }
 
   ngOnInit(): void {
@@ -401,12 +460,27 @@ export class OCalendarComponent
   ngOnDestroy(): void {
     this.destroy();
     this.refresh$.complete();
+    this.onLanguageChangeSubscription?.unsubscribe();
   }
 
   initialize(): void {
     super.initialize();
     if (!Util.isDefined(this.locale)) {
+      this.updateLocaleOnChange = true;
       this.locale = this.translateService.getCurrentLang() || 'en';
+    }
+    // Only follows the app's active language when `locale` wasn't explicitly
+    // bound, same condition `o-date-input`'s own `updateLocaleOnChange` uses:
+    // an explicit input always wins over the app's language.
+    if (this.updateLocaleOnChange) {
+      this.onLanguageChangeSubscription = this.translateService.onLanguageChanged.subscribe(() => {
+        this.locale = this.translateService.getCurrentLang();
+        // toolbarTitle/day-number circles etc. are plain bindings, re-checked
+        // on the next change detection run (triggered by this event handler
+        // running inside the zone); angular-calendar's own internal views
+        // (weekday headers, hour labels) only re-format on this refresh$ tick.
+        Promise.resolve().then(() => this.refresh$.next());
+      });
     }
   }
 
@@ -513,17 +587,22 @@ export class OCalendarComponent
     if (!Util.isDefined(start)) {
       return undefined;
     }
-    const end = Util.isDefined(this.endColumn) ? this.parseDate(row?.[this.endColumn]) : undefined;
+    const columnEnd = Util.isDefined(this.endColumn) ? this.parseDate(row?.[this.endColumn]) : undefined;
+    // No end-column, or an empty/invalid value for this row: default to the
+    // end of the event's own day instead of leaving it end-less. Defaulting
+    // to the active view's own range end instead (endOfMonth/Week/Day) was
+    // tried first, but in month view that stretches the event all the way to
+    // the last padded day of the month, rendering as one continuous bar
+    // repeated across every cell in between instead of a single-day event.
+    const end = columnEnd ?? this.dateAdapter.endOfDay(start!);
     const color = Util.isDefined(this.colorColumn) ? row?.[this.colorColumn] : undefined;
 
     const event: CalendarEvent = {
       start,
+      end,
       title: Util.isDefined(this.titleColumn) ? String(row?.[this.titleColumn] ?? '') : '',
       meta: row
     };
-    if (Util.isDefined(end)) {
-      event.end = end;
-    }
     if (Util.isDefined(color) && color !== '') {
       event.color = { primary: color, secondary: color };
     }
@@ -564,22 +643,31 @@ export class OCalendarComponent
   }
 
   private formatLongDate(date: Date): string {
-    const formatted = moment(date).locale(this.locale).format('dddd, D MMMM YYYY');
+    // Intl.DateTimeFormat, not moment: it's backed by the browser's own ICU
+    // data, so every locale is translated out of the box, matching the
+    // toolbar's own date picker (provideNativeDateAdapter()) instead of
+    // requiring an explicit `import 'moment/locale/xx'` per language.
+    const formatted = new Intl.DateTimeFormat(this.locale, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(date);
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }
 
   /* -------------------- MONTH CELL HELPERS -------------------- */
 
-  /** Events shown inside a month cell, capped by maxEventsPerCell. */
+  /** Events shown inside a month cell, capped by maxEventsPerMonthCell. */
   visibleEvents(day: { events?: CalendarEvent[] }): CalendarEvent[] {
     const events = day?.events ?? [];
-    return events.slice(0, this.maxEventsPerCell);
+    return events.slice(0, this.maxEventsPerMonthCell);
   }
 
   /** Number of events hidden behind the "+N more" link in a month cell. */
   hiddenEventsCount(day: { events?: CalendarEvent[] }): number {
     const total = day?.events?.length ?? 0;
-    return Math.max(0, total - this.maxEventsPerCell);
+    return Math.max(0, total - this.maxEventsPerMonthCell);
   }
 
   /**
@@ -594,9 +682,16 @@ export class OCalendarComponent
     this.activeDayTrigger = trigger;
   }
 
-  /** Event clicked from inside the day events popover: close it and re-emit `onEventClick`. */
-  onDayEventMenuClick(event: CalendarEvent): void {
-    this.activeDayTrigger?.closeMenu();
+  /**
+   * Shared click handler for the `eventPillTemplate` used by the month cell,
+   * the week/day agenda list and the "+N more" popover: optionally closes the
+   * day popover first (only relevant when called from there), then re-emits
+   * `onEventClick`.
+   */
+  onEventPillClicked(event: CalendarEvent, closePopover: boolean): void {
+    if (closePopover) {
+      this.activeDayTrigger?.closeMenu();
+    }
     this.handleEventClicked(event);
   }
 
@@ -607,11 +702,6 @@ export class OCalendarComponent
     }
     const value = event?.meta?.[this.descriptionColumn];
     return Util.isDefined(value) ? String(value) : '';
-  }
-
-  /** Accent color of an event pill; falls back to the theme primary. */
-  getEventColor(event: CalendarEvent): string {
-    return event?.color?.primary ?? 'var(--mat-sys-primary)';
   }
 
   /** Tooltip text for an event; an empty string disables the tooltip. */

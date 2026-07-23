@@ -1,3 +1,32 @@
+## 18.0.0-next.3 (2026-07-20)
+
+### Breaking Changes
+* **o-calendar**: rename `max-events-per-cell` to `max-events-per-month-cell`, to make explicit that it only applies to the month view's day cells (not week/day, which have no "+N more" mechanism)
+
+### Features
+* **o-calendar**: bundle `angular-calendar`'s structural layout styles (flex, spacing, sizing — not its color theming) directly into the component via its scss source (`angular-calendar/scss/angular-calendar`), so consuming apps no longer need to add `node_modules/angular-calendar/css/angular-calendar.css` to their own `angular.json` `styles`
+* **o-calendar**: add `empty-cell-text` input — customizes (or clears, with `''`) the placeholder text shown in place of a day's event list in the agenda (`show-hours="no"`) when it has no events; previously a hardcoded `···`
+* **o-calendar**: add `more-clickable` input — set to `no` to render the month view's `+N more` indicator as a static label instead of a button that opens the day events popover
+* **o-calendar**: show a loading skeleton (`ngx-skeleton-loader`) while a service/entity query is in flight, using the `loading` observable already inherited from `AbstractOServiceBaseComponent` — shaped like an agenda (a day-number circle, a weekday label in week/day, and a few varying-width event-card bars) rather than one flat block, and like the active view's own layout, cell/column dividers included (month grid, or one column per visible day for week/day)
+
+### Bug Fixes
+* **o-calendar**: default an event's `end` to the end of its own start day when `end-column` isn't configured, or a row's value is empty/invalid, instead of leaving the event end-less
+* **o-calendar**: fix unwanted scrollbar in the week agenda (`show-hours="no"`) — `.o-cal-agenda-week` combined `height: 100%` with a border and the default `content-box` sizing, so the border added 1px on top of the container's own height, just enough to overflow it and trigger the scroll
+* **o-calendar**: fix `toolbarTitle` not translating when `locale` changes — it was formatted with `moment(date).locale(...)`, which silently falls back to `en` for any locale not explicitly registered via `import 'moment/locale/xx'`; now formatted with `Intl.DateTimeFormat`, matching the toolbar's own date picker (`provideNativeDateAdapter()`), so every locale works out of the box
+* **o-calendar**: fix weekday names not translating in the month view header row and the week/day view's own header — same root cause as `toolbarTitle` (angular-calendar's stock `monthViewColumnHeader`/`weekViewColumnHeader` formatters use `moment(date).locale(...)`); both overridden in `OCalendarDateFormatter` with `Intl.DateTimeFormat`
+* **o-calendar**: fix `locale` (and everything derived from it — `toolbarTitle`, weekday headers) never updating after the app's active language changed — `locale` was only read once from `ontimize-web-ngx`'s translate service at init; now, when it isn't explicitly bound, it subscribes to `onLanguageChanged` and re-renders, same pattern `o-date-input`'s `updateLocaleOnChange` already uses
+* **o-calendar**: fix event text in the week/day hourly grid stuck at a hard-coded 12px — `angular-calendar`'s own `.cal-event` rule sets `font-size: 12px` and our override didn't touch it; now uses the same `--mat-sys-label-medium-size` token as the month/agenda event pills, so it follows the app's configured density like the rest of the component
+* **o-calendar**: the active view-switch button (month/week/day) now uses Material's `mat-flat-button` instead of `mat-stroked-button`, matching its filled active look
+* **o-calendar**: fix custom `oCalendarEvent` templates losing the default pill's background and event-colored left border — the month cell, week agenda, day agenda and "+N more" popover wrappers now all apply the same background/left-border classes as the default pill, and the week/day real grid's custom event wrapper (which keeps `angular-calendar`'s own `.cal-event` for its structural sizing/positioning) gets the same per-event border color too, instead of being locked to the theme's primary color
+* **o-calendar**: fix the week/day column header's day number (`week-header-day-format`) not translating for its two documented values (`D`, `MMM D`) — same `moment(date).locale(...)` root cause as the rest; now formatted with `Intl.DateTimeFormat` like everything else, with moment kept only as a fallback for any other, free-form moment token
+* **o-calendar**: fix events silently disappearing (and which ones varying between otherwise-identical queries) when a view's date range legitimately has more of them than `query-rows` (32 by default) — `AbstractOServiceComponent` defaults `pagination-controls` to `true`, which slices the response down to a single page starting at `currentPage * queryRows`; a calendar has no notion of pages, so `o-calendar` now forces it to `false`
+
+### Miscellaneous
+* **o-calendar**: unify the month cell, week/day agenda list and "+N more" popover's event rendering (custom `oCalendarEvent` template or default pill) into a single shared `eventPillTemplate`, removing three duplicated copies of the same markup
+* **o-calendar**: remove the dead, commented-out `.o-calendar-view-btn` scss rule left over from before the view-switch buttons became `mat-stroked-button`/`mat-flat-button`; the active button now uses `color="primary"` instead
+* **o-calendar**: move the event's left-border color out of the templates — instead of a `[style.borderLeftColor]` binding (and the `getEventColor()` method computing it) repeated in every view, a single shared `.o-cal-event` class owns the border's width/style/theme-fallback, fed by a `[style.--o-cal-event-color]` custom property set to the event's own `color-column` value (or left unset, falling through to the theme's primary color)
+* **o-calendar**: add an `o-calendar` host class, matching the component's own selector — the same convention every `ontimize-web-ngx` component follows
+
 ## 18.0.0-next.2 (2026-07-10)
 
 ### Features

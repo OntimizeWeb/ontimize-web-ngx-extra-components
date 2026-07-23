@@ -14,7 +14,7 @@
           <mat-icon>chevron_left</mat-icon>
         </button>
 
-        <button type="button" class="o-calendar-title" [matMenuTriggerFor]="oCalendarDatePicker">
+        <button mat-button type="button" class="o-calendar-title" [matMenuTriggerFor]="oCalendarDatePicker">
           {{ toolbarTitle }}
         </button>
 
@@ -38,11 +38,21 @@
       @if (views.length > 1) {
         <div class="o-calendar-view-toggle">
           @for (v of views; track v) {
-            <button type="button" class="o-calendar-view-btn"
-              [class.o-calendar-view-btn--active]="view === v"
-              (click)="setView(v)">
-              {{ getViewLabel(v) | oTranslate }}
-            </button>
+            <!-- mat-stroked-button/mat-flat-button are directive selectors,
+                 matched at compile time from the attribute's presence in the
+                 template, not a runtime binding — so the active state needs
+                 its own branch instead of toggling one attribute's value. -->
+            @if (view === v) {
+              <button mat-flat-button color="primary" type="button" class="o-calendar-view-btn"
+                (click)="setView(v)">
+                {{ getViewLabel(v) | oTranslate }}
+              </button>
+            } @else {
+              <button mat-stroked-button type="button" class="o-calendar-view-btn"
+                (click)="setView(v)">
+                {{ getViewLabel(v) | oTranslate }}
+              </button>
+            }
           }
         </div>
       }
@@ -52,6 +62,37 @@
 
   <div class="o-calendar-body">
 
+    @if (loading | async) {
+      <!-- Loading skeleton, shaped like an agenda (a day-number circle, a
+           weekday label in week/day, and a few event-card bars) instead of
+           one flat block, and like the active view's own layout: a
+           month-like grid, or one column per visible day for week/day (both
+           show-hours and agenda modes alike). -->
+      @switch (calendarView) {
+        @case (CalendarView.Month) {
+          <div class="o-cal-skeleton-month">
+            @for (cell of skeletonMonthCells; track $index) {
+              <div class="o-cal-skeleton-cell">
+                <ngx-skeleton-loader appearance="circle" [theme]="skeletonDayNumberTheme"></ngx-skeleton-loader>
+                <ng-container *ngTemplateOutlet="skeletonEventsTemplate; context: { rows: skeletonMonthEventRows }"></ng-container>
+              </div>
+            }
+          </div>
+        }
+        @case (CalendarView.Week) {
+          <div class="o-cal-skeleton-columns">
+            @for (column of skeletonWeekColumns; track $index) {
+              <ng-container *ngTemplateOutlet="skeletonColumnTemplate"></ng-container>
+            }
+          </div>
+        }
+        @case (CalendarView.Day) {
+          <div class="o-cal-skeleton-columns o-cal-skeleton-columns--day">
+            <ng-container *ngTemplateOutlet="skeletonColumnTemplate"></ng-container>
+          </div>
+        }
+      }
+    } @else {
     @switch (calendarView) {
       @case (CalendarView.Month) {
         <mwl-calendar-month-view
@@ -127,10 +168,32 @@
         }
       }
     }
+    }
 
   </div>
 
 </div>
+
+<!-- Loading skeleton building blocks. skeletonEventsTemplate renders a
+     handful of varying-width event-card bars; skeletonColumnTemplate wraps
+     it with a weekday + day-number header, for the week/day skeleton
+     columns (the month skeleton cell has no per-cell header of its own —
+     month's weekday names are the real, static grid header above it). -->
+<ng-template #skeletonEventsTemplate let-rows="rows">
+  @for (row of rows; track $index) {
+    <ngx-skeleton-loader [theme]="skeletonEventThemes[$index % skeletonEventThemes.length]"></ngx-skeleton-loader>
+  }
+</ng-template>
+
+<ng-template #skeletonColumnTemplate>
+  <div class="o-cal-skeleton-column">
+    <div class="o-cal-skeleton-column-header">
+      <ngx-skeleton-loader [theme]="skeletonWeekdayTheme"></ngx-skeleton-loader>
+      <ngx-skeleton-loader appearance="circle" [theme]="skeletonDayNumberTheme"></ngx-skeleton-loader>
+    </div>
+    <ng-container *ngTemplateOutlet="skeletonEventsTemplate; context: { rows: skeletonColumnEventRows }"></ng-container>
+  </div>
+</ng-template>
 
 <!-- Custom month day cell: day number + event pills (title + description) + "+N more". -->
 <ng-template #monthCellTemplate let-day="day" let-locale="locale">
@@ -141,36 +204,20 @@
   @if (day.events.length > 0) {
     <div class="o-cal-cell-events">
       @for (event of visibleEvents(day); track event) {
-        @if (eventTemplate) {
-          <div class="o-cal-event-custom"
-            [mwlCalendarTooltip]="getEventTooltip(event)"
-            [tooltipEvent]="event"
-            [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-            [tooltipAppendToBody]="true"
-            (click)="handleEventClicked(event); $event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
-          </div>
-        } @else {
-          <div class="o-cal-event-pill"
-            [style.borderLeftColor]="getEventColor(event)"
-            [mwlCalendarTooltip]="getEventTooltip(event)"
-            [tooltipEvent]="event"
-            [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-            [tooltipAppendToBody]="true"
-            (click)="handleEventClicked(event); $event.stopPropagation()">
-            <span class="o-cal-event-title">{{ event.title }}</span>
-            @if (getEventDescription(event)) {
-              <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
-            }
-          </div>
-        }
+        <ng-container *ngTemplateOutlet="eventPillTemplate; context: { event: event, closePopover: false }"></ng-container>
       }
       @if (hiddenEventsCount(day) > 0) {
-        <button type="button" class="o-cal-event-more" #moreTrigger="matMenuTrigger"
-          [matMenuTriggerFor]="dayEventsMenu"
-          (click)="prepareDayEventsMenu(day, moreTrigger); $event.stopPropagation()">
-          +{{ hiddenEventsCount(day) }} {{ 'MORE' | oTranslate }}
-        </button>
+        @if (moreClickable) {
+          <button type="button" class="o-cal-event-more" #moreTrigger="matMenuTrigger"
+            [matMenuTriggerFor]="dayEventsMenu"
+            (click)="prepareDayEventsMenu(day, moreTrigger); $event.stopPropagation()">
+            +{{ hiddenEventsCount(day) }} {{ 'MORE' | oTranslate }}
+          </button>
+        } @else {
+          <span class="o-cal-event-more o-cal-event-more--static">
+            +{{ hiddenEventsCount(day) }} {{ 'MORE' | oTranslate }}
+          </span>
+        }
       }
     </div>
   }
@@ -184,35 +231,45 @@
   </div>
 </ng-template>
 
+<!-- Shared event pill: default pill or custom oCalendarEvent template, with
+     the same background/left-border-color/tooltip wiring in both. Used by the
+     month cell, the week/day agenda list and the "+N more" popover below;
+     closePopover additionally closes the day popover before re-emitting
+     onEventClick (only relevant when called from there). -->
+<ng-template #eventPillTemplate let-event="event" let-closePopover="closePopover">
+  @if (eventTemplate) {
+    <div class="o-cal-event-custom o-cal-event-pill o-cal-event"
+      [style.--o-cal-event-color]="event.color?.primary"
+      [mwlCalendarTooltip]="getEventTooltip(event)"
+      [tooltipEvent]="event"
+      [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+      [tooltipAppendToBody]="true"
+      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()">
+      <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
+    </div>
+  } @else {
+    <div class="o-cal-event-pill o-cal-event"
+      [style.--o-cal-event-color]="event.color?.primary"
+      [mwlCalendarTooltip]="getEventTooltip(event)"
+      [tooltipEvent]="event"
+      [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
+      [tooltipAppendToBody]="true"
+      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()">
+      <span class="o-cal-event-title">{{ event.title }}</span>
+      @if (getEventDescription(event)) {
+        <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
+      }
+    </div>
+  }
+</ng-template>
+
 <!-- Event card list used by the agenda (show-hours="no") week/day views. -->
 <ng-template #agendaEventsTemplate let-events="events">
   @if (!events.length) {
-    <span class="o-cal-agenda-empty">···</span>
+    <span class="o-cal-agenda-empty">{{ emptyCellText }}</span>
   }
   @for (event of events; track event) {
-    @if (eventTemplate) {
-      <div class="o-cal-event-custom"
-        [mwlCalendarTooltip]="getEventTooltip(event)"
-        [tooltipEvent]="event"
-        [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-        [tooltipAppendToBody]="true"
-        (click)="handleEventClicked(event)">
-        <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
-      </div>
-    } @else {
-      <div class="o-cal-event-pill"
-        [style.borderLeftColor]="getEventColor(event)"
-        [mwlCalendarTooltip]="getEventTooltip(event)"
-        [tooltipEvent]="event"
-        [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-        [tooltipAppendToBody]="true"
-        (click)="handleEventClicked(event)">
-        <span class="o-cal-event-title">{{ event.title }}</span>
-        @if (getEventDescription(event)) {
-          <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
-        }
-      </div>
-    }
+    <ng-container *ngTemplateOutlet="eventPillTemplate; context: { event: event, closePopover: false }"></ng-container>
   }
 </ng-template>
 
@@ -225,29 +282,7 @@
       <div class="o-cal-day-menu-title">{{ activeDay.title }}</div>
       <div class="o-cal-day-menu-list">
         @for (event of activeDay.events; track event) {
-          @if (eventTemplate) {
-            <div class="o-cal-event-custom"
-              [mwlCalendarTooltip]="getEventTooltip(event)"
-              [tooltipEvent]="event"
-              [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-              [tooltipAppendToBody]="true"
-              (click)="onDayEventMenuClick(event)">
-              <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
-            </div>
-          } @else {
-            <div class="o-cal-event-pill"
-              [style.borderLeftColor]="getEventColor(event)"
-              [mwlCalendarTooltip]="getEventTooltip(event)"
-              [tooltipEvent]="event"
-              [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
-              [tooltipAppendToBody]="true"
-              (click)="onDayEventMenuClick(event)">
-              <span class="o-cal-event-title">{{ event.title }}</span>
-              @if (getEventDescription(event)) {
-                <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
-              }
-            </div>
-          }
+          <ng-container *ngTemplateOutlet="eventPillTemplate; context: { event: event, closePopover: true }"></ng-container>
         }
       </div>
     </div>
@@ -258,7 +293,8 @@
      container plus the tooltip and click wiring around the projected template. -->
 <ng-template #oCalWeekEventAdapter let-weekEvent="weekEvent" let-tooltipPlacement="tooltipPlacement"
   let-tooltipTemplate="tooltipTemplate" let-tooltipAppendToBody="tooltipAppendToBody" let-tooltipDelay="tooltipDelay">
-  <div class="cal-event o-cal-event-custom"
+  <div class="cal-event o-cal-event-custom o-cal-event"
+    [style.--o-cal-event-color]="weekEvent.event.color?.primary"
     [mwlCalendarTooltip]="getEventTooltip(weekEvent.event)"
     [tooltipPlacement]="tooltipPlacement"
     [tooltipEvent]="weekEvent.event"
