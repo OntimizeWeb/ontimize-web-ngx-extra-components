@@ -99,10 +99,18 @@ export function momentAdapterFactory(): DateAdapter {
 
 export const O_CALENDAR_VIEWS: OCalendarView[] = ['day', 'week', 'month'];
 
+/**
+ * Every view the `views` input accepts, including `'year'` — which is
+ * deliberately left out of `O_CALENDAR_VIEWS` (the default view set) so
+ * existing consumers don't get a new toolbar button without asking for it.
+ */
+const ALL_CALENDAR_VIEWS: OCalendarView[] = [...O_CALENDAR_VIEWS, 'year'];
+
 const VIEW_LABELS: { [key in OCalendarView]: string } = {
   day: 'DAY',
   week: 'WEEK',
-  month: 'MONTH'
+  month: 'MONTH',
+  year: 'YEAR'
 };
 
 @Component({
@@ -148,7 +156,7 @@ export class OCalendarComponent
     this.setView(value);
   }
   get view(): OCalendarView {
-    return this.calendarView as OCalendarView;
+    return this.isYearView ? 'year' : (this.calendarView as OCalendarView);
   }
 
   @Input('view-date') viewDate: Date = new Date();
@@ -157,7 +165,7 @@ export class OCalendarComponent
   @Input('views')
   set views(value: string | OCalendarView[]) {
     const parsed = Array.isArray(value) ? value : Util.parseArray(value, true);
-    const filtered = (parsed as OCalendarView[]).filter(v => O_CALENDAR_VIEWS.indexOf(v) !== -1);
+    const filtered = (parsed as OCalendarView[]).filter(v => ALL_CALENDAR_VIEWS.includes(v));
     this.availableViews = filtered.length ? filtered : [...O_CALENDAR_VIEWS];
   }
   get views(): OCalendarView[] {
@@ -229,7 +237,7 @@ export class OCalendarComponent
   @Input('week-starts-on')
   set weekStartsOn(value: number | string) {
     const parsed = Number(value);
-    const next = !isNaN(parsed) && parsed >= 0 && parsed <= 6 ? parsed : undefined;
+    const next = !Number.isNaN(parsed) && parsed >= 0 && parsed <= 6 ? parsed : undefined;
     if (next === this._weekStartsOn) {
       return;
     }
@@ -253,17 +261,26 @@ export class OCalendarComponent
    */
   @Input('week-header-day-format')
   set weekHeaderDayFormat(value: string) {
-    const format = value || 'D';
-    if (format === this.dateFormatter.columnSubHeaderFormat) {
-      return;
-    }
-    this.dateFormatter.columnSubHeaderFormat = format;
-    // Header labels are computed by the formatter, not by an ngOnChanges-tracked
-    // input, so poke the refresh subject once the view bindings are up to date.
-    Promise.resolve().then(() => this.refresh$.next());
+    this.applyWeekHeaderDayFormat(value);
   }
   get weekHeaderDayFormat(): string {
     return this.dateFormatter.columnSubHeaderFormat;
+  }
+
+  /**
+   * Applies the week/day header format, defaulting to 'D' (day number only).
+   * A regular method (not the `weekHeaderDayFormat` setter above) so the
+   * default can be an actual default parameter — TypeScript doesn't allow
+   * default values on `set` accessor parameters.
+   */
+  private applyWeekHeaderDayFormat(value: string = 'D'): void {
+    if (value === this.dateFormatter.columnSubHeaderFormat) {
+      return;
+    }
+    this.dateFormatter.columnSubHeaderFormat = value;
+    // Header labels are computed by the formatter, not by an ngOnChanges-tracked
+    // input, so poke the refresh subject once the view bindings are up to date.
+    Promise.resolve().then(() => this.refresh$.next());
   }
 
   /**
@@ -343,7 +360,7 @@ export class OCalendarComponent
   @Input('max-events-per-month-cell')
   set maxEventsPerMonthCell(value: number | string) {
     const parsed = Number(value);
-    this._maxEventsPerMonthCell = isNaN(parsed) || parsed < 1 ? 3 : parsed;
+    this._maxEventsPerMonthCell = Number.isNaN(parsed) || parsed < 1 ? 3 : parsed;
   }
   get maxEventsPerMonthCell(): number {
     return this._maxEventsPerMonthCell;
@@ -368,6 +385,16 @@ export class OCalendarComponent
   public calendarView: CalendarView = CalendarView.Month;
   public events: CalendarEvent[] = [];
   public readonly refresh$ = new Subject<void>();
+
+  /**
+   * Whether the year view is active. Kept separate from `calendarView`
+   * because angular-calendar's own `CalendarView` enum only knows about
+   * Month/Week/Day — there is no native year view to delegate to, so the
+   * year grid is rendered entirely by this component. `calendarView` keeps
+   * reflecting the last real angular-calendar view (month/week/day), which is
+   * what setView() restores when leaving year view.
+   */
+  public isYearView: boolean = false;
 
   /** Placeholder items for the loading skeleton (month: a 7x5 grid; week: one per visible day). */
   protected readonly skeletonMonthCells = Array.from({ length: 35 });
@@ -402,6 +429,17 @@ export class OCalendarComponent
   /** Event bar rows per skeleton cell/column — month cells are compact (2), week/day columns have room for more (3). */
   protected readonly skeletonMonthEventRows = Array.from({ length: 2 });
   protected readonly skeletonColumnEventRows = Array.from({ length: 3 });
+
+  /** Year skeleton: 12 mini-months, each with a title bar and a plain (non-shimmering) day grid — a full ngx-skeleton-loader per day cell (12 * ~35) would be excessive for what is only a placeholder shape. */
+  protected readonly skeletonYearMonths = Array.from({ length: 12 });
+  protected readonly skeletonYearDays = Array.from({ length: 35 });
+  protected readonly skeletonYearMonthTitleTheme = {
+    width: '55%',
+    height: '10px',
+    margin: '0 0 6px',
+    'border-radius': '4px',
+    'background-color': 'var(--o-cal-hover)'
+  };
 
   protected availableViews: OCalendarView[] = [...O_CALENDAR_VIEWS];
   protected extraTranslate: TranslateExtraComponentsService;
@@ -533,6 +571,9 @@ export class OCalendarComponent
    * exactly what angular-calendar is about to display.
    */
   protected getViewRange(): { start: Date; end: Date } {
+    if (this.isYearView) {
+      return { start: this.startOfYear(this.viewDate), end: this.endOfYear(this.viewDate) };
+    }
     const weekStartsOn = this.weekStartsOn;
     switch (this.calendarView) {
       case CalendarView.Week:
@@ -551,6 +592,33 @@ export class OCalendarComponent
           end: this.dateAdapter.endOfWeek(this.dateAdapter.endOfMonth(this.viewDate), { weekStartsOn })
         };
     }
+  }
+
+  /**
+   * Year arithmetic, built from the `DateAdapter` primitives it does expose
+   * (`setMonth`/`setYear`/`startOfMonth`/`endOfMonth`) since angular-calendar's
+   * `DateAdapter` interface has no year-level methods at all (no
+   * `startOfYear`/`endOfYear`/`addYears`) — there is no native year view to
+   * back them. Setting month to 0 (January) or 11 (December) before resetting
+   * to start/end-of-month is always safe regardless of the original day of
+   * month, since both months have 31 days.
+   */
+  private startOfYear(date: Date): Date {
+    return this.dateAdapter.startOfMonth(this.dateAdapter.setMonth(date, 0));
+  }
+  private endOfYear(date: Date): Date {
+    return this.dateAdapter.endOfMonth(this.dateAdapter.setMonth(date, 11));
+  }
+  private addYears(date: Date, amount: number): Date {
+    return this.dateAdapter.setYear(date, this.dateAdapter.getYear(date) + amount);
+  }
+
+  /** Toolbar prev/next in year view: mwlCalendarPreviousView/NextView only know how to step day/week/month, so year navigation is handled here instead. */
+  goToPreviousYear(): void {
+    this.onViewDateChanged(this.addYears(this.viewDate, -1));
+  }
+  goToNextYear(): void {
+    this.onViewDateChanged(this.addYears(this.viewDate, 1));
   }
 
   /** Re-queries the service once the view/date changes, skipped during initial setup. */
@@ -576,7 +644,34 @@ export class OCalendarComponent
     this.events = source
       .map(row => this.mapRowToEvent(row))
       .filter((e): e is CalendarEvent => Util.isDefined(e));
+    this.indexEventsByDay();
     this.refresh$.next();
+  }
+
+  /**
+   * Index of events by start day, keyed by `dayKey()`. `eventsForDay()` is
+   * called once per rendered day cell — up to ~35 for month/agenda, but
+   * ~420 for the year view's 12 mini-months — so re-filtering the whole
+   * `events` array (O(days * events)) on every cell would scale badly there.
+   * Rebuilt once whenever `events` changes instead.
+   */
+  private eventsByDay = new Map<string, CalendarEvent[]>();
+
+  private indexEventsByDay(): void {
+    this.eventsByDay = new Map();
+    for (const event of this.events) {
+      const key = this.dayKey(event.start);
+      const bucket = this.eventsByDay.get(key);
+      if (bucket) {
+        bucket.push(event);
+      } else {
+        this.eventsByDay.set(key, [event]);
+      }
+    }
+  }
+
+  private dayKey(date: Date): string {
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
   }
 
   protected mapRowToEvent(row: any): CalendarEvent | undefined {
@@ -617,14 +712,25 @@ export class OCalendarComponent
       return undefined;
     }
     const date = value instanceof Date ? value : new Date(value);
-    return isNaN(date.getTime()) ? undefined : date;
+    return Number.isNaN(date.getTime()) ? undefined : date;
   }
 
   /* -------------------- VIEW HANDLING -------------------- */
 
   setView(view: OCalendarView): void {
+    if (view === 'year') {
+      if (this.isYearView) {
+        return;
+      }
+      this.isYearView = true;
+      this.onViewChange.emit('year');
+      this.refreshQueryForView();
+      return;
+    }
     const target = this.toCalendarView(view);
-    if (target === this.calendarView) {
+    const changed = target !== this.calendarView || this.isYearView;
+    this.isYearView = false;
+    if (!changed) {
       return;
     }
     this.calendarView = target;
@@ -637,9 +743,9 @@ export class OCalendarComponent
     return VIEW_LABELS[view];
   }
 
-  /** Long, localized title shown in the toolbar, e.g. "Viernes, 8 mayo 2026". */
+  /** Long, localized title shown in the toolbar, e.g. "Viernes, 8 mayo 2026" (just the year number in year view). */
   get toolbarTitle(): string {
-    return this.formatLongDate(this.viewDate);
+    return this.isYearView ? String(this.viewDate.getFullYear()) : this.formatLongDate(this.viewDate);
   }
 
   private formatLongDate(date: Date): string {
@@ -743,7 +849,7 @@ export class OCalendarComponent
     const days: Date[] = [];
     for (let i = 0; i < 7; i++) {
       const day = this.dateAdapter.addDays(start, i);
-      if (this.excludeDays.indexOf(day.getDay()) === -1) {
+      if (!this.excludeDays.includes(day.getDay())) {
         days.push(day);
       }
     }
@@ -752,9 +858,9 @@ export class OCalendarComponent
     return days;
   }
 
-  /** Events occurring on the given day, used by the agenda week/day list. */
+  /** Events occurring on the given day, used by the agenda week/day list and the year view's day cells. */
   eventsForDay(date: Date): CalendarEvent[] {
-    return this.events.filter(event => this.sameDay(event.start, date));
+    return this.eventsByDay.get(this.dayKey(date)) ?? [];
   }
 
   /** Whether the given date is today, used to highlight the agenda day header. */
@@ -776,6 +882,99 @@ export class OCalendarComponent
     if (this.datePickerTrigger) {
       this.datePickerTrigger.closeMenu();
     }
+  }
+
+  /**
+   * Toolbar date picker in year view: only the year matters, so the picker
+   * opens straight into mat-calendar's multi-year grid and this closes it
+   * right after a year is picked, instead of letting mat-calendar drill down
+   * into its month/day views next (which would force picking a day just to
+   * navigate the calendar to a year).
+   */
+  onPickerYearSelected(date: Date): void {
+    this.onViewDateChanged(this.dateAdapter.setYear(this.viewDate, date.getFullYear()));
+    if (this.datePickerTrigger) {
+      this.datePickerTrigger.closeMenu();
+    }
+  }
+
+  /**
+   * Toolbar date picker in month view: only the month matters, so the picker
+   * opens straight into mat-calendar's month grid (a year's 12 months) and
+   * this closes it right after a month is picked, instead of letting
+   * mat-calendar drill down into a day just to navigate the calendar to a
+   * month.
+   */
+  onPickerMonthSelected(date: Date): void {
+    const withMonth = this.dateAdapter.setMonth(this.viewDate, date.getMonth());
+    this.onViewDateChanged(this.dateAdapter.setYear(withMonth, date.getFullYear()));
+    if (this.datePickerTrigger) {
+      this.datePickerTrigger.closeMenu();
+    }
+  }
+
+  /* -------------------- YEAR VIEW HELPERS -------------------- */
+
+  private yearGridCacheKey: string | null = null;
+  private yearGridCache: { date: Date; days: { date: Date; inMonth: boolean }[] }[] = [];
+
+  /**
+   * The 12 months of the visible year, each with its own week-padded day
+   * grid (same padding rule as the month view: `startOfWeek(startOfMonth)` ..
+   * `endOfWeek(endOfMonth)`). Memoized by (year, weekStartsOn, show-weekends)
+   * for the same reason `weekDays` is: a fresh getter evaluation returning new
+   * Date instances every change-detection run would break the `@for` day
+   * cells' `track` identity across the ~420 cells this view renders.
+   */
+  get yearMonths(): { date: Date; days: { date: Date; inMonth: boolean }[] }[] {
+    const year = this.viewDate.getFullYear();
+    const key = `${year}|${this.weekStartsOn}|${this.showWeekends}`;
+    if (key === this.yearGridCacheKey) {
+      return this.yearGridCache;
+    }
+    const weekStartsOn = this.weekStartsOn;
+    const months: { date: Date; days: { date: Date; inMonth: boolean }[] }[] = [];
+    for (let m = 0; m < 12; m++) {
+      const monthDate = new Date(year, m, 1);
+      const gridStart = this.dateAdapter.startOfWeek(this.dateAdapter.startOfMonth(monthDate), { weekStartsOn });
+      const gridEnd = this.dateAdapter.endOfWeek(this.dateAdapter.endOfMonth(monthDate), { weekStartsOn });
+      const days: { date: Date; inMonth: boolean }[] = [];
+      for (let day = gridStart; day.getTime() <= gridEnd.getTime(); day = this.dateAdapter.addDays(day, 1)) {
+        if (!this.excludeDays.includes(day.getDay())) {
+          days.push({ date: day, inMonth: day.getMonth() === m });
+        }
+      }
+      months.push({ date: monthDate, days });
+    }
+    this.yearGridCacheKey = key;
+    this.yearGridCache = months;
+    return months;
+  }
+
+  private yearWeekdayLabelsCacheKey: string | null = null;
+  private yearWeekdayLabelsCache: string[] = [];
+
+  /** Short weekday labels ("Mon".."Sun") for the year grid's mini-month headers, respecting weekStartsOn/show-weekends. */
+  get yearWeekdayLabels(): string[] {
+    const key = `${this.locale}|${this.weekStartsOn}|${this.showWeekends}`;
+    if (key === this.yearWeekdayLabelsCacheKey) {
+      return this.yearWeekdayLabelsCache;
+    }
+    const formatter = new Intl.DateTimeFormat(this.locale, { weekday: 'short' });
+    this.yearWeekdayLabelsCache = this.weekDays.map(day => formatter.format(day));
+    this.yearWeekdayLabelsCacheKey = key;
+    return this.yearWeekdayLabelsCache;
+  }
+
+  /** Localized month name for a mini-month header, e.g. "January". Intl-based like formatLongDate, so every locale works without an explicit moment locale import. */
+  formatMonthTitle(date: Date): string {
+    const formatted = new Intl.DateTimeFormat(this.locale, { month: 'long' }).format(date);
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  }
+
+  /** Year view day cell click: only re-emits onDayClick (no built-in popover or view switch) so the consumer decides what happens. */
+  handleYearDayClicked(date: Date): void {
+    this.onDayClick.emit({ date, events: this.eventsForDay(date) });
   }
 
   handleEventClicked(event: CalendarEvent): void {

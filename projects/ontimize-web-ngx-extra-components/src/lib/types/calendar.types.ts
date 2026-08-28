@@ -1,9 +1,10 @@
 import { CalendarEvent } from 'angular-calendar';
 
 /**
- * Available views for the `o-calendar` component.
+ * Available views for the `o-calendar` component. `'year'` is opt-in only
+ * (via the `views` input) — it is not part of the default view set.
  */
-export type OCalendarView = 'month' | 'week' | 'day';
+export type OCalendarView = 'month' | 'week' | 'day' | 'year';
 
 /**
  * Function that maps a service data row into a `CalendarEvent`.

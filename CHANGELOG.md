@@ -1,3 +1,18 @@
+## Unreleased
+
+### Features
+* **o-calendar**: add a `year` view — a grid of 12 mini-months, entirely custom-built since `angular-calendar` has no native year view to delegate to (its `CalendarView` enum only knows `Month`/`Week`/`Day`); `'year'` is opt-in only via the `views` input (not part of the default view set), so existing consumers don't get a new toolbar button without asking for it
+  * a day cell click only re-emits `onDayClick` (no built-in popover or automatic navigation to month/day) — the consumer decides what a day click means at this zoom level
+  * a day cell with events gets a small colored dot, since a pill-per-event (like every other view) wouldn't fit a cell this small — a numeric badge with the event count was tried and dropped, as it isn't meaningful information at this zoom level
+  * respects `week-starts-on` and `show-weekends` like the month/week views, and shows the same loading skeleton (12 plain mini-month placeholders) while a service/entity query is in flight
+  * events are now indexed by day in a `Map` (rebuilt once whenever the event list changes) instead of `eventsForDay()` filtering the whole array on every call — the year view alone renders up to ~420 day cells, which made the previous `O(days * events)` cost noticeable
+* **o-calendar**: the toolbar's "jump to date" picker now matches the active view's granularity instead of always asking for a full day — month view opens straight into `mat-calendar`'s month grid (pick a month), year view into its multi-year grid (pick a year), stopping there instead of drilling further down into a day just to navigate the calendar to a month/year
+
+## 18.0.0-next.4 (2026-08-20)
+
+### Miscellaneous
+* **deps**: bump `ngx-extended-pdf-viewer` from `^19.0.0` to `^20.0.0`
+
 ## 18.0.0-next.3 (2026-07-20)
 
 ### Breaking Changes

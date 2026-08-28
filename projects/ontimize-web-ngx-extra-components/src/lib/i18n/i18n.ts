@@ -31,6 +31,7 @@ export const MAP = {
     'MONTH': 'Month',
     'WEEK': 'Week',
     'DAY': 'Day',
+    'YEAR': 'Year',
     'MORE': 'more'
   },
 
@@ -65,6 +66,7 @@ export const MAP = {
     'MONTH': 'Mes',
     'WEEK': 'Semana',
     'DAY': 'Día',
+    'YEAR': 'Año',
     'MORE': 'más'
   }
 

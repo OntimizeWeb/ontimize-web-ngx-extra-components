@@ -170,7 +170,8 @@ o-calendar {
    * needs to behave like a block so width/height from its own theme apply
    * predictably inside the flex/grid layouts above. */
   .o-cal-skeleton-month,
-  .o-cal-skeleton-columns {
+  .o-cal-skeleton-columns,
+  .o-cal-skeleton-year {
     ngx-skeleton-loader {
       display: block;
     }
@@ -480,6 +481,139 @@ o-calendar {
       color: var(--o-cal-text) ;
       font-size: var(--mat-sys-label-large-size, 0.875rem) ;
     }
+  }
+
+  /* ---------------- Year view ---------------- */
+  /* angular-calendar has no native year view (Month/Week/Day only), so this
+   * grid of 12 mini-months is entirely custom markup, following the same
+   * --o-cal-* token conventions as the other views. auto-fill instead of a
+   * fixed column count so it still lays out sensibly in a narrow host. */
+  .o-cal-year-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 4px;
+  }
+
+  .o-cal-year-month {
+    box-sizing: border-box;
+    border: 1px solid var(--o-cal-border);
+    border-radius: 4px;
+    padding: 10px 12px;
+  }
+
+  .o-cal-year-month-title {
+    font-size: var(--mat-sys-title-medium-size, 1rem);
+    font-weight: 600;
+    text-align: center;
+    color: var(--o-cal-text);
+    padding-bottom: 8px;
+  }
+
+  .o-cal-year-weekdays,
+  .o-cal-year-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .o-cal-year-weekday {
+    text-align: center;
+    font-size: var(--mat-sys-label-small-size, 0.6875rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--o-cal-muted);
+    padding-bottom: 4px;
+  }
+
+  /* Reset to a plain grid cell: each day is a <button> (it emits onDayClick)
+   * but at this zoom level it should read as a cell, not a link. */
+  .o-cal-year-day {
+    appearance: none;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 2px 0;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: var(--o-cal-hover);
+    }
+  }
+
+  .o-cal-year-day-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: var(--mat-sys-label-small-size, 0.6875rem);
+    color: var(--o-cal-text);
+  }
+
+  /* Days padded in from the adjacent month: same muted treatment as the
+   * month view's own .cal-out-month / .o-cal-day-number pairing. */
+  .o-cal-year-day--out .o-cal-year-day-number {
+    color: var(--o-cal-muted);
+    opacity: 0.6;
+  }
+
+  /* Today: filled circle, same treatment as every other view's day number,
+   * just scaled down (18px) to fit this view's much smaller cells. */
+  .o-cal-year-day--today .o-cal-year-day-number {
+    background: var(--o-cal-primary);
+    color: var(--o-cal-on-primary);
+  }
+
+  /* Event marker: a plain dot — a pill-per-event (like every other view)
+   * wouldn't fit a cell this size, and a numeric badge was tried and dropped
+   * (the exact count isn't meaningful information at this zoom level). */
+  .o-cal-year-day-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--o-cal-primary);
+  }
+
+  /* ---------------- Year skeleton ---------------- */
+  /* Plain (non-shimmering) shapes instead of a full ngx-skeleton-loader per
+   * day cell — 12 months * ~35 days would be excessive for what is only a
+   * placeholder shape. Mirrors .o-cal-year-view's own grid so the layout
+   * doesn't jump once the real content replaces it. */
+  .o-cal-skeleton-year {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 4px;
+  }
+
+  .o-cal-skeleton-year-month {
+    box-sizing: border-box;
+    border: 1px solid var(--o-cal-border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .o-cal-skeleton-year-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    width: 100%;
+  }
+
+  .o-cal-skeleton-year-day {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-color: var(--o-cal-hover);
   }
 }
 

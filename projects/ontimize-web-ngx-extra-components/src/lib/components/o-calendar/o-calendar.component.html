@@ -7,30 +7,67 @@
       }
 
       <div class="o-calendar-nav">
-        <button mat-icon-button type="button" class="o-calendar-nav-btn"
-          mwlCalendarPreviousView [view]="calendarView" [viewDate]="viewDate"
-          (viewDateChange)="onViewDateChanged($event)"
-          [attr.aria-label]="'PREVIOUS' | oTranslate">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
+        <!-- Year view has no CalendarView of its own for the mwlCalendarPreviousView/
+             NextView directives to step through, so it navigates via
+             goToPreviousYear/goToNextYear instead. -->
+        @if (isYearView) {
+          <button mat-icon-button type="button" class="o-calendar-nav-btn"
+            (click)="goToPreviousYear()"
+            [attr.aria-label]="'PREVIOUS' | oTranslate">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+        } @else {
+          <button mat-icon-button type="button" class="o-calendar-nav-btn"
+            mwlCalendarPreviousView [view]="calendarView" [viewDate]="viewDate"
+            (viewDateChange)="onViewDateChanged($event)"
+            [attr.aria-label]="'PREVIOUS' | oTranslate">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+        }
 
         <button mat-button type="button" class="o-calendar-title" [matMenuTriggerFor]="oCalendarDatePicker">
           {{ toolbarTitle }}
         </button>
 
-        <button mat-icon-button type="button" class="o-calendar-nav-btn"
-          mwlCalendarNextView [view]="calendarView" [viewDate]="viewDate"
-          (viewDateChange)="onViewDateChanged($event)"
-          [attr.aria-label]="'NEXT' | oTranslate">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
+        @if (isYearView) {
+          <button mat-icon-button type="button" class="o-calendar-nav-btn"
+            (click)="goToNextYear()"
+            [attr.aria-label]="'NEXT' | oTranslate">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        } @else {
+          <button mat-icon-button type="button" class="o-calendar-nav-btn"
+            mwlCalendarNextView [view]="calendarView" [viewDate]="viewDate"
+            (viewDateChange)="onViewDateChanged($event)"
+            [attr.aria-label]="'NEXT' | oTranslate">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        }
       </div>
 
-      <!-- Date picker opened from the toolbar title to jump to any year/month/day. -->
+      <!-- Date picker opened from the toolbar title to jump to any year/month/day.
+           Year and month views have no day (year view not even a month) to
+           pick, so they open straight into mat-calendar's multi-year/year
+           grid and stop right there: picking a year/month only navigates the
+           calendar, without mat-calendar's normal year -> month -> day
+           drill-down forcing a day pick just to get to a month. -->
       <mat-menu #oCalendarDatePicker="matMenu" class="o-calendar-datepicker-panel">
-        <mat-calendar [selected]="viewDate" [startAt]="viewDate" (click)="$event.stopPropagation()"
-          (selectedChange)="onPickerDateSelected($event)">
-        </mat-calendar>
+        @if (isYearView) {
+          <mat-calendar [startAt]="viewDate" startView="multi-year" (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+            (yearSelected)="onPickerYearSelected($event)">
+          </mat-calendar>
+        } @else if (calendarView === CalendarView.Month) {
+          <mat-calendar [startAt]="viewDate" startView="year" (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+            (monthSelected)="onPickerMonthSelected($event)">
+          </mat-calendar>
+        } @else {
+          <mat-calendar [selected]="viewDate" [startAt]="viewDate" (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+            (selectedChange)="onPickerDateSelected($event)">
+          </mat-calendar>
+        }
       </mat-menu>
 
       <span class="o-calendar-spacer"></span>
@@ -62,6 +99,58 @@
 
   <div class="o-calendar-body">
 
+    @if (isYearView) {
+      @if (loading | async) {
+        <!-- Year skeleton: 12 plain (non-shimmering) mini-month grids, a much
+             lighter placeholder than a full ngx-skeleton-loader per day cell
+             (12 * ~35) would be. -->
+        <div class="o-cal-skeleton-year">
+          @for (month of skeletonYearMonths; track $index) {
+            <div class="o-cal-skeleton-year-month">
+              <ngx-skeleton-loader [theme]="skeletonYearMonthTitleTheme"></ngx-skeleton-loader>
+              <div class="o-cal-skeleton-year-days">
+                @for (day of skeletonYearDays; track $index) {
+                  <div class="o-cal-skeleton-year-day"></div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Year view: 12 mini-months of its own, since angular-calendar has
+             no native year view to delegate to. Each day cell only re-emits
+             onDayClick on click (no built-in popover/navigation, by design —
+             the consumer decides what a day click means at this zoom level).
+             Days with events just get a plain dot — a pill-per-event wouldn't
+             fit a cell this small, and a numeric badge was tried and dropped:
+             at this zoom level the exact count isn't meaningful information. -->
+        <div class="o-cal-year-view">
+          @for (month of yearMonths; track month.date.getTime()) {
+            <div class="o-cal-year-month">
+              <div class="o-cal-year-month-title">{{ formatMonthTitle(month.date) }}</div>
+              <div class="o-cal-year-weekdays">
+                @for (label of yearWeekdayLabels; track $index) {
+                  <span class="o-cal-year-weekday">{{ label }}</span>
+                }
+              </div>
+              <div class="o-cal-year-days">
+                @for (day of month.days; track day.date.getTime()) {
+                  <button type="button" class="o-cal-year-day"
+                    [class.o-cal-year-day--out]="!day.inMonth"
+                    [class.o-cal-year-day--today]="isToday(day.date)"
+                    (click)="handleYearDayClicked(day.date)">
+                    <span class="o-cal-year-day-number">{{ day.date.getDate() }}</span>
+                    @if (eventsForDay(day.date).length > 0) {
+                      <span class="o-cal-year-day-dot"></span>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    } @else {
     @if (loading | async) {
       <!-- Loading skeleton, shaped like an agenda (a day-number circle, a
            weekday label in week/day, and a few event-card bars) instead of
@@ -169,6 +258,7 @@
       }
     }
     }
+    }
 
   </div>
 
@@ -239,22 +329,28 @@
 <ng-template #eventPillTemplate let-event="event" let-closePopover="closePopover">
   @if (eventTemplate) {
     <div class="o-cal-event-custom o-cal-event-pill o-cal-event"
+      tabindex="0" role="button"
       [style.--o-cal-event-color]="event.color?.primary"
       [mwlCalendarTooltip]="getEventTooltip(event)"
       [tooltipEvent]="event"
       [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
       [tooltipAppendToBody]="true"
-      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()">
+      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
+      (keydown.enter)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
+      (keydown.space)="onEventPillClicked(event, closePopover); $event.stopPropagation(); $event.preventDefault()">
       <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
     </div>
   } @else {
     <div class="o-cal-event-pill o-cal-event"
+      tabindex="0" role="button"
       [style.--o-cal-event-color]="event.color?.primary"
       [mwlCalendarTooltip]="getEventTooltip(event)"
       [tooltipEvent]="event"
       [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
       [tooltipAppendToBody]="true"
-      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()">
+      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
+      (keydown.enter)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
+      (keydown.space)="onEventPillClicked(event, closePopover); $event.stopPropagation(); $event.preventDefault()">
       <span class="o-cal-event-title">{{ event.title }}</span>
       @if (getEventDescription(event)) {
         <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
@@ -294,6 +390,7 @@
 <ng-template #oCalWeekEventAdapter let-weekEvent="weekEvent" let-tooltipPlacement="tooltipPlacement"
   let-tooltipTemplate="tooltipTemplate" let-tooltipAppendToBody="tooltipAppendToBody" let-tooltipDelay="tooltipDelay">
   <div class="cal-event o-cal-event-custom o-cal-event"
+    tabindex="0" role="button"
     [style.--o-cal-event-color]="weekEvent.event.color?.primary"
     [mwlCalendarTooltip]="getEventTooltip(weekEvent.event)"
     [tooltipPlacement]="tooltipPlacement"
@@ -301,7 +398,9 @@
     [tooltipTemplate]="tooltipTemplate"
     [tooltipAppendToBody]="tooltipAppendToBody"
     [tooltipDelay]="tooltipDelay"
-    (click)="handleEventClicked(weekEvent.event); $event.stopPropagation()">
+    (click)="handleEventClicked(weekEvent.event); $event.stopPropagation()"
+    (keydown.enter)="handleEventClicked(weekEvent.event); $event.stopPropagation()"
+    (keydown.space)="handleEventClicked(weekEvent.event); $event.stopPropagation(); $event.preventDefault()">
     <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: weekEvent.event, row: weekEvent.event.meta }"></ng-container>
   </div>
 </ng-template>
