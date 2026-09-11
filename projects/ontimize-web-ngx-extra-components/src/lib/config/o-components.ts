@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { OSkeletonComponent } from '../components/o-skeleton/o-skeleton.component';
 import { OntimizeWebModule } from 'ontimize-web-ngx';
 import { ODataViewModule } from '../components/o-data-view/o-data-view.module';
-import { OImageEditorModule, OCalendarModule } from '../components';
+import { OImageEditorModule, OCalendarModule, OCollectionEditorModule } from '../components';
 import { TranslateExtraComponentsService } from '../services';
 
 export const OEXTRACOMPONENTS_DECLARATION_MODULES: any = [];
@@ -18,5 +18,6 @@ export const OEXTRACOMPONENTS_EXPORT_MODULES: any = [
   OSkeletonComponent,
   ODataViewModule,
   OImageEditorModule,
-  OCalendarModule
+  OCalendarModule,
+  OCollectionEditorModule
 ];

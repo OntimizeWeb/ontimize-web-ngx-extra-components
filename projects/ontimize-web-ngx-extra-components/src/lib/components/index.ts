@@ -6,3 +6,5 @@ export * from './o-data-view/o-data-view.module';
 export * from './o-calendar/o-calendar.component';
 export * from './o-calendar/o-calendar.module';
 export * from './o-calendar/o-calendar-templates.directive';
+export * from './o-collection-editor/o-collection-editor.component';
+export * from './o-collection-editor/o-collection-editor.module';

@@ -1,0 +1,264 @@
+/*
+  o-collection-editor
+  -------------------
+  The component uses ViewEncapsulation.None (the addon convention, and required
+  here so the consumer can style the chrome from its own scss and so the CDK drag
+  preview — which is moved to <body> — keeps its styles). Everything is therefore
+  GLOBAL: every selector must be prefixed `o-collection-editor__`, and there must
+  be no bare element selectors.
+
+  Colors and sizes go through theme tokens (--mat-sys-* / --o-*), never hex.
+  Any percentage box that also has padding or a border needs box-sizing:
+  border-box, or it overflows its container by a few px and triggers scrollbars.
+*/
+
+o-collection-editor {
+  display: block;
+
+  /* Local aliases so a consumer can retheme without fighting specificity:
+     `o-collection-editor { --o-collection-editor-border: ...; }` */
+  --o-collection-editor-border: var(--o-border-color, var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12)));
+  --o-collection-editor-surface: var(--mat-sys-surface-container-low, transparent);
+  --o-collection-editor-muted: var(--mat-sys-on-surface-variant, #6b7280);
+  --o-collection-editor-empty-bg: var(--mat-sys-surface-container-lowest, #f9fafb);
+  --o-collection-editor-error: var(--mat-sys-error, #b3261e);
+  --o-collection-editor-skeleton: var(--o-cal-hover, var(--mat-sys-surface-container-highest, rgba(0, 0, 0, 0.08)));
+}
+
+.o-collection-editor__container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.o-collection-editor__container--disabled {
+  opacity: 0.6;
+}
+
+/* Title/description on the left, "add group" on the right — same row-with-
+   spacer pattern as .o-collection-editor__items-header. Renders whenever any
+   of the three is present, so a lone add-group button still gets its row. */
+.o-collection-editor__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.o-collection-editor__heading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.o-collection-editor__title {
+  font-size: var(--mat-sys-title-medium-size, 1rem);
+  font-weight: 500;
+}
+
+.o-collection-editor__description {
+  font-size: var(--mat-sys-body-medium-size, 0.875rem);
+  color: var(--o-collection-editor-muted);
+}
+
+/* -------------------- groups -------------------- */
+
+.o-collection-editor__groups,
+.o-collection-editor__items {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.o-collection-editor__group {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--o-collection-editor-border);
+  border-radius: 4px;
+  background: var(--o-collection-editor-surface);
+}
+
+.o-collection-editor__group--invalid,
+.o-collection-editor__item--invalid {
+  border-color: var(--o-collection-editor-error);
+}
+
+.o-collection-editor__group--busy,
+.o-collection-editor__item--busy {
+  pointer-events: none;
+}
+
+.o-collection-editor__group-header,
+.o-collection-editor__items-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.o-collection-editor__group-index {
+  /* Fixed square box: a circular badge needs equal width/height and no
+     horizontal padding, or it turns into an oval as soon as it hits 2 digits. */
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  font-size: var(--mat-sys-label-large-size, 0.8125rem);
+  font-weight: 500;
+  background: var(--o-collection-editor-skeleton);
+}
+
+.o-collection-editor__group-heading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* lets the text ellipsize instead of stretching the row */
+}
+
+.o-collection-editor__group-name,
+.o-collection-editor__item-name {
+  font-size: var(--mat-sys-title-small-size, 0.875rem);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.o-collection-editor__group-description,
+.o-collection-editor__item-description {
+  font-size: var(--mat-sys-label-medium-size, 0.75rem);
+  color: var(--o-collection-editor-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.o-collection-editor__spacer {
+  flex: 1 1 auto;
+}
+
+.o-collection-editor__group-fields {
+  min-width: 0;
+}
+
+.o-collection-editor__items-label {
+  font-size: var(--mat-sys-label-large-size, 0.8125rem);
+  font-weight: 500;
+  color: var(--o-collection-editor-muted);
+}
+
+/* -------------------- items -------------------- */
+
+.o-collection-editor__item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--o-collection-editor-border);
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.o-collection-editor__item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* -------------------- empty / error -------------------- */
+
+/*
+  Estado vacío: caja de borde discontinuo, que es la convención con la que ya se
+  pintan estos huecos en las apps consumidoras. Los colores van por token, con el
+  valor original como fallback, para que en tema oscuro no se quede en claro.
+  `box-sizing: border-box` porque la caja lleva padding y borde propios.
+*/
+.o-collection-editor__empty {
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px dashed var(--o-collection-editor-border);
+  border-radius: 10px;
+  background: var(--o-collection-editor-empty-bg);
+  font-size: var(--mat-sys-label-large-size, 0.8125rem);
+  line-height: 1.5;
+  color: var(--o-collection-editor-muted);
+}
+
+.o-collection-editor__error {
+  font-size: var(--mat-sys-label-medium-size, 0.75rem);
+  color: var(--o-collection-editor-error);
+}
+
+/* -------------------- skeleton (busy rows) -------------------- */
+
+.o-collection-editor__skeleton {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+
+  /* ngx-skeleton-loader wraps each bar in its own element with a default
+     bottom margin; neutralise it so the themes drive the spacing. */
+  ngx-skeleton-loader {
+    line-height: 1;
+  }
+}
+
+/* -------------------- drag & drop -------------------- */
+
+.o-collection-editor__drag-handle {
+  cursor: move;
+  flex: 0 0 auto;
+}
+
+.o-collection-editor__drag-handle[disabled] {
+  cursor: default;
+}
+
+/*
+  The CDK moves the preview to <body>, outside this component's DOM. With
+  ViewEncapsulation.None these rules still apply, which is the reason for that
+  choice.
+*/
+.cdk-drag-preview.o-collection-editor__group,
+.cdk-drag-preview.o-collection-editor__item {
+  box-sizing: border-box;
+  background: var(--mat-sys-surface, #fff);
+  box-shadow: var(--mat-sys-level3, 0 3px 6px rgba(0, 0, 0, 0.24));
+}
+
+.cdk-drag-placeholder.o-collection-editor__group,
+.cdk-drag-placeholder.o-collection-editor__item {
+  opacity: 0.4;
+}
+
+.cdk-drop-list-dragging .o-collection-editor__group:not(.cdk-drag-placeholder),
+.cdk-drop-list-dragging .o-collection-editor__item:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* -------------------- a11y -------------------- */
+
+/* Announcements must reach screen readers without being visible. */
+.o-collection-editor__live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

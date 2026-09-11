@@ -1,0 +1,243 @@
+<!--
+  Structural chrome only. Everything domain-specific comes from the consumer's
+  projected templates (oCollectionGroupFields / oCollectionItem).
+-->
+<div class="o-collection-editor__container" [class.o-collection-editor__container--disabled]="isDisabled">
+
+  @if (title || description || canAddGroup) {
+    <div class="o-collection-editor__header">
+      <div class="o-collection-editor__heading">
+        @if (title) {
+          <div class="o-collection-editor__title">{{ title | oTranslate }}</div>
+        }
+        @if (description) {
+          <div class="o-collection-editor__description">{{ description | oTranslate }}</div>
+        }
+      </div>
+
+      <span class="o-collection-editor__spacer"></span>
+
+      @if (canAddGroup) {
+        <o-button attr="add-group"
+          class="o-collection-editor__add-group"
+          icon="add"
+          [label]="addGroupText"
+          [enabled]="!isDisabled"
+          [attr.data-testid]="getDataTestId('add-group')"
+          (onClick)="addGroup()">
+        </o-button>
+      }
+    </div>
+  }
+
+  <!-- Structural errors. Not mat-error: that only works inside a mat-form-field,
+       which this component is not, so the ARIA wiring is ours (role="alert"). -->
+  @if (hasError('minGroups') && minGroupsText) {
+    <div class="o-collection-editor__error" role="alert">
+      {{ minGroupsText | oTranslate }}: {{ getErrorValue('minGroups', 'required') }}
+    </div>
+  }
+  @if (hasError('minItemsPerGroup') && minItemsText) {
+    <div class="o-collection-editor__error" role="alert">
+      {{ minItemsText | oTranslate }}: {{ getErrorValue('minItemsPerGroup', 'required') }}
+    </div>
+  }
+  @for (oError of getActiveOErrors(); track oError.name) {
+    <div class="o-collection-editor__error" role="alert">{{ oError.text | oTranslate }}</div>
+  }
+
+  @if (!groups.length && emptyGroupsText) {
+    <div class="o-collection-editor__empty">{{ emptyGroupsText | oTranslate }}</div>
+  }
+
+  <div class="o-collection-editor__groups" cdkDropList
+    [cdkDropListDisabled]="!groupsDraggable || isDisabled"
+    (cdkDropListDropped)="dropGroup($event)">
+
+    @for (group of groups; track group.key; let gi = $index) {
+      <div class="o-collection-editor__group" cdkDrag
+        [cdkDragDisabled]="!groupsDraggable || isDisabled"
+        [class.o-collection-editor__group--invalid]="group.invalid"
+        [class.o-collection-editor__group--busy]="group.busy"
+        [attr.aria-busy]="group.busy"
+        [attr.aria-labelledby]="'oce-group-heading-' + rowToken(group.key)"
+        [attr.data-testid]="getRowDataTestId('group', group.key)"
+        (focusout)="onGroupValueChanged(group)">
+
+        <div class="o-collection-editor__group-header">
+          <span class="o-collection-editor__group-index" aria-hidden="true">{{ gi + 1 }}</span>
+
+          <div class="o-collection-editor__group-heading" [attr.id]="'oce-group-heading-' + rowToken(group.key)">
+            @if (getGroupTitle(group)) {
+              <span class="o-collection-editor__group-name">{{ getGroupTitle(group) }}</span>
+            } @else if (groupLabel) {
+              <span class="o-collection-editor__group-name">{{ groupLabel | oTranslate }}</span>
+            }
+            @if (getGroupDescription(group)) {
+              <span class="o-collection-editor__group-description">{{ getGroupDescription(group) }}</span>
+            }
+          </div>
+
+          <span class="o-collection-editor__spacer"></span>
+
+          @if (groupsDraggable) {
+            <o-button attr="drag-group" cdkDragHandle
+              class="o-collection-editor__drag-handle"
+              icon="drag_indicator"
+              [enabled]="!isDisabled && !group.busy"
+              [aria-label]="dragGroupTooltip"
+              [matTooltip]="dragGroupTooltip | oTranslate"
+              [attr.data-testid]="getRowDataTestId('drag-group', group.key)">
+            </o-button>
+          }
+          @if (groupsSortable) {
+            <!-- Keyboard path: cdk drag-drop offers no keyboard reordering. -->
+            <o-button attr="move-group-up"
+              icon="arrow_upward"
+              [enabled]="!isDisabled && !group.busy && gi > 0"
+              (onClick)="moveGroup(gi, gi - 1)"
+              aria-label="COLLECTION_EDITOR.MOVE_UP"
+              [matTooltip]="'COLLECTION_EDITOR.MOVE_UP' | oTranslate"
+              [attr.data-testid]="getRowDataTestId('move-group-up', group.key)">
+            </o-button>
+            <o-button attr="move-group-down"
+              icon="arrow_downward"
+              [enabled]="!isDisabled && !group.busy && gi < groups.length - 1"
+              (onClick)="moveGroup(gi, gi + 1)"
+              aria-label="COLLECTION_EDITOR.MOVE_DOWN"
+              [matTooltip]="'COLLECTION_EDITOR.MOVE_DOWN' | oTranslate"
+              [attr.data-testid]="getRowDataTestId('move-group-down', group.key)">
+            </o-button>
+          }
+
+          @if (groupsRemovable) {
+            <o-button attr="remove-group"
+              class="o-collection-editor__remove"
+              icon="close"
+              [enabled]="!isDisabled && !group.busy"
+              (onClick)="removeGroup(group)"
+              [aria-label]="removeGroupTooltip"
+              [matTooltip]="removeGroupTooltip | oTranslate"
+              [attr.data-testid]="getRowDataTestId('remove-group', group.key)">
+            </o-button>
+          }
+        </div>
+
+        @if (group.busy) {
+          <!-- Same shape and height as the real row so the layout does not jump. -->
+          <div class="o-collection-editor__skeleton">
+            <ngx-skeleton-loader [theme]="skeletonFieldTheme" aria-hidden="true"></ngx-skeleton-loader>
+            <ngx-skeleton-loader [theme]="skeletonRowTheme" aria-hidden="true"></ngx-skeleton-loader>
+          </div>
+        } @else {
+          @if (groupFieldsTemplate) {
+            <div class="o-collection-editor__group-fields">
+              <ng-container *ngTemplateOutlet="groupFieldsTemplate; context: groupContext(group, gi)"></ng-container>
+            </div>
+          }
+
+          <div class="o-collection-editor__items-header">
+            @if (itemsLabel) {
+              <span class="o-collection-editor__items-label">{{ itemsLabel | oTranslate }}</span>
+            }
+            <span class="o-collection-editor__spacer"></span>
+            @if (canAddItem) {
+              <o-button attr="add-item"
+                class="o-collection-editor__add-item"
+                icon="add"
+                [label]="addItemText"
+                [enabled]="!isDisabled && !group.busy"
+                [attr.data-testid]="getRowDataTestId('add-item', group.key)"
+                (onClick)="addItem(group)">
+              </o-button>
+            }
+          </div>
+
+          @if (!group.items.length && emptyItemsText) {
+            <div class="o-collection-editor__empty o-collection-editor__empty--items">
+              {{ emptyItemsText | oTranslate }}
+            </div>
+          }
+
+          <div class="o-collection-editor__items" cdkDropList
+            [cdkDropListDisabled]="!itemsDraggable || isDisabled"
+            (cdkDropListDropped)="dropItem(group, $event)">
+
+            @for (item of group.items; track item.key; let ii = $index) {
+              <div class="o-collection-editor__item" cdkDrag
+                [cdkDragDisabled]="!itemsDraggable || isDisabled"
+                [class.o-collection-editor__item--busy]="item.busy"
+                [attr.aria-busy]="item.busy"
+                [attr.data-testid]="getRowDataTestId('item', item.key)"
+                (focusout)="onItemValueChanged(group, item)">
+
+                @if (itemsDraggable) {
+                  <o-button attr="drag-item" cdkDragHandle
+                    class="o-collection-editor__drag-handle"
+                    icon="drag_indicator"
+                    [enabled]="!isDisabled && !item.busy"
+                    [aria-label]="dragItemTooltip"
+                    [matTooltip]="dragItemTooltip | oTranslate"
+                    [attr.data-testid]="getRowDataTestId('drag-item', item.key)">
+                  </o-button>
+                }
+
+                <div class="o-collection-editor__item-body">
+                  @if (item.busy) {
+                    <ngx-skeleton-loader [theme]="skeletonRowTheme" aria-hidden="true"></ngx-skeleton-loader>
+                  } @else {
+                    @if (getItemTitle(item)) {
+                      <span class="o-collection-editor__item-name">{{ getItemTitle(item) }}</span>
+                    } @else if (itemLabel) {
+                      <span class="o-collection-editor__item-name">{{ itemLabel | oTranslate }}</span>
+                    }
+                    @if (getItemDescription(item)) {
+                      <span class="o-collection-editor__item-description">{{ getItemDescription(item) }}</span>
+                    }
+                    @if (itemTemplate) {
+                      <ng-container *ngTemplateOutlet="itemTemplate; context: itemContext(group, item, gi, ii)"></ng-container>
+                    }
+                  }
+                </div>
+
+                @if (itemsSortable) {
+                  <o-button attr="move-item-up"
+                    icon="arrow_upward"
+                    [enabled]="!isDisabled && !item.busy && ii > 0"
+                    (onClick)="moveItem(group, ii, ii - 1)"
+                    aria-label="COLLECTION_EDITOR.MOVE_UP"
+                    [matTooltip]="'COLLECTION_EDITOR.MOVE_UP' | oTranslate"
+                    [attr.data-testid]="getRowDataTestId('move-item-up', item.key)">
+                  </o-button>
+                  <o-button attr="move-item-down"
+                    icon="arrow_downward"
+                    [enabled]="!isDisabled && !item.busy && ii < group.items.length - 1"
+                    (onClick)="moveItem(group, ii, ii + 1)"
+                    aria-label="COLLECTION_EDITOR.MOVE_DOWN"
+                    [matTooltip]="'COLLECTION_EDITOR.MOVE_DOWN' | oTranslate"
+                    [attr.data-testid]="getRowDataTestId('move-item-down', item.key)">
+                  </o-button>
+                }
+
+                @if (itemsRemovable) {
+                  <o-button attr="remove-item"
+                    class="o-collection-editor__remove"
+                    icon="close"
+                    [enabled]="!isDisabled && !item.busy"
+                    (onClick)="removeItem(group, item)"
+                    [aria-label]="removeItemTooltip"
+                    [matTooltip]="removeItemTooltip | oTranslate"
+                    [attr.data-testid]="getRowDataTestId('remove-item', item.key)">
+                  </o-button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Announces the result of a keyboard reorder. -->
+  <div class="o-collection-editor__live-region" aria-live="polite" role="status">{{ moveAnnouncement }}</div>
+</div>

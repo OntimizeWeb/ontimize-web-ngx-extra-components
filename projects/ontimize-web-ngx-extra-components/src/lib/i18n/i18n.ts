@@ -32,7 +32,22 @@ export const MAP = {
     'WEEK': 'Week',
     'DAY': 'Day',
     'YEAR': 'Year',
-    'MORE': 'more'
+    'MORE': 'more',
+
+    // o-collection-editor. Namespaced: this MAP is merged into the application's
+    // global ngx-translate dictionary, so flat keys would collide with the app's own.
+    'COLLECTION_EDITOR.EMPTY_GROUPS': 'No entries yet',
+    'COLLECTION_EDITOR.EMPTY_ITEMS': 'No items in this entry',
+    'COLLECTION_EDITOR.ADD_GROUP': 'Add',
+    'COLLECTION_EDITOR.ADD_ITEM': 'Add item',
+    'COLLECTION_EDITOR.REMOVE_GROUP': 'Remove',
+    'COLLECTION_EDITOR.REMOVE_ITEM': 'Remove item',
+    'COLLECTION_EDITOR.DRAG_GROUP': 'Reorder',
+    'COLLECTION_EDITOR.DRAG_ITEM': 'Reorder item',
+    'COLLECTION_EDITOR.MOVE_UP': 'Move up',
+    'COLLECTION_EDITOR.MOVE_DOWN': 'Move down',
+    'COLLECTION_EDITOR.VALIDATION.MIN_GROUPS': 'Minimum number of entries required',
+    'COLLECTION_EDITOR.VALIDATION.MIN_ITEMS_PER_GROUP': 'Minimum number of items per entry required'
   },
 
   // Spanish
@@ -67,7 +82,22 @@ export const MAP = {
     'WEEK': 'Semana',
     'DAY': 'Día',
     'YEAR': 'Año',
-    'MORE': 'más'
+    'MORE': 'más',
+
+    // o-collection-editor. Con namespace: este MAP se fusiona en el diccionario global
+    // de ngx-translate de la aplicación, así que claves planas colisionarían con las suyas.
+    'COLLECTION_EDITOR.EMPTY_GROUPS': 'Todavía no hay entradas',
+    'COLLECTION_EDITOR.EMPTY_ITEMS': 'No hay elementos en esta entrada',
+    'COLLECTION_EDITOR.ADD_GROUP': 'Añadir',
+    'COLLECTION_EDITOR.ADD_ITEM': 'Añadir elemento',
+    'COLLECTION_EDITOR.REMOVE_GROUP': 'Eliminar',
+    'COLLECTION_EDITOR.REMOVE_ITEM': 'Eliminar elemento',
+    'COLLECTION_EDITOR.DRAG_GROUP': 'Reordenar',
+    'COLLECTION_EDITOR.DRAG_ITEM': 'Reordenar elemento',
+    'COLLECTION_EDITOR.MOVE_UP': 'Subir',
+    'COLLECTION_EDITOR.MOVE_DOWN': 'Bajar',
+    'COLLECTION_EDITOR.VALIDATION.MIN_GROUPS': 'Número mínimo de entradas requerido',
+    'COLLECTION_EDITOR.VALIDATION.MIN_ITEMS_PER_GROUP': 'Número mínimo de elementos por entrada requerido'
   }
 
 };
