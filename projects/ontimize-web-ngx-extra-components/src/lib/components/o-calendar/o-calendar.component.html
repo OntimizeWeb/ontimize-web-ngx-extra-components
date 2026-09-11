@@ -328,34 +328,28 @@
      onEventClick (only relevant when called from there). -->
 <ng-template #eventPillTemplate let-event="event" let-closePopover="closePopover">
   @if (eventTemplate) {
-    <div class="o-cal-event-custom o-cal-event-pill o-cal-event"
-      tabindex="0" role="button"
+    <button type="button" class="o-cal-event-custom o-cal-event-pill o-cal-event"
       [style.--o-cal-event-color]="event.color?.primary"
       [mwlCalendarTooltip]="getEventTooltip(event)"
       [tooltipEvent]="event"
       [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
       [tooltipAppendToBody]="true"
-      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
-      (keydown.enter)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
-      (keydown.space)="onEventPillClicked(event, closePopover); $event.stopPropagation(); $event.preventDefault()">
+      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()">
       <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: event, row: event.meta }"></ng-container>
-    </div>
+    </button>
   } @else {
-    <div class="o-cal-event-pill o-cal-event"
-      tabindex="0" role="button"
+    <button type="button" class="o-cal-event-pill o-cal-event"
       [style.--o-cal-event-color]="event.color?.primary"
       [mwlCalendarTooltip]="getEventTooltip(event)"
       [tooltipEvent]="event"
       [tooltipTemplate]="tooltipTemplate ? oCalTooltipAdapter : $any(null)"
       [tooltipAppendToBody]="true"
-      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
-      (keydown.enter)="onEventPillClicked(event, closePopover); $event.stopPropagation()"
-      (keydown.space)="onEventPillClicked(event, closePopover); $event.stopPropagation(); $event.preventDefault()">
+      (click)="onEventPillClicked(event, closePopover); $event.stopPropagation()">
       <span class="o-cal-event-title">{{ event.title }}</span>
       @if (getEventDescription(event)) {
         <span class="o-cal-event-desc">{{ getEventDescription(event) }}</span>
       }
-    </div>
+    </button>
   }
 </ng-template>
 
@@ -389,8 +383,7 @@
      container plus the tooltip and click wiring around the projected template. -->
 <ng-template #oCalWeekEventAdapter let-weekEvent="weekEvent" let-tooltipPlacement="tooltipPlacement"
   let-tooltipTemplate="tooltipTemplate" let-tooltipAppendToBody="tooltipAppendToBody" let-tooltipDelay="tooltipDelay">
-  <div class="cal-event o-cal-event-custom o-cal-event"
-    tabindex="0" role="button"
+  <button type="button" class="cal-event o-cal-event-custom o-cal-event"
     [style.--o-cal-event-color]="weekEvent.event.color?.primary"
     [mwlCalendarTooltip]="getEventTooltip(weekEvent.event)"
     [tooltipPlacement]="tooltipPlacement"
@@ -398,9 +391,7 @@
     [tooltipTemplate]="tooltipTemplate"
     [tooltipAppendToBody]="tooltipAppendToBody"
     [tooltipDelay]="tooltipDelay"
-    (click)="handleEventClicked(weekEvent.event); $event.stopPropagation()"
-    (keydown.enter)="handleEventClicked(weekEvent.event); $event.stopPropagation()"
-    (keydown.space)="handleEventClicked(weekEvent.event); $event.stopPropagation(); $event.preventDefault()">
+    (click)="handleEventClicked(weekEvent.event); $event.stopPropagation()">
     <ng-container *ngTemplateOutlet="eventTemplate; context: { $implicit: weekEvent.event, row: weekEvent.event.meta }"></ng-container>
-  </div>
+  </button>
 </ng-template>

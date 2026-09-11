@@ -315,14 +315,14 @@ export class OCollectionEditorComponent<G = any, I = any>
   private warnedItemsColumn = false;
 
   /** DOM-safe token per row key, backing `attrFor` and the element ids. */
-  private rowTokens = new Map<OCollectionKey, string>();
+  private readonly rowTokens = new Map<OCollectionKey, string>();
   private nextRowToken = 1;
 
   /** Control names minted through `attrFor`, so they can be un-ignored on destroy. */
-  private mintedAttrs = new Set<string>();
+  private readonly mintedAttrs = new Set<string>();
 
   /** Keys with a removal in flight, so a second request for the same row is ignored. */
-  private removingKeys = new Set<OCollectionKey>();
+  private readonly removingKeys = new Set<OCollectionKey>();
 
   private initialized = false;
 

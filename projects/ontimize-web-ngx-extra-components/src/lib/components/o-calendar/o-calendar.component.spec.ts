@@ -99,7 +99,7 @@ describe('OCalendarComponent', () => {
     component.staticData = [{ start: new Date(2026, 0, 1), title: 'Kickoff' }];
     component.ngOnInit();
 
-    expect(component.events.length).toBe(1);
+    expect(component.events).toHaveSize(1);
     expect(component.events[0].title).toBe('Kickoff');
   });
 
@@ -324,7 +324,7 @@ describe('OCalendarComponent', () => {
         { start: otherDay, title: 'C' }
       ]);
 
-      expect(component.events.length).toBe(3);
+      expect(component.events).toHaveSize(3);
       expect(component.eventsForDay(day).map(e => e.title)).toEqual(['A', 'B']);
       expect(component.eventsForDay(otherDay).map(e => e.title)).toEqual(['C']);
       expect(component.eventsForDay(new Date(2000, 0, 1))).toEqual([]);
@@ -337,7 +337,7 @@ describe('OCalendarComponent', () => {
       const events = [1, 2, 3, 4].map(i => ({ start: new Date(), title: `E${i}` } as CalendarEvent));
       const day = { events };
 
-      expect(component.visibleEvents(day).length).toBe(2);
+      expect(component.visibleEvents(day)).toHaveSize(2);
       expect(component.hiddenEventsCount(day)).toBe(2);
       expect(component.hiddenEventsCount({ events: [] })).toBe(0);
     });
@@ -411,10 +411,10 @@ describe('OCalendarComponent', () => {
 
     it('weekDays excludes Saturday/Sunday when show-weekends is off', () => {
       component.showWeekends = true;
-      expect(component.weekDays.length).toBe(7);
+      expect(component.weekDays).toHaveSize(7);
 
       component.showWeekends = false;
-      expect(component.weekDays.length).toBe(5);
+      expect(component.weekDays).toHaveSize(5);
       component.weekDays.forEach(d => expect([0, 6]).not.toContain(d.getDay()));
     });
 
@@ -428,7 +428,7 @@ describe('OCalendarComponent', () => {
     it('yearMonths returns 12 padded month grids, memoized while year/weekStartsOn/showWeekends stay the same', () => {
       component.viewDate = new Date(2026, 5, 15);
       const months = component.yearMonths;
-      expect(months.length).toBe(12);
+      expect(months).toHaveSize(12);
       months.forEach(m => expect(m.days.length % 7).toBe(0));
       expect(component.yearMonths).toBe(months);
 
@@ -474,7 +474,7 @@ describe('OCalendarComponent', () => {
       const spy = spyOn(component.onDayClick, 'emit');
       component.handleHourSegmentClicked(new Date(2026, 0, 1, 14, 0));
       const arg = spy.calls.mostRecent().args[0];
-      expect(arg.events.length).toBe(1);
+      expect(arg.events).toHaveSize(1);
       expect(arg.events[0].title).toBe('A');
     });
 

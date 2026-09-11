@@ -104,14 +104,14 @@ describe('OCollectionEditorComponent', () => {
 
     it('writeValue(null) and writeValue([]) both give an empty collection', () => {
       component.writeValue([group('a')]);
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
 
       component.writeValue(null);
-      expect(component.groups.length).toBe(0);
+      expect(component.groups).toHaveSize(0);
 
       component.writeValue([group('a')]);
       component.writeValue([]);
-      expect(component.groups.length).toBe(0);
+      expect(component.groups).toHaveSize(0);
     });
 
     it('getValue() always returns an array, even if a non-array was written', () => {
@@ -128,7 +128,7 @@ describe('OCollectionEditorComponent', () => {
       expect(onChange).toHaveBeenCalled();
       const emitted = onChange.calls.mostRecent().args[0];
       expect(Array.isArray(emitted)).toBe(true);
-      expect(emitted.length).toBe(1);
+      expect(emitted).toHaveSize(1);
     });
 
     it('the auto-echo guard keeps busy/invalid when the emitted value comes back', () => {
@@ -150,7 +150,7 @@ describe('OCollectionEditorComponent', () => {
       component.ngOnInit();
       component.addGroup();
       component.writeValue([group('other')]);
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
       expect(component.groups[0].value.name).toBe('other');
     });
   });
@@ -169,8 +169,8 @@ describe('OCollectionEditorComponent', () => {
       component.ngOnInit();
       component.setData([group('a', ['i1', 'i2']), group('b')]);
 
-      expect(component.groups.length).toBe(2);
-      expect(component.groups[0].items.length).toBe(2);
+      expect(component.groups).toHaveSize(2);
+      expect(component.groups[0].items).toHaveSize(2);
       expect(component.groups[0].value.name).toBe('a');
     });
 
@@ -178,7 +178,7 @@ describe('OCollectionEditorComponent', () => {
       component.ngOnInit();
       component.setData({ value: [group('a')] } as any);
 
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
       expect(component.groups[0].value.name).toBe('a');
     });
 
@@ -186,16 +186,16 @@ describe('OCollectionEditorComponent', () => {
       component.setData([group('a')]);
       component.ngOnInit();
 
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
     });
 
     it('clearValue empties the rows (o-form resets its components this way)', () => {
       component.ngOnInit();
       component.setData([group('a')]);
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
 
       component.clearValue();
-      expect(component.groups.length).toBe(0);
+      expect(component.groups).toHaveSize(0);
     });
 
     it('setValue — oForm.setFieldValue(attr, ...) — rebuilds too', () => {
@@ -215,7 +215,7 @@ describe('OCollectionEditorComponent', () => {
 
       expect(component.groups[0].key).toBe(key);     // no identity churn
       expect(component.groups[0].busy).toBe(true);   // busy survived
-      expect(component.groups[0].items.length).toBe(1);
+      expect(component.groups[0].items).toHaveSize(1);
     });
   });
 
@@ -225,14 +225,14 @@ describe('OCollectionEditorComponent', () => {
     it('seeds the collection when the form has no value', () => {
       component.staticData = [group('a'), group('b')];
       component.ngOnInit();
-      expect(component.groups.length).toBe(2);
+      expect(component.groups).toHaveSize(2);
     });
 
     it('does not overwrite an existing form value', () => {
       component.writeValue([group('fromForm')]);
       component.staticData = [group('a'), group('b')];
       component.ngOnInit();
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
       expect(component.groups[0].value.name).toBe('fromForm');
     });
   });
@@ -324,18 +324,18 @@ describe('OCollectionEditorComponent', () => {
       component.ngOnInit();
       component.writeValue([{ name: 'a', questions: [{ text: 'q1' }] } as any]);
 
-      expect(component.groups[0].items.length).toBe(1);
+      expect(component.groups[0].items).toHaveSize(1);
 
       component.addItem(component.groups[0]);
       const plain: any[] = component.getValue();
-      expect(plain[0].questions.length).toBe(2);
+      expect(plain[0].questions).toHaveSize(2);
       expect(plain[0].items).toBeUndefined();
     });
 
     it('defaults to `items`, so the common shape needs no configuration', () => {
       component.ngOnInit();
       component.writeValue([group('a', ['i1', 'i2'])]);
-      expect(component.groups[0].items.length).toBe(2);
+      expect(component.groups[0].items).toHaveSize(2);
     });
 
     it('treats a missing column as an empty collection and warns once on a non-array', () => {
@@ -344,8 +344,8 @@ describe('OCollectionEditorComponent', () => {
       component.ngOnInit();
       component.writeValue([{ name: 'a' } as any, { name: 'b', questions: 'nope' } as any]);
 
-      expect(component.groups[0].items.length).toBe(0);
-      expect(component.groups[1].items.length).toBe(0);
+      expect(component.groups[0].items).toHaveSize(0);
+      expect(component.groups[1].items).toHaveSize(0);
       expect(warn).toHaveBeenCalledTimes(1);
     });
   });
@@ -365,13 +365,13 @@ describe('OCollectionEditorComponent', () => {
 
     it('after adding an item', () => {
       component.addItem(component.groups[0]);
-      expect(component.groups[0].value.items.length).toBe(3);
+      expect(component.groups[0].value.items).toHaveSize(3);
     });
 
     it('after removing an item', async () => {
       spyOn(TestBed.inject(DialogService), 'confirm').and.returnValue(Promise.resolve(true));
       await component.removeItem(component.groups[0], component.groups[0].items[0]);
-      expect(component.groups[0].value.items.length).toBe(1);
+      expect(component.groups[0].value.items).toHaveSize(1);
     });
 
     it('after reordering items', () => {
@@ -483,7 +483,7 @@ describe('OCollectionEditorComponent', () => {
       expect(component.canAddGroup).toBe(false);
       expect(component.canAddItem).toBe(false);
       expect(() => component.addGroup()).not.toThrow();
-      expect(component.groups.length).toBe(0);
+      expect(component.groups).toHaveSize(0);
     });
 
     it('adds groups and items and emits the outputs', () => {
@@ -492,11 +492,11 @@ describe('OCollectionEditorComponent', () => {
       component.ngOnInit();
 
       component.addGroup();
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
       expect(added).toHaveBeenCalled();
 
       component.addItem(component.groups[0]);
-      expect(component.groups[0].items.length).toBe(1);
+      expect(component.groups[0].items).toHaveSize(1);
       expect(itemAdded).toHaveBeenCalled();
     });
   });
@@ -516,13 +516,13 @@ describe('OCollectionEditorComponent', () => {
       component.canRemoveGroup = () => false;
       await component.removeGroup(component.groups[0]);
       expect(dialog.confirm).not.toHaveBeenCalled();
-      expect(component.groups.length).toBe(2);
+      expect(component.groups).toHaveSize(2);
     });
 
     it('removes immediately when no handler is configured', async () => {
       const removed = spyOn(component.onGroupRemoved, 'emit');
       await component.removeGroup(component.groups[0]);
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
       expect(removed).toHaveBeenCalled();
     });
 
@@ -530,7 +530,7 @@ describe('OCollectionEditorComponent', () => {
       component.confirmRemoveGroupMessage = '';
       await component.removeGroup(component.groups[0]);
       expect(dialog.confirm).not.toHaveBeenCalled();
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
     });
 
     it('deferred handler resolving true: row is busy while pending, then removed', async () => {
@@ -545,7 +545,7 @@ describe('OCollectionEditorComponent', () => {
 
       resolve(true);
       await pending;
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
       expect(target.busy).toBe(false);
     });
 
@@ -553,7 +553,7 @@ describe('OCollectionEditorComponent', () => {
       component.removeGroupHandler = () => Promise.resolve(false);
       const removed = spyOn(component.onGroupRemoved, 'emit');
       await component.removeGroup(component.groups[0]);
-      expect(component.groups.length).toBe(2);
+      expect(component.groups).toHaveSize(2);
       expect(component.groups[0].busy).toBe(false);
       expect(removed).not.toHaveBeenCalled();
     });
@@ -562,7 +562,7 @@ describe('OCollectionEditorComponent', () => {
       spyOn(console, 'error');
       component.removeGroupHandler = () => Promise.reject(new Error('boom'));
       await component.removeGroup(component.groups[0]);
-      expect(component.groups.length).toBe(2);
+      expect(component.groups).toHaveSize(2);
       expect(component.groups[0].busy).toBe(false);
     });
 
@@ -579,7 +579,7 @@ describe('OCollectionEditorComponent', () => {
       resolve(true);
       await pending;
 
-      expect(component.groups.length).toBe(1);
+      expect(component.groups).toHaveSize(1);
       expect(component.groups[0].value.name).toBe('a');   // 'b' went, not the one at index 1
     });
 
@@ -602,7 +602,7 @@ describe('OCollectionEditorComponent', () => {
     it('removes items too', async () => {
       const removed = spyOn(component.onItemRemoved, 'emit');
       await component.removeItem(component.groups[0], component.groups[0].items[0]);
-      expect(component.groups[0].items.length).toBe(1);
+      expect(component.groups[0].items).toHaveSize(1);
       expect(removed).toHaveBeenCalled();
     });
   });
@@ -652,7 +652,7 @@ describe('OCollectionEditorComponent', () => {
 
       await component.removeGroup(component.groups[0]);
 
-      expect(component.groups.length).toBe(1);                    // removal happened
+      expect(component.groups).toHaveSize(1);                    // removal happened
       expect(component.getControl().hasError('minGroups')).toBe(true);
     });
 
@@ -825,8 +825,8 @@ describe('OCollectionEditorComponent', () => {
       expect(() => fixture.detectChanges()).not.toThrow();
 
       const el: HTMLElement = fixture.nativeElement;
-      expect(el.querySelectorAll('.o-collection-editor__group').length).toBe(1);
-      expect(el.querySelectorAll('.o-collection-editor__item').length).toBe(1);
+      expect(el.querySelectorAll('.o-collection-editor__group')).toHaveSize(1);
+      expect(el.querySelectorAll('.o-collection-editor__item')).toHaveSize(1);
       // every actionable control must be a real button with an explicit type,
       // otherwise it would submit the surrounding <form> inside an <o-form>
       const buttons = Array.from(el.querySelectorAll('button'));
@@ -895,9 +895,9 @@ describe('OCollectionEditorComponent', () => {
       // Scoped to the elements THIS component controls: `o-button`'s own inner <button>
       // always carries a data-testid equal to its own `attr` (see OButtonComponent's
       // `dataTestId` getter), independently of this component's own input.
-      expect(el.querySelectorAll('o-button[data-testid]').length).toBe(0);
-      expect(el.querySelectorAll('.o-collection-editor__group[data-testid]').length).toBe(0);
-      expect(el.querySelectorAll('.o-collection-editor__item[data-testid]').length).toBe(0);
+      expect(el.querySelectorAll('o-button[data-testid]')).toHaveSize(0);
+      expect(el.querySelectorAll('.o-collection-editor__group[data-testid]')).toHaveSize(0);
+      expect(el.querySelectorAll('.o-collection-editor__item[data-testid]')).toHaveSize(0);
     });
 
     it('composes static and per-row test ids from the data-testid input', () => {

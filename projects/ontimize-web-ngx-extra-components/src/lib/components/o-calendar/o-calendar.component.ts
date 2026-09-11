@@ -104,7 +104,7 @@ export const O_CALENDAR_VIEWS: OCalendarView[] = ['day', 'week', 'month'];
  * deliberately left out of `O_CALENDAR_VIEWS` (the default view set) so
  * existing consumers don't get a new toolbar button without asking for it.
  */
-const ALL_CALENDAR_VIEWS: OCalendarView[] = [...O_CALENDAR_VIEWS, 'year'];
+const ALL_CALENDAR_VIEWS: Set<OCalendarView> = new Set([...O_CALENDAR_VIEWS, 'year']);
 
 const VIEW_LABELS: { [key in OCalendarView]: string } = {
   day: 'DAY',
@@ -165,7 +165,7 @@ export class OCalendarComponent
   @Input('views')
   set views(value: string | OCalendarView[]) {
     const parsed = Array.isArray(value) ? value : Util.parseArray(value, true);
-    const filtered = (parsed as OCalendarView[]).filter(v => ALL_CALENDAR_VIEWS.includes(v));
+    const filtered = (parsed as OCalendarView[]).filter(v => ALL_CALENDAR_VIEWS.has(v));
     this.availableViews = filtered.length ? filtered : [...O_CALENDAR_VIEWS];
   }
   get views(): OCalendarView[] {

@@ -11,7 +11,7 @@
  * - synthetic identity for rows that are not persisted yet, always prefixed
  *   `oce:` so it can never collide with a real one.
  */
-export type OCollectionKey = string;
+export type OCollectionKey = string; // NOSONAR: kept as a named alias for API readability, not for type safety
 
 /** Payload of `o-collection-editor`'s `onGroupAdded` / `onGroupRemoved` outputs. */
 export interface OCollectionGroupEvent<G = any> {

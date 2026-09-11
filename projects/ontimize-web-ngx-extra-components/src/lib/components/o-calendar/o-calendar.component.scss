@@ -680,6 +680,18 @@ o-calendar.o-cal-week-header-wide .cal-week-view .cal-day-headers .cal-header.ca
  * instead of a direct [style.borderLeftColor] override, so this class alone
  * decides how that color is actually used. */
 .o-cal-event {
+  /* Now a <button> (SonarQube: a clickable "button role" element must be a real
+   * <button>/<input>), which otherwise brings its own chrome — centered text,
+   * system font, a margin/border, native background — reset here so it still
+   * renders exactly like the plain wrapper it replaced. `display`/padding/
+   * background stay owned by `.o-cal-event-pill` / the `.cal-event` override
+   * below, both of which already declare their own. */
+  appearance: none;
+  margin: 0;
+  border: 0;
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
   border-left: 3px solid var(--o-cal-event-color, var(--o-cal-primary, var(--mat-sys-primary, #2e7d32))) ;
 }
 
