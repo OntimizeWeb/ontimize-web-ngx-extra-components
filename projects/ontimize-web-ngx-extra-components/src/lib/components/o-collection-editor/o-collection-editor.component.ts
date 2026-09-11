@@ -468,7 +468,7 @@ export class OCollectionEditorComponent<G = any, I = any>
 
   /** Always an array, whatever arrives (null, undefined, a non-array). */
   override ensureOFormValue(arg: any): void {
-    const raw = arg && arg.value !== undefined && !Util.isArray(arg) ? arg.value : arg;
+    const raw = arg?.value !== undefined && !Util.isArray(arg) ? arg.value : arg;
     super.ensureOFormValue(Util.isArray(raw) ? raw : []);
   }
 
@@ -755,7 +755,7 @@ export class OCollectionEditorComponent<G = any, I = any>
 
   private ignoreInFormPayload(attr: string): void {
     const keys = this.formIgnoredKeys;
-    if (keys && keys.indexOf(attr) === -1) {
+    if (keys && !keys.includes(attr)) {
       keys.push(attr);
     }
   }
