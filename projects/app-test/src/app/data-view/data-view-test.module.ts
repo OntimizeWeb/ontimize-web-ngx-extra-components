@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { O_TABLE_GLOBAL_CONFIG, OntimizeWebModule } from 'ontimize-web-ngx';
 
 import { DataViewTestComponent } from './data-view-test.component';
@@ -8,6 +9,7 @@ import { PacksService } from '../../services/packs.service';
 
 @NgModule({
   imports: [
+    CommonModule,
     OntimizeWebModule,
     OExtraComponentsModule
   ],

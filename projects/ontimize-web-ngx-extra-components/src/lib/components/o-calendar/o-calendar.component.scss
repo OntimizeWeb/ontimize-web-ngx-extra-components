@@ -1,0 +1,764 @@
+/* Structural layout rules from angular-calendar's own scss source (flex,
+ * min-height, spacing — the grid mechanics the component relies on), bundled
+ * here so consuming apps get them automatically just by using <o-calendar>,
+ * with no `angular.json` styles entry of their own. Its color theming lives
+ * behind `cal-theme($overrides)` and sibling mixins, which are never
+ * `@include`d below, so none of its hardcoded default colors are emitted —
+ * only the plain, unconditional rules (layout) are. All theming instead
+ * comes from the --o-cal-* custom properties this file defines next. */
+@import 'angular-calendar/scss/angular-calendar';
+
+o-calendar {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  /* ----------------------------------------------------------------------
+   * Theme tokens. Colors are inherited from the Ontimize / Angular Material
+   * theme (`--mat-sys-*`). The fallbacks only apply outside a themed app.
+   * -------------------------------------------------------------------- */
+  --o-cal-primary: var(--mat-sys-primary, #2e7d32);
+  --o-cal-on-primary: var(--mat-sys-on-primary, #ffffff);
+  --o-cal-surface: var(--mat-sys-surface, #ffffff);
+  --o-cal-text: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
+  --o-cal-muted: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.55));
+  --o-cal-border: var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
+
+  --o-cal-today-tint: color-mix(in srgb, var(--o-cal-primary) 8%, transparent);
+  --o-cal-pill-bg: color-mix(in srgb, var(--o-cal-primary) 6%, var(--o-cal-surface));
+  --o-cal-hover: color-mix(in srgb, var(--o-cal-text) 4%, transparent);
+  --o-cal-out-month: color-mix(in srgb, var(--o-cal-text) 3%, transparent);
+
+  .o-calendar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    background: var(--o-cal-surface);
+    color: var(--o-cal-text);
+    font-family: var(--o-font-family, Roboto, "Helvetica Neue", sans-serif);
+  }
+
+  /* ---------------- Toolbar ---------------- */
+  .o-calendar-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px 16px;
+  }
+
+  .o-calendar-header-title {
+    font-size: var(--mat-sys-title-medium-size, 1rem);
+    font-weight: 600;
+    color: var(--o-cal-text);
+    white-space: nowrap;
+  }
+
+  .o-calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .o-calendar-nav-btn {
+      color: var(--o-cal-muted);
+    }
+  }
+
+  /* The toolbar date is a button that opens the date picker menu. */
+  .o-calendar-title {
+    appearance: none;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--mat-sys-label-large-size, 0.8125rem);
+    font-weight: 400;
+    color: var(--o-cal-muted);
+    text-transform: capitalize;
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    &:hover {
+      background: var(--o-cal-hover);
+    }
+  }
+
+  .o-calendar-spacer {
+    flex: 1 1 auto;
+  }
+
+  /* View switch: mat-stroked-button (inactive) / mat-flat-button (active) —
+   * Material's own button styling handles the rest. */
+  .o-calendar-view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------------- Body ---------------- */
+  .o-calendar-body {
+    flex: 1 1 auto;
+    overflow: auto;
+  }
+
+  /* ---------------- Loading skeleton ---------------- */
+  /* Cell/column dividers mirror the real views: the month grid draws them the
+   * same way as `.cal-days` (outer top/left border on the container, each cell
+   * adding its own right/bottom border), and the columns the same way as
+   * `.o-cal-agenda-week` (outer border + per-column right divider). box-sizing:
+   * border-box keeps the 1px border inside the 100% height, otherwise it
+   * overflows .o-calendar-body and triggers a scrollbar (same fix as
+   * .o-cal-agenda-week). */
+  .o-cal-skeleton-month {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: 1fr;
+    height: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--o-cal-border);
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .o-cal-skeleton-cell {
+    border-right: 1px solid var(--o-cal-border);
+    border-bottom: 1px solid var(--o-cal-border);
+  }
+
+  .o-cal-skeleton-cell,
+  .o-cal-skeleton-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px 8px;
+    overflow: hidden;
+  }
+
+  .o-cal-skeleton-column-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--o-cal-border);
+  }
+
+  .o-cal-skeleton-columns {
+    display: flex;
+    height: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--o-cal-border);
+
+    > .o-cal-skeleton-column {
+      flex: 1 1 0;
+      border-right: 1px solid var(--o-cal-border);
+
+      &:last-child {
+        border-right: 0;
+      }
+    }
+
+    /* Day view: a single, full-width column instead of 7 narrow ones. */
+    &--day > .o-cal-skeleton-column {
+      flex: 1 1 100%;
+    }
+  }
+
+  /* ngx-skeleton-loader defaults to an inline host; every skeleton bar here
+   * needs to behave like a block so width/height from its own theme apply
+   * predictably inside the flex/grid layouts above. */
+  .o-cal-skeleton-month,
+  .o-cal-skeleton-columns,
+  .o-cal-skeleton-year {
+    ngx-skeleton-loader {
+      display: block;
+    }
+  }
+
+  /* ---------------- Week / Day agenda (show-hours="no") ---------------- */
+  .o-cal-agenda-week {
+    display: flex;
+    height: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--o-cal-border);
+  }
+
+  .o-cal-agenda-day-column {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--o-cal-border);
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  .o-cal-agenda-day-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--o-cal-border);
+  }
+
+  .o-cal-agenda-weekday {
+    font-size: var(--mat-sys-label-large-size, 0.875rem);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--o-cal-muted);
+  }
+
+  /* Fixed-size box regardless of today/not-today, so every column's header
+   * is the same height and their bottom borders stay aligned. Same 24px
+   * circle size as the week/day grid view's own .cal-today day number. */
+  .o-cal-agenda-day-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: var(--mat-sys-label-large-size, 0.875rem);
+    font-weight: 500;
+    color: var(--o-cal-text);
+  }
+
+  /* Today: background tint (header, column and day-view list) + filled
+   * circle on the day number — same treatment as the week/day grid view's
+   * own .cal-today (.cal-header.cal-today / .cal-day-column.cal-today).
+   * Only `.o-cal-agenda-today-tint` paints the tint: in week view it sits on
+   * the day column, which already wraps the header, so the header itself
+   * must NOT repaint it too — that would stack two translucent layers and
+   * render visibly darker than every other "today" tint in the calendar. */
+  .o-cal-agenda-today-tint {
+    background-color: var(--o-cal-today-tint);
+  }
+
+  .o-cal-agenda-day-header--today .o-cal-agenda-day-number {
+    background: var(--o-cal-primary);
+    color: var(--o-cal-on-primary);
+  }
+
+  .o-cal-agenda-day-list {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    overflow-y: auto;
+  }
+
+  .o-cal-agenda-empty {
+    display: block;
+    color: var(--o-cal-muted);
+    font-size: var(--mat-sys-label-medium-size, 0.75rem);
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .cal-month-view,
+  .cal-week-view,
+  .cal-day-view {
+    background: transparent;
+  }
+
+  /* ---------------- Month view ---------------- */
+  .cal-month-view {
+
+    .cal-header .cal-cell {
+      color: var(--o-cal-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: var(--mat-sys-label-large-size, 0.875rem);
+      letter-spacing: 0.04em;
+      text-align: left;
+      padding: 8px 10px;
+
+    }
+
+    .cal-days {
+      border: 1px solid var(--o-cal-border);
+      border-bottom: 0;
+    }
+
+    .cal-cell-row {
+      border-color: var(--o-cal-border);
+    }
+
+    /* The base css tints the whole hovered row (#fafafa) and the hovered cell
+     * (#ededed) with hard-coded light grays, unreadable on dark themes. The
+     * cell selector needs the row class to win over the base specificity. */
+    .cal-cell-row:hover {
+      background-color: transparent;
+    }
+
+    .cal-day-cell {
+      min-height: 108px;
+      /* Flex item: without this the cell refuses to shrink below the event
+       * text width (min-width: auto), making day columns uneven. With it,
+       * columns stay equal and the pill text ellipsizes instead. */
+      min-width: 0;
+      border-color: var(--o-cal-border) ;
+    }
+
+    .cal-cell-row .cal-day-cell:hover,
+    .cal-day-cell.cal-has-events.cal-open {
+      background-color: var(--o-cal-hover);
+    }
+
+    /* Days outside the current month: faded background + muted number. */
+    .cal-day-cell.cal-out-month {
+      background-color: var(--o-cal-out-month);
+
+      .o-cal-day-number {
+        color: var(--o-cal-muted);
+        opacity: 0.6;
+      }
+    }
+
+    /* Today: background tint + filled circle on the day number, same
+     * treatment as the week/day grid view's own .cal-today. */
+    .cal-day-cell.cal-today {
+      background-color: var(--o-cal-today-tint);
+
+      .o-cal-day-number {
+        background: var(--o-cal-primary);
+        color: var(--o-cal-on-primary);
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+
+  /* Custom month cell content */
+  .o-cal-cell-top {
+    padding: 6px 8px 2px;
+  }
+
+  .o-cal-day-number {
+    font-size: var(--mat-sys-label-large-size, 0.875rem);
+    font-weight: 500;
+    color: var(--o-cal-text);
+    line-height: 1.4;
+  }
+
+  .o-cal-cell-events {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0 6px 6px;
+  }
+
+  /* Opens the day events popover; reset to look like a plain text link. */
+  .o-cal-event-more {
+    appearance: none;
+    border: 0;
+    background: none;
+    display: inline-block;
+    margin-top: 1px;
+    padding: 1px 6px;
+    font-family: inherit;
+    font-size: var(--mat-sys-label-large-size, 0.875rem);
+    font-weight: 600;
+    color: var(--o-cal-primary);
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* Static (non-clickable) variant: `more-clickable="no"`, no popover, so it
+   * shouldn't look like an actionable link either. */
+  .o-cal-event-more--static {
+    color: var(--o-cal-muted);
+    cursor: default;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  /* ---------------- Week / Day views ---------------- */
+  .cal-week-view,
+  .cal-day-view {
+
+    .cal-header,
+    .cal-day-headers,
+    .cal-hour-odd,
+    .cal-time-events,
+    .cal-all-day-events,
+    .cal-hour:not(:last-child) .cal-hour-segment,
+    .cal-hour:last-child :not(:last-child) .cal-hour-segment {
+      border-color: var(--o-cal-border);
+    }
+
+    .cal-day-headers {
+      .cal-header {
+        color: var(--o-cal-muted);
+
+        b {
+          display: block;
+          text-transform: uppercase;
+          font-size: var(--mat-sys-label-large-size, 0.875rem);
+          letter-spacing: 0.04em;
+          font-weight: 600;
+        }
+
+        /* Same size as .o-cal-day-number (month) / .o-cal-agenda-day-number
+         * (agenda), so the day number reads the same everywhere, today or not. */
+        span {
+          font-size: var(--mat-sys-label-large-size, 0.875rem);
+          font-weight: 500;
+          color: var(--o-cal-text);
+        }
+      }
+
+      /* Base css hovers the day header with a hard-coded #ededed. Declared
+       * before the .cal-today rule so the today tint wins while hovering. */
+      .cal-header:hover,
+      .cal-drag-over {
+        background-color: var(--o-cal-hover);
+      }
+
+      /* Today column header: tint + circled day number. */
+      .cal-header.cal-today {
+        background-color: var(--o-cal-today-tint);
+
+        span {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: var(--o-cal-primary);
+          color: var(--o-cal-on-primary);
+          opacity: 1;
+        }
+      }
+    }
+
+    /* Tint the whole "today" column body. */
+    .cal-day-columns .cal-day-column.cal-today,
+    .cal-time-events .cal-day-columns > :is(.cal-today) {
+      background-color: var(--o-cal-today-tint);
+    }
+
+    /* Alternating hour rows: the base css hard-codes #fafafa, unreadable on dark themes. */
+    .cal-hour-odd {
+      background-color: var(--o-cal-out-month);
+    }
+
+    .cal-hour-segment:hover,
+    .cal-drag-over .cal-hour-segment,
+    .cal-time-events .cal-day-columns:not(.cal-resize-active) .cal-hour-segment:hover {
+      background-color: var(--o-cal-hover);
+    }
+
+    /* Event pills reuse the month look; theme tint + primary accent. The base
+     * css hard-codes font-size: 12px here — same token as .o-cal-event-pill
+     * (month/agenda) so it follows the app's configured density instead.
+     * The left border itself (width/style/color) comes from the shared
+     * .o-cal-event class below, not from here — border-top/right/bottom
+     * only zero out the rest of angular-calendar's own border. */
+    .cal-event {
+      background-color: var(--o-cal-pill-bg) ;
+      border-top: 0 ;
+      border-right: 0 ;
+      border-bottom: 0 ;
+      border-radius: 3px ;
+      color: var(--o-cal-text) ;
+      font-size: var(--mat-sys-label-large-size, 0.875rem) ;
+    }
+  }
+
+  /* ---------------- Year view ---------------- */
+  /* angular-calendar has no native year view (Month/Week/Day only), so this
+   * grid of 12 mini-months is entirely custom markup, following the same
+   * --o-cal-* token conventions as the other views. auto-fill instead of a
+   * fixed column count so it still lays out sensibly in a narrow host. */
+  .o-cal-year-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 4px;
+  }
+
+  .o-cal-year-month {
+    box-sizing: border-box;
+    border: 1px solid var(--o-cal-border);
+    border-radius: 4px;
+    padding: 10px 12px;
+  }
+
+  .o-cal-year-month-title {
+    font-size: var(--mat-sys-title-medium-size, 1rem);
+    font-weight: 600;
+    text-align: center;
+    color: var(--o-cal-text);
+    padding-bottom: 8px;
+  }
+
+  .o-cal-year-weekdays,
+  .o-cal-year-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .o-cal-year-weekday {
+    text-align: center;
+    font-size: var(--mat-sys-label-small-size, 0.6875rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--o-cal-muted);
+    padding-bottom: 4px;
+  }
+
+  /* Reset to a plain grid cell: each day is a <button> (it emits onDayClick)
+   * but at this zoom level it should read as a cell, not a link. */
+  .o-cal-year-day {
+    appearance: none;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 2px 0;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: var(--o-cal-hover);
+    }
+  }
+
+  .o-cal-year-day-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: var(--mat-sys-label-small-size, 0.6875rem);
+    color: var(--o-cal-text);
+  }
+
+  /* Days padded in from the adjacent month: same muted treatment as the
+   * month view's own .cal-out-month / .o-cal-day-number pairing. */
+  .o-cal-year-day--out .o-cal-year-day-number {
+    color: var(--o-cal-muted);
+    opacity: 0.6;
+  }
+
+  /* Today: filled circle, same treatment as every other view's day number,
+   * just scaled down (18px) to fit this view's much smaller cells. */
+  .o-cal-year-day--today .o-cal-year-day-number {
+    background: var(--o-cal-primary);
+    color: var(--o-cal-on-primary);
+  }
+
+  /* Event marker: a plain dot — a pill-per-event (like every other view)
+   * wouldn't fit a cell this size, and a numeric badge was tried and dropped
+   * (the exact count isn't meaningful information at this zoom level). */
+  .o-cal-year-day-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--o-cal-primary);
+  }
+
+  /* ---------------- Year skeleton ---------------- */
+  /* Plain (non-shimmering) shapes instead of a full ngx-skeleton-loader per
+   * day cell — 12 months * ~35 days would be excessive for what is only a
+   * placeholder shape. Mirrors .o-cal-year-view's own grid so the layout
+   * doesn't jump once the real content replaces it. */
+  .o-cal-skeleton-year {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 4px;
+  }
+
+  .o-cal-skeleton-year-month {
+    box-sizing: border-box;
+    border: 1px solid var(--o-cal-border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .o-cal-skeleton-year-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    width: 100%;
+  }
+
+  .o-cal-skeleton-year-day {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-color: var(--o-cal-hover);
+  }
+}
+
+/* Week view today circle: sized for a bare day number ('D', the default
+ * week-header-day-format). Any other format renders longer text (e.g. 'MMM D'
+ * -> "Jul 16") that wouldn't fit a 24px circle without clipping or stretching
+ * it into an oval, so it becomes a rounded-rect pill instead. Needs to live
+ * outside the `o-calendar { }` block to prefix the host with its own class
+ * (`:host` doesn't apply under ViewEncapsulation.None). Higher specificity
+ * (5 classes) than the plain `.cal-header.cal-today span` circle rule (4
+ * classes), so it wins regardless of source order. */
+o-calendar.o-cal-week-header-wide .cal-week-view .cal-day-headers .cal-header.cal-today span {
+  width: auto;
+  min-width: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+}
+
+/* Event pill / custom event wrapper. Global (not nested under `o-calendar`)
+ * because the day-events popover below renders in the CDK overlay, outside
+ * the <o-calendar> subtree, so the --o-cal-* custom properties scoped to the
+ * host are not inherited there; every var falls back to the plain Material
+ * system token, which is what --o-cal-* itself resolves to by default anyway. */
+.o-cal-event-pill {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  cursor: pointer;
+  background: var(--o-cal-pill-bg, color-mix(in srgb, var(--mat-sys-primary, #2e7d32) 6%, var(--mat-sys-surface, #ffffff)));
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: var(--mat-sys-label-large-size, 0.875rem);
+  line-height: 1.35;
+
+  .o-cal-event-title {
+    font-weight: 700;
+    color: var(--o-cal-text, var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87)));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .o-cal-event-desc {
+    color: var(--o-cal-muted, var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.55)));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Wrapper of the custom (projected) event template. */
+.o-cal-event-custom {
+  min-width: 0;
+  cursor: pointer;
+}
+
+/* Event border-left color, shared by every view (month pill, agenda cards,
+ * "+N more" popover, week/day real grid — the last one alongside
+ * angular-calendar's own .cal-event, hence  to beat its hard-coded
+ * border). Width/style and the theme fallback live here in one place; the
+ * event's own color (color-column), if any, flows in through the
+ * --o-cal-event-color custom property (set with [style.--o-cal-event-color])
+ * instead of a direct [style.borderLeftColor] override, so this class alone
+ * decides how that color is actually used. */
+.o-cal-event {
+  /* Now a <button> (SonarQube: a clickable "button role" element must be a real
+   * <button>/<input>), which otherwise brings its own chrome — centered text,
+   * system font, a margin/border, native background — reset here so it still
+   * renders exactly like the plain wrapper it replaced. `display`/padding/
+   * background stay owned by `.o-cal-event-pill` / the `.cal-event` override
+   * below, both of which already declare their own. */
+  appearance: none;
+  margin: 0;
+  border: 0;
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
+  border-left: 3px solid var(--o-cal-event-color, var(--o-cal-primary, var(--mat-sys-primary, #2e7d32))) ;
+}
+
+/* Default card look of the custom tooltip template wrapper. Tooltips may be
+ * appended to the body (week/day views), outside the o-calendar element, so
+ * this rule is global and relies on theme tokens with fallbacks. */
+.o-cal-tooltip {
+  /* angular-calendar positions the tooltip by setting inline top/left via JS
+   * (positionElements), which only has any effect on a positioned element —
+   * its own default .cal-tooltip class sets position: absolute for exactly
+   * this reason. Without it, this custom tooltip renders in normal document
+   * flow at the end of <body> instead of anchored next to the hovered event. */
+  position: absolute;
+  z-index: 1070;
+  background: var(--mat-sys-surface-container-high, #ffffff);
+  color: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
+  border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 8px 10px;
+  font-size: var(--mat-sys-label-medium-size, 0.75rem);
+  max-width: 260px;
+}
+
+/* Toolbar date picker: the mat-menu panel is attached to the CDK overlay
+ * container, outside the o-calendar element, so it cannot be nested above. */
+.mat-mdc-menu-panel.o-calendar-datepicker-panel {
+  max-width: none;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+
+  mat-calendar {
+    width: 300px;
+  }
+}
+
+/* "+N more" day events popover: also attached to the CDK overlay. */
+.mat-mdc-menu-panel.o-calendar-day-events-menu {
+  max-width: 360px;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}
+
+.o-cal-day-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  min-width: 220px;
+  max-height: 320px;
+}
+
+.o-cal-day-menu-title {
+  font-size: var(--mat-sys-label-large-size, 0.8125rem);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87));
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
+}
+
+.o-cal-day-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}

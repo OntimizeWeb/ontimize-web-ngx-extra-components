@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ContentChild, EmbeddedViewRef, Inject, Input, OnChanges, OnDestroy, OnInit, Optional, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { BooleanInputConverter, Codes, FilterExpression, IServiceDataComponent, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OConfigureServiceArgs, OFilterBuilderComponent, OGridComponent, OQueryDataArgs, OTableComponent, OTableGlobalConfig } from 'ontimize-web-ngx';
+import { CommonModule } from '@angular/common';
+import { BooleanInputConverter, Codes, FilterExpression, IServiceDataComponent, O_TABLE_GLOBAL_CONFIG, OButtonToggleGroupComponent, OButtonToggleModule, OConfigureServiceArgs, OFilterBuilderComponent, OGridComponent, OGridModule, OQueryDataArgs, OTableComponent, OTableGlobalConfig, OTableModule } from 'ontimize-web-ngx';
 import { TableConfig } from '../../interfaces/table-config.interface';
 import { GridConfig } from '../../interfaces/grid-config.interface';
 import { ODataViewTableColumnsDirective, ODataViewGridItemDirective } from '../../directives';
@@ -9,6 +10,8 @@ import { CustomBoolean, ODataViewMode } from '../../types/data-view.types';
   selector: 'o-data-view',
   templateUrl: './o-data-view.component.html',
   styleUrls: ['./o-data-view.component.scss'],
+  standalone: true,
+  imports: [CommonModule, OTableModule, OGridModule, OButtonToggleModule, ODataViewTableColumnsDirective, ODataViewGridItemDirective],
   encapsulation: ViewEncapsulation.None
 })
 
@@ -226,6 +229,10 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     return this.defaultView === 'table' ? this.table : this.grid;
   }
 
+  setFilterBuilder(fb: OFilterBuilderComponent): void {
+    this.filterBuilder = fb;
+  }
+
   ngOnInit(): void {
     if (!this.defaultView) this.defaultView = 'table';
   }
@@ -241,37 +248,6 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.columnsView.destroy();
       this.columnsView = null;
     }
-  }
-
-  ngOnChanges(): void {
-    this.resolveTableInputs();
-    this.resolveGridInputs();
-  }
-
-  public changeView(value: ODataViewMode): void {
-    const previousView = this.defaultView;
-
-    if (this.toggleGroup) {
-      this.defaultView = this.toggleGroup.getValue();
-    } else {
-      this.defaultView = value;
-    }
-
-    this.defaultView === 'grid' ? this.table.updateStateStorage() : this.grid.updateStateStorage();
-    // If switching to table and columns aren't registered, register them
-    if (this.defaultView === 'table' && previousView !== 'table') {
-      setTimeout(() => this.syncTableColumnsWithTable(), 0);
-    }
-  }
-
-
-
-  /**
-   * Sets the filter builder component for this data view.
-   * @param fb - The OFilterBuilderComponent instance to be associated with this data view
-   */
-  setFilterBuilder(fb: OFilterBuilderComponent): void {
-    this.filterBuilder = fb;
   }
 
 
@@ -300,6 +276,28 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
       console.error('Error registering table columns:', error);
     }
   }
+
+  public changeView(value: ODataViewMode): void {
+    const previousView = this.defaultView;
+
+    if (this.toggleGroup) {
+      this.defaultView = this.toggleGroup.getValue();
+    } else {
+      this.defaultView = value;
+    }
+
+    this.defaultView === 'grid' ? this.table.updateStateStorage() : this.grid.updateStateStorage();
+    // If switching to table and columns aren't registered, register them
+    if (this.defaultView === 'table' && previousView !== 'table') {
+      setTimeout(() => this.syncTableColumnsWithTable(), 0);
+    }
+  }
+
+  ngOnChanges(): void {
+    this.resolveTableInputs();
+    this.resolveGridInputs();
+  }
+
   private resolveTableInputs(): void {
     const cfg = this.tableConfig ?? {};
     const g = this.tableGlobalConfig;
@@ -352,7 +350,7 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.r_table_quickFilterFunction = cfg.quickFilterFunction;
     this.r_table_rowClass = cfg.rowClass;
     this.r_table_showExpandableIconFunction = cfg.showExpandableIconFunction;
-    this.r_table_showHeaderTooltip = cfg.showHeaderTooltip
+    this.r_table_showHeaderTooltip = cfg.showHeaderTooltip;
   }
 
   private resolveGridInputs(): void {
@@ -430,7 +428,5 @@ export class ODataViewComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const s = String(v).trim();
     return s.length ? s : undefined;
   }
-
-
 
 }

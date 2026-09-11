@@ -21,10 +21,10 @@ describe('OSkeletonComponent', () => {
       imports: [
         CommonModule,
         NoopAnimationsModule,
-        NgxSkeletonLoaderModule
+        NgxSkeletonLoaderModule,
+        OSkeletonComponent
       ],
       declarations: [
-        OSkeletonComponent,
         MockExtraComponentsTranslatePipe
       ]
     }).compileComponents();

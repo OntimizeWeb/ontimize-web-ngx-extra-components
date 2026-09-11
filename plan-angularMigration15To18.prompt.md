@@ -41,28 +41,66 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 
 ---
 
-## FASE 2: Angular 16 → 17 — Rama `migration/17.x.x`
+## FASE 2: Angular 16 → 17 — Rama `migration/17.x.x` ✅ COMPLETADO
 
-### Acciones previstas
-- Actualizar todas las dependencias Angular a `^17.x`
-- `ng-packagr` → `^17.x`, `typescript` → `~5.2.x`, `zone.js` → `~0.14.x`
-- `@ngbracket/ngx-layout` → `^17.x` (verificar disponibilidad)
-- Actualizar terceros si hay versión compatible Angular 17
-- Actualizar `ontimize-web-ngx` → `^16.x` si se publica, si no mantener `^15.9.0`
-- Control flow syntax opcional (`@if`, `@for`) si el tiempo lo permite
+### Acciones realizadas
+- Actualizar todas las dependencias Angular a `^17.3.0`
+- `ng-packagr` → `^17.3.0`, `typescript` → `~5.2.2`, `zone.js` → `~0.14.0`
+- `@ngbracket/ngx-layout` → `^17.0.1`
+- `@angular-eslint/*` → `^17.0.0`
+- `ontimize-web-ngx` → mantenido en `^15.9.0` (no hay versión 16/17 publicada)
+- Sin cambios en código fuente
+
+### No aplica en este addon
+- **Control flow migration** (`*ngIf` → `@if`): no hay templates propios en este addon
+- **Migración `inject()`**: sin inyectores propios complejos — todo el DI va a través de `OntimizeWebModule`
+- **Guards funcionales**: sin guards propios
+- **Standalone gradual**: no hay componentes que requieran migración parcial — se gestiona en Fase 3
 
 ---
 
-## FASE 3: Angular 17 → 18 — Rama `migration/18.x.x`
+## FASE 3: Angular 17 → 18 — Rama `migration/18.x.x` ✅ COMPLETADO
 
-### Acciones previstas
-- Actualizar todas las dependencias Angular a `^18.x`
-- `ng-packagr` → `^18.x`, `typescript` → `~5.4.x`
-- Reemplazar `@angular/flex-layout` + `@ngbracket/ngx-layout` por CSS nativo si se usa en templates
-- Actualizar `o-components.ts`: `FlexLayoutModule` → clases CSS o eliminación si no se usa en templates
-- Actualizar `ontimize-web-ngx` → `^18.0.0` (apuntando al tgz local o versión publicada)
-- Revisar APIs de Angular Material 18 (prefijos `m2-` o migración a M3)
-- Actualizar `@angular/material-moment-adapter` peer deps
+### Acciones realizadas
+- Actualizar todas las dependencias Angular a `^18.2.0`
+- `ng-packagr` → `^18.2.0`, `typescript` → `~5.5.4`
+- Añadir `luxon ^3.4.0` + `@types/luxon` (peer de `ngx-material-timepicker` transitivo del framework)
+- Eliminar `@angular/flex-layout` y `@ngbracket/ngx-layout`
+- Eliminar `FlexLayoutModule` de `o-components.ts` (import y array `OEXTRACOMPONENTS_IMPORTS_MODULES`)
+- `ontimize-web-ngx` → `file:../ontimize-web-ngx/dist/ontimize-web-ngx-18.0.0-SNAPSHOT-0.tgz`
+- Actualizar `peerDependencies` a `ontimize-web-ngx ^18.0.0`
+- **`projects/ontimize-web-ngx-extra-components/tsconfig.lib.json`**: añadir `"compilationMode": "partial"` en `angularCompilerOptions`
+  > ⚠️ `tsconfig.lib.prod.json` ya lo tiene, pero `tsconfig.lib.json` (usado por `npm run build` sin `-c production`) no. Sin esto el dist se compila en modo full y produce errores `NG0203` / `ɵɵconditional not found` en el consumidor.
+
+### Standalone migration ✅ COMPLETADO (commit `8b294f4`)
+
+El framework `ontimize-web-ngx@18` ya tiene **201 componentes con `standalone: true`** en su rama `migration/18.x.x`. Los componentes de este addon aún no están migrados.
+
+**Inventario de componentes a migrar:**
+| Componente / Directiva | Archivo |
+|---|---|
+| `OImageEditorComponent` | `o-image-editor/o-image-editor.component.ts` |
+| `ODataViewComponent` | `o-data-view/o-data-view.component.ts` |
+| `OSkeletonComponent` | `o-skeleton/o-skeleton.component.ts` |
+| `ODataViewTableColumnsDirective` | `directives/o-data-view-table-columns.directive.ts` |
+| `ODataViewGridItemDirective` | `directives/o-data-view-grid-item.directive.ts` |
+
+**Módulos wrapper a mantener por backward compatibility:**
+- `OntimizeWebNgxExtraComponentsModule` → re-exportar standalone components
+- `OImageEditorModule`, `ODataViewModule` → mantener como wrappers deprecated
+
+**Pasos:**
+1. Añadir `standalone: true` a cada componente/directiva
+2. Mover sus `imports` de NgModule al array `imports` del decorador `@Component`
+3. Mantener los NgModule wrapper re-exportando los standalone components
+4. Verificar build y consumo desde playground
+
+**Nota**: No hay bloqueo técnico — los componentes de este addon pueden migrarse a standalone independientemente del framework. La API `provideOntimizeWeb()` solo es necesaria para la playground (bootstrap de la app).
+
+### No aplica en este addon
+- **M3 theming migration**: sin archivos SCSS de theming propios — el theming lo gestiona `ontimize-web-ngx`
+- **Typed Forms**: sin uso de `UntypedFormGroup`/`UntypedFormControl` propios
+- **Guards funcionales**: sin guards propios
 
 ---
 
@@ -75,7 +113,10 @@ Migración incremental del addon `ontimize-web-ngx-extra-components` (Angular 15
 
 ## Decisiones
 
-- **flex-layout**: Mantener `@angular/flex-layout` como peer transitorio en Fases 1-2 (requerido por `ontimize-web-ngx@15`); eliminar en Fase 3
-- **ontimize-web-ngx**: Usar `^15.9.0` en Fases 1-2 hasta que se publique versión 16/17/18
-- **ngx-image-cropper**: Migrado a standalone en Fase 1 (`ImageCropperModule` → `ImageCropperComponent`)
-- **Standalone**: No hay standalone components propios en el addon — no requiere migración de DI
+- **flex-layout**: Mantenido `@angular/flex-layout` como peer transitorio en Fases 1-2 (requerido por `ontimize-web-ngx@15`); eliminado en Fase 3 ✅
+- **ontimize-web-ngx**: Usada `^15.9.0` en Fases 1-2; en Fase 3 apunta al tgz local `^18.0.0` ✅
+- **ngx-image-cropper**: Migrado a standalone en Fase 1 (`ImageCropperModule` → `ImageCropperComponent`) ✅
+- **luxon**: Añadido en Fase 3 como dependencia directa (peer transitivo de `ngx-material-timepicker` que viene del framework) ✅
+- **Standalone**: ✅ Completado — 5 componentes/directivas migrados (`8b294f4`). Módulos wrapper mantienen backward compatibility
+- **M3 theming**: Sin theming propio — depende del framework; se actualizará cuando `ontimize-web-ngx` publique su nueva API de theming
+- **Control flow / inject() / Guards**: No aplica — addon sin templates propios ni guards ni DI complejo propio

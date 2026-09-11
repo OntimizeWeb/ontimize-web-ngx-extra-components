@@ -1,82 +1,90 @@
 <ng-template #actionsTpl>
-  <div *ngIf="selectedFile" fxLayout="row" fxFlex="32px" fxLayoutGap="16px" fxLayoutAlign="end end">
-    <o-button attr="reset" type="STROKED" icon="undo" label="RESET" (onClick)="reset()">
-    </o-button>
-    <o-button attr="save" type="STROKED" color="primary" icon="save" label="SAVE" (onClick)="save()">
-    </o-button>
-  </div>
+  @if (selectedFile) {
+    <div style="display:flex; flex-direction:row; height:32px; gap:16px; justify-content:flex-end; align-items:flex-end">
+      <o-button attr="reset" type="STROKED" icon="undo" label="RESET" (onClick)="reset()">
+      </o-button>
+      <o-button attr="save" type="STROKED" color="primary" icon="save" label="SAVE" (onClick)="save()">
+      </o-button>
+    </div>
+  }
 </ng-template>
 
-<div class="o-image-editor bg-level-1" fxLayout="column" fxFlexFill>
+<div class="o-image-editor bg-level-1 o-flex-column o-flex-fill">
 
-  <ng-container *ngIf="selectedFile && actionsPosition === 'top'">
+  @if (selectedFile && actionsPosition === 'top') {
     <ng-container *ngTemplateOutlet="actionsTpl"></ng-container>
-  </ng-container>
+  }
 
-  <div class="o-image-editor-content" fxLayout="row" fxFlex="1 1 auto" fxLayoutAlign="space-between">
+  <div class="o-image-editor-content o-flex-row o-flex" style="justify-content:space-between">
 
-    <div *ngIf="selectedFile" class="tools" fxLayout="column" fxLayoutAlign="center center">
-      <mat-button-toggle-group class="tools-toggle" fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="8px" [value]="toolsValue"
-        (change)="onToolChange($event.value)">
+    @if (selectedFile) {
+      <div class="tools o-flex-column" style="align-items:center; justify-content:center">
+        <mat-button-toggle-group class="tools-toggle" style="align-items:center; justify-content:center; gap:8px" [value]="toolsValue"
+          (change)="onToolChange($event.value)">
 
-        <mat-button-toggle value="upload" matTooltip="{{ 'UPLOAD_IMAGE' | oTranslate }}">
-          <div fxLayout="column" fxLayoutAlign="center center">
-            <mat-icon>upload</mat-icon>
-            <span>{{ 'UPLOAD' | oTranslate }}</span>
-          </div>
-        </mat-button-toggle>
-
-        <mat-button-toggle value="crop" matTooltip="{{ 'CROP' | oTranslate }}">
-          <div fxLayout="column" fxLayoutAlign="center center">
-            <mat-icon>crop</mat-icon>
-            <span>{{ 'CROP' | oTranslate }}</span>
-          </div>
-        </mat-button-toggle>
-
-        <mat-button-toggle value="resize" matTooltip="{{ 'RESIZE' | oTranslate }}">
-          <div fxLayout="column" fxLayoutAlign="center center">
-            <mat-icon>photo_size_select_large</mat-icon>
-            <span>{{ 'RESIZE' | oTranslate }}</span>
-          </div>
-        </mat-button-toggle>
-
-      </mat-button-toggle-group>
-    </div>
-
-    <div class="o-image-editor-body" fxLayout="column" fxFlex="1 1 auto" fxLayoutGap="6px">
-      <ng-container *ngIf="selectedFile">
-
-        <div fxLayout="row" fxLayoutAlign="center center">
-          <div *ngIf="activeTool === 'crop' && !cropperLoading" fxLayout="row" fxLayoutGap="6px" fxLayoutAlign="center">
-            <o-button attr="flip" type="BASIC" icon="flip" label="FLIP" (onClick)="flip()"></o-button>
-            <o-button attr="rotate" type="BASIC" icon="rotate_90_degrees_cw" label="ROTATE_90" (onClick)="rotate()"></o-button>
-          </div>
-
-          <div *ngIf="activeTool === 'resize' && !cropperLoading" fxLayout="row" fxLayoutGap="16px" fxLayoutAlign="center">
-            <div class="oie-selector ratio">
-              <button mat-button type="button" [disabled]="resizeLocked" [class.is-active]="resizePreset === 'horizontal'"
-                (click)="setResizePreset('horizontal')">
-                <mat-icon>crop_landscape</mat-icon>
-                {{ "HORIZONTAL" | oTranslate }}
-              </button>
-
-              <button mat-button type="button" [disabled]="resizeLocked" [class.is-active]="resizePreset === 'vertical'"
-                (click)="setResizePreset('vertical')">
-                <mat-icon>crop_portrait</mat-icon>
-                {{ "VERTICAL" | oTranslate }}
-              </button>
-
-              <button mat-button type="button" [disabled]="resizeLocked" [class.is-active]="resizePreset === 'avatar'"
-                (click)="setResizePreset('avatar')">
-                <mat-icon class="material-symbols-outlined">circle</mat-icon>
-                {{ "AVATAR" | oTranslate }}
-              </button>
+          <mat-button-toggle value="upload" matTooltip="{{ 'UPLOAD_IMAGE' | oTranslate }}">
+            <div class="o-flex-column" style="align-items:center; justify-content:center">
+              <mat-icon>upload</mat-icon>
+              <span>{{ 'UPLOAD' | oTranslate }}</span>
             </div>
-          </div>
+          </mat-button-toggle>
+
+          <mat-button-toggle value="crop" matTooltip="{{ 'CROP' | oTranslate }}">
+            <div class="o-flex-column" style="align-items:center; justify-content:center">
+              <mat-icon>crop</mat-icon>
+              <span>{{ 'CROP' | oTranslate }}</span>
+            </div>
+          </mat-button-toggle>
+
+          <mat-button-toggle value="resize" matTooltip="{{ 'RESIZE' | oTranslate }}">
+            <div class="o-flex-column" style="align-items:center; justify-content:center">
+              <mat-icon>photo_size_select_large</mat-icon>
+              <span>{{ 'RESIZE' | oTranslate }}</span>
+            </div>
+          </mat-button-toggle>
+
+        </mat-button-toggle-group>
+      </div>
+    }
+
+    <div class="o-image-editor-body o-flex-column o-flex" style="gap:6px">
+      @if (selectedFile) {
+
+        <div class="o-flex-row" style="align-items:center; justify-content:center">
+          @if (activeTool === 'crop' && !cropperLoading) {
+            <div class="o-flex-row" style="gap:6px; justify-content:center">
+              <o-button attr="flip" type="BASIC" icon="flip" label="FLIP" (onClick)="flip()"></o-button>
+              <o-button attr="rotate" type="BASIC" icon="rotate_90_degrees_cw" label="ROTATE_90" (onClick)="rotate()"></o-button>
+            </div>
+          }
+
+          @if (activeTool === 'resize' && !cropperLoading) {
+            <div class="o-flex-row" style="gap:16px; justify-content:center">
+              <div class="oie-selector ratio">
+                <button mat-button type="button" [disabled]="resizeLocked" [class.is-active]="resizePreset === 'horizontal'"
+                  (click)="setResizePreset('horizontal')">
+                  <mat-icon>crop_landscape</mat-icon>
+                  {{ "HORIZONTAL" | oTranslate }}
+                </button>
+
+                <button mat-button type="button" [disabled]="resizeLocked" [class.is-active]="resizePreset === 'vertical'"
+                  (click)="setResizePreset('vertical')">
+                  <mat-icon>crop_portrait</mat-icon>
+                  {{ "VERTICAL" | oTranslate }}
+                </button>
+
+                <button mat-button type="button" [disabled]="resizeLocked" [class.is-active]="resizePreset === 'avatar'"
+                  (click)="setResizePreset('avatar')">
+                  <mat-icon class="material-symbols-outlined">circle</mat-icon>
+                  {{ "AVATAR" | oTranslate }}
+                </button>
+              </div>
+            </div>
+          }
 
         </div>
 
-        <image-cropper #cropper [imageFile]="selectedFile!" [maintainAspectRatio]="maintainAspectRatio" [aspectRatio]="aspectRatio || 1"
+        <image-cropper #cropper alignImage="center" [imageFile]="selectedFile!" [maintainAspectRatio]="maintainAspectRatio" [aspectRatio]="aspectRatio || 1"
           [canvasRotation]="canvasRotation" [(transform)]="transform" [imageQuality]="95" format="jpeg" (imageCropped)="onImageCropped($event)"
           (imageLoaded)="onImageLoaded($event)" (loadImageFailed)="onLoadImageFailed()" [containWithinAspectRatio]="true"
           [resetCropOnAspectRatioChange]="true" [roundCropper]="roundCropper" [cropperStaticWidth]=" cropperStaticWidth"
@@ -84,126 +92,145 @@
           [imageBase64]="cropperImageBase64" (cropperReady)="onCropperReady($event)" (cropperChange)="onCropperChange($event)">
         </image-cropper>
 
-        <div *ngIf="activeTool === 'crop' && !cropperLoading" class="oie-adjust-bar">
+        @if (activeTool === 'crop' && !cropperLoading) {
+          <div class="oie-adjust-bar">
 
-          <div class="oie-dot-track" fxLayout="row" fxLayoutAlign="center center" [class.is-scale]="cropAdjustMode === 'scale'">
+            <div class="oie-dot-track o-flex-row" style="align-items:center; justify-content:center" [class.is-scale]="cropAdjustMode === 'scale'">
 
-            <div fxLayout="row" fxFlex="135px" class="oie-dots oie-dots--left" *ngIf="cropAdjustMode !== 'scale'">
-              <div class="oie-dots-track" [style.transform]="'translateX(' + rotateDotsTranslatePx + 'px)'">
-                <span *ngFor="let _ of dotsTape; let i = index" class="oie-dot" [class.oie-dot--big]="isBig(i)"></span>
+              @if (cropAdjustMode !== 'scale') {
+                <div class="oie-dots oie-dots--left o-flex-row" style="width:135px">
+                  <div class="oie-dots-track" [style.transform]="'translateX(' + rotateDotsTranslatePx + 'px)'">
+                    @for (_ of dotsTape; track $index; let i = $index) {
+                      <span class="oie-dot" [class.oie-dot--big]="isBig(i)"></span>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (cropAdjustMode === 'scale') {
+                <div style="width:135px"></div>
+              }
+
+              <div class="oie-center o-flex-column" style="width:55px" aria-hidden="true">
+                <span class="oie-dot-value">{{ adjustLabel }}</span>
+                <span class="oie-dot-indicator"></span>
               </div>
-            </div>
 
-            <div *ngIf="cropAdjustMode === 'scale'" fxFlex="135px"></div>
-
-            <div fxLayout="column" fxFlex="55px" class="oie-center" aria-hidden="true">
-              <span class="oie-dot-value">{{ adjustLabel }}</span>
-              <span class="oie-dot-indicator"></span>
-            </div>
-
-            <div fxLayout="row" fxFlex="135px" class="oie-dots oie-dots--right">
-              <div class="oie-dots-track"
-                [style.transform]="'translateX(' + (cropAdjustMode === 'scale' ? scaleDotsTranslatePx : rotateDotsTranslatePx) + 'px)'">
-                <span *ngFor="let _ of dotsTape; let i = index" class="oie-dot" [class.oie-dot--big]="isBig(i)"></span>
+              <div class="oie-dots oie-dots--right o-flex-row" style="width:135px">
+                <div class="oie-dots-track"
+                  [style.transform]="'translateX(' + (cropAdjustMode === 'scale' ? scaleDotsTranslatePx : rotateDotsTranslatePx) + 'px)'">
+                  @for (_ of dotsTape; track $index; let i = $index) {
+                    <span class="oie-dot" [class.oie-dot--big]="isBig(i)"></span>
+                  }
+                </div>
               </div>
+
+              <input class="oie-dot-input" [class.is-scale]="cropAdjustMode === 'scale'" type="range" [min]="adjustMin" [max]="adjustMax"
+                [step]="adjustStep" [value]="adjustValue" (input)="onAdjustInput($event.target.value)" />
             </div>
 
-            <input class="oie-dot-input" [class.is-scale]="cropAdjustMode === 'scale'" type="range" [min]="adjustMin" [max]="adjustMax"
-              [step]="adjustStep" [value]="adjustValue" (input)="onAdjustInput($event.target.value)" />
+            <div class="oie-selector">
+              <button mat-button type="button" [class.is-active]="cropAdjustMode === 'rotation'" (click)="cropAdjustMode = 'rotation'">
+                {{ "ROTATION" | oTranslate }}
+              </button>
+
+              <button mat-button type="button" [class.is-active]="cropAdjustMode === 'scale'" (click)="cropAdjustMode = 'scale'">
+                {{ "SCALE" | oTranslate }}
+              </button>
+            </div>
+
           </div>
+        }
 
-          <div class="oie-selector">
-            <button mat-button type="button" [class.is-active]="cropAdjustMode === 'rotation'" (click)="cropAdjustMode = 'rotation'">
-              {{ "ROTATION" | oTranslate }}
-            </button>
+        @if (activeTool === 'resize' && !cropperLoading) {
+          <div class="o-flex-column" style="align-items:center; justify-content:center">
+            <div class="o-flex-row" style="gap:6px; align-items:baseline; justify-content:center">
+              <mat-form-field [ngStyle]="{'width': '120px'}">
+                <mat-label>{{ "WIDTH" | oTranslate}}</mat-label>
+                <input matInput type="number" min="1" [(ngModel)]="resizeWidth" [ngModelOptions]="{ standalone: true }" [disabled]="resizeLocked"
+                  (blur)="onResizeBoxCommit('w')" (keydown.enter)="onResizeBoxCommit('w')">
+              </mat-form-field>
+              <button mat-icon-button type="button" (click)="toggleResizeLock()" [attr.aria-label]="'LOCK_SIZE'">
+                <mat-icon>{{ resizeLocked ? 'lock' : 'lock_open' }}</mat-icon>
+              </button>
+              <mat-form-field [ngStyle]="{'width': '120px'}">
+                <mat-label>{{ "HEIGHT" | oTranslate}}</mat-label>
+                <input matInput type="number" min="1" [(ngModel)]="resizeHeight" [ngModelOptions]="{ standalone: true }" [disabled]="resizeLocked"
+                  (blur)="onResizeBoxCommit('h')" (keydown.enter)="onResizeBoxCommit('h')">
+              </mat-form-field>
+            </div>
+            <div class="oie-selector ratio o-flex-row" style="gap:24px; justify-content:center">
+              <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === 'custom'"
+                (click)="setResizeRatioPreset('custom')">
+                <mat-icon>crop_free</mat-icon>
+                {{ 'CUSTOM' | oTranslate}}
+              </button>
 
-            <button mat-button type="button" [class.is-active]="cropAdjustMode === 'scale'" (click)="cropAdjustMode = 'scale'">
-              {{ "SCALE" | oTranslate }}
-            </button>
+              <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '1:1'"
+                (click)="setResizeRatioPreset('1:1')">
+                <mat-icon>crop_square</mat-icon>
+                1:1
+              </button>
+
+              <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '2:1'"
+                (click)="setResizeRatioPreset('2:1')">
+                <mat-icon>crop_16_9</mat-icon>
+                2:1
+              </button>
+
+              <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '3:2'"
+                (click)="setResizeRatioPreset('3:2')">
+                <mat-icon>crop_3_2</mat-icon>
+                3:2
+              </button>
+
+              <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '4:3'"
+                (click)="setResizeRatioPreset('4:3')">
+                <mat-icon>crop_landscape</mat-icon>
+                4:3
+              </button>
+
+              <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '5:4'"
+                (click)="setResizeRatioPreset('5:4')">
+                <mat-icon>crop_5_4</mat-icon>
+                5:4
+              </button>
+
+              <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '16:9'"
+                (click)="setResizeRatioPreset('16:9')">
+                <mat-icon>crop_16_9</mat-icon>
+                16:9
+              </button>
+            </div>
           </div>
+        }
+      }
 
+      @if (!selectedFile || uploadOverlay) {
+        <div class="o-image-editor-load-zone o-flex-column" [class.is-overlay]="uploadOverlay"
+          style="align-items:center; justify-content:center; gap:32px; flex:1 1 100%"
+          [class.o-image-editor-load-zone--dragover]="dragOver"
+          (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+          <span>{{ "DRAG_MESSAGE" | oTranslate }}</span>
+          <span>{{ "OR" | oTranslate }}</span>
+          <o-button attr="select_image" type="RAISED" icon="upload" label="UPLOAD_IMAGE" (onClick)="$event.stopPropagation(); openFilePicker()">
+          </o-button>
+          <input #fileInput type="file" hidden accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onFileInputChange($event)">
         </div>
+      }
 
-        <div *ngIf="activeTool === 'resize' && !cropperLoading" fxLayout="column" fxLayoutAlign="center center">
-          <div fxLayout="row" fxLayoutGap="6px" fxLayoutAlign="center baseline">
-            <mat-form-field [ngStyle]="{'width': '120px'}">
-              <mat-label>{{ "WIDTH" | oTranslate}}</mat-label>
-              <input matInput type="number" min="1" [(ngModel)]="resizeWidth" [ngModelOptions]="{ standalone: true }" [disabled]="resizeLocked"
-                (blur)="onResizeBoxCommit('w')" (keydown.enter)="onResizeBoxCommit('w')">
-            </mat-form-field>
-            <button mat-icon-button type="button" (click)="toggleResizeLock()" [attr.aria-label]="'LOCK_SIZE'">
-              <mat-icon>{{ resizeLocked ? 'lock' : 'lock_open' }}</mat-icon>
-            </button>
-            <mat-form-field [ngStyle]="{'width': '120px'}">
-              <mat-label>{{ "HEIGHT" | oTranslate}}</mat-label>
-              <input matInput type="number" min="1" [(ngModel)]="resizeHeight" [ngModelOptions]="{ standalone: true }" [disabled]="resizeLocked"
-                (blur)="onResizeBoxCommit('h')" (keydown.enter)="onResizeBoxCommit('h')">
-            </mat-form-field>
-          </div>
-          <div class="oie-selector ratio" fxLayout="row" fxLayoutGap="24px" fxLayoutAlign="center">
-            <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === 'custom'"
-              (click)="setResizeRatioPreset('custom')">
-              <mat-icon>crop_free</mat-icon>
-              {{ 'CUSTOM' | oTranslate}}
-            </button>
-
-            <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '1:1'"
-              (click)="setResizeRatioPreset('1:1')">
-              <mat-icon>crop_square</mat-icon>
-              1:1
-            </button>
-
-            <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '2:1'"
-              (click)="setResizeRatioPreset('2:1')">
-              <mat-icon>crop_16_9</mat-icon>
-              2:1
-            </button>
-
-            <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '3:2'"
-              (click)="setResizeRatioPreset('3:2')">
-              <mat-icon>crop_3_2</mat-icon>
-              3:2
-            </button>
-
-            <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '4:3'"
-              (click)="setResizeRatioPreset('4:3')">
-              <mat-icon>crop_landscape</mat-icon>
-              4:3
-            </button>
-
-            <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '5:4'"
-              (click)="setResizeRatioPreset('5:4')">
-              <mat-icon>crop_5_4</mat-icon>
-              5:4
-            </button>
-
-            <button mat-button type="button" [disabled]="resizeLocked || resizePreset === 'avatar'" [class.is-active]="resizeRatioPreset === '16:9'"
-              (click)="setResizeRatioPreset('16:9')">
-              <mat-icon>crop_16_9</mat-icon>
-              16:9
-            </button>
-          </div>
+      @if (cropperLoading) {
+        <div class="o-flex-column" style="align-items:center; justify-content:center; flex:1 1 100%">
+          <mat-spinner diameter="60"></mat-spinner>
         </div>
-      </ng-container>
-
-      <div class="o-image-editor-load-zone" *ngIf="!selectedFile || uploadOverlay" [class.is-overlay]="uploadOverlay" fxLayout="column"
-        fxLayoutAlign="center center" fxLayoutGap="32px" fxFlex="100" [class.o-image-editor-load-zone--dragover]="dragOver"
-        (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
-        <span>{{ "DRAG_MESSAGE" | oTranslate }}</span>
-        <span>{{ "OR" | oTranslate }}</span>
-        <o-button attr="select_image" type="RAISED" icon="upload" label="UPLOAD_IMAGE" (onClick)="$event.stopPropagation(); openFilePicker()">
-        </o-button>
-        <input #fileInput type="file" hidden accept="image/jpeg,image/jpg,image/png,image/gif" (change)="onFileInputChange($event)">
-      </div>
-
-      <div *ngIf="cropperLoading" fxLayout="column" fxLayoutAlign="center center" fxFlex="100">
-        <mat-spinner diameter="60"></mat-spinner>
-      </div>
+      }
 
     </div>
-    <div *ngIf="selectedFile" fxLayout="column" fxFlex="82px"></div>
+    @if (selectedFile) {
+      <div class="o-flex-column" style="width:82px"></div>
+    }
   </div>
-  <ng-container *ngIf="selectedFile && actionsPosition === 'bottom'">
+  @if (selectedFile && actionsPosition === 'bottom') {
     <ng-container *ngTemplateOutlet="actionsTpl"></ng-container>
-  </ng-container>
+  }
 </div>

@@ -1,0 +1,19 @@
+<div class="calendar-test-page">
+  <h2>o-calendar</h2>
+
+  <o-calendar
+    attr="demoCalendar"
+    [static-data]="staticData"
+    columns="id;title;code;start;end;allDay"
+    keys="id"
+    start-column="start"
+    end-column="end"
+    title-column="title"
+    description-column="code"
+    all-day-column="allDay"
+    week-starts-on="1"
+    views="month;week;day;year"
+    (onEventClick)="onEventClick($event)"
+    (onDayClick)="onDayClick($event)">
+  </o-calendar>
+</div>
