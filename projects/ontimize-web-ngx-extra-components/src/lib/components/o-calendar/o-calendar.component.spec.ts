@@ -37,6 +37,9 @@ function configureCalendarTestingModule(): void {
   const routerStub = {
     url: '/',
     events: of(),
+    // ontimize-web-ngx's APP_INITIALIZER (see the NavigationService note below) also
+    // runs addPermissionsRouteGuard(), which reads route.config to add the 403 route.
+    config: [],
     navigate: () => Promise.resolve(true),
     navigateByUrl: () => Promise.resolve(true)
   };
@@ -59,7 +62,12 @@ function configureCalendarTestingModule(): void {
       },
       { provide: AuthService, useValue: {} },
       { provide: LocalStorageService, useClass: LocalStorageService, deps: [Injector] },
-      { provide: NavigationService, useValue: jasmine.createSpyObj('NavigationService', ['navigate', 'getPreviousRouteData', 'getLastItem']) },
+      // 'initialize' is required too: ontimize-web-ngx's own APP_INITIALIZER calls
+      // injector.get(NavigationService).initialize() as part of app bootstrap, which
+      // TestBed still runs here — an incomplete spy throws "is not a function" from
+      // that initializer's pending promise, and (with `destroyAfterEach: false` in
+      // test.ts) that throw surfaces later, attributed to whatever spec runs next.
+      { provide: NavigationService, useValue: jasmine.createSpyObj('NavigationService', ['initialize', 'navigate', 'getPreviousRouteData', 'getLastItem']) },
       { provide: OErrorDialogManager, useValue: jasmine.createSpyObj('OErrorDialogManager', ['openErrorDialog']) }
     ]
   });
@@ -457,6 +465,7 @@ describe('OCalendarComponent', () => {
 
     it('handleHourSegmentClicked emits onDayClick with events matching that day only', () => {
       component.startColumn = 'start';
+      component.titleColumn = 'title';
       component.setDataArray([
         { start: new Date(2026, 0, 1, 10, 0), title: 'A' },
         { start: new Date(2026, 0, 2), title: 'B' }

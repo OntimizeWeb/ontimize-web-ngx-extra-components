@@ -4,8 +4,10 @@ import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { APP_CONFIG, AppConfig, appConfigFactory, DialogService, O_FORM_CONTEXT } from 'ontimize-web-ngx';
+import { of } from 'rxjs';
+import { APP_CONFIG, AppConfig, appConfigFactory, DialogService, O_FORM_CONTEXT, OTranslateService } from 'ontimize-web-ngx';
 
 import { OCollectionEditorComponent } from './o-collection-editor.component';
 import { OCollectionGroupFieldsDirective, OCollectionItemDirective } from '../../directives';
@@ -17,7 +19,8 @@ interface DemoGroup { id?: string; name: string; items: DemoItem[]; }
  * The DI surface is small precisely because the component extends
  * `OFormDataComponent` (ctor `(elRef, injector)`) and not a service component:
  * only AppConfig (for OTranslateService/PermissionsService) and MatDialog (for
- * DialogService) are actually needed.
+ * DialogService) are actually needed. `ActivatedRoute` is also required — every
+ * `o-button` the template renders (add/remove/move/drag) injects it directly.
  */
 function configureModule(extraProviders: any[] = []): void {
   TestBed.configureTestingModule({
@@ -31,6 +34,10 @@ function configureModule(extraProviders: any[] = []): void {
     providers: [
       { provide: APP_CONFIG, useValue: { uuid: 'com.ontimize.collection-editor.test', title: 'Test', locale: 'en' } },
       { provide: AppConfig, useFactory: appConfigFactory, deps: [Injector] },
+      {
+        provide: ActivatedRoute,
+        useValue: { params: of({}), queryParams: of({}), snapshot: { params: {}, queryParams: {}, data: {} } }
+      },
       ...extraProviders
     ]
   });
@@ -448,7 +455,13 @@ describe('OCollectionEditorComponent', () => {
 
     it('registers the minted names with the form, so they stay out of the payload', () => {
       const ignored: string[] = [];
-      (component as any).form = { ignoreFormCacheKeys: ignored };
+      const formStub = jasmine.createSpyObj('OFormComponent', [
+        'registerFormComponent', 'registerFormControlComponent', 'registerSQLTypeFormComponent',
+        'unregisterFormComponent', 'unregisterFormControlComponent', 'unregisterSQLTypeFormComponent',
+        'isInInsertMode', 'isInUpdateMode', 'isEditableDetail'
+      ]);
+      formStub.ignoreFormCacheKeys = ignored;
+      (component as any).form = formStub;
       component.ngOnInit();
       component.writeValue([group('a')]);
 
@@ -659,6 +672,9 @@ describe('OCollectionEditorComponent', () => {
     });
 
     it('validateStructure returns an OFormValidation with resolved messages', () => {
+      // ngx-translate only resolves a key once a current/default lang is set; a real
+      // app does this through its APP_INITIALIZER, which this bare TestBed never runs.
+      TestBed.inject(OTranslateService).setDefaultLang('en');
       component.minGroups = 1;
       component.minItemsPerGroup = 0;
       component.ngOnInit();
@@ -747,7 +763,8 @@ describe('OCollectionEditorComponent', () => {
       component.writeValue([group('a', ['i1'])]);
       const g = component.groups[0];
       const ctx = component.itemContext(g, g.items[0], 0, 0);
-      ['$implicit', 'item', 'group', 'groupKey', 'key', 'groupIndex', 'itemIndex', 'busy', 'invalid', 'disabled', 'notifyChange']
+      // No 'invalid' here on purpose: there is nothing structural to evaluate at the item level (see the class docs).
+      ['$implicit', 'item', 'group', 'groupKey', 'key', 'groupIndex', 'itemIndex', 'busy', 'disabled', 'notifyChange']
         .forEach(k => expect(k in ctx).toBe(true, `missing "${k}" in the item context`));
       expect(ctx.groupKey).toBe(g.key);
     });
@@ -759,6 +776,10 @@ describe('OCollectionEditorComponent', () => {
       component.writeValue([group('a')]);
       onChange.calls.reset();
 
+      // Same as any other focusout: an untouched group is a no-op emit (see
+      // "emitValue does not dirty a form that did not change" below), so the
+      // context's notifyChange is only observable here after a real edit.
+      component.groups[0].value.name = 'edited';
       component.groupContext(component.groups[0], 0).notifyChange();
       expect(onChange).toHaveBeenCalled();
     });
@@ -865,13 +886,18 @@ describe('OCollectionEditorComponent', () => {
   /* ------------------------------------------------------------------ */
   describe('data-testid', () => {
 
-    it('renders no data-testid anywhere when the input is left unset', () => {
+    it('renders no data-testid on its own elements when the input is left unset', () => {
       component.staticData = [group('a', ['i1'])];
       component.ngOnInit();
       fixture.detectChanges();
 
       const el: HTMLElement = fixture.nativeElement;
-      expect(el.querySelectorAll('[data-testid]').length).toBe(0);
+      // Scoped to the elements THIS component controls: `o-button`'s own inner <button>
+      // always carries a data-testid equal to its own `attr` (see OButtonComponent's
+      // `dataTestId` getter), independently of this component's own input.
+      expect(el.querySelectorAll('o-button[data-testid]').length).toBe(0);
+      expect(el.querySelectorAll('.o-collection-editor__group[data-testid]').length).toBe(0);
+      expect(el.querySelectorAll('.o-collection-editor__item[data-testid]').length).toBe(0);
     });
 
     it('composes static and per-row test ids from the data-testid input', () => {
@@ -912,7 +938,11 @@ describe('OCollectionEditorComponent', () => {
         ],
         providers: [
           { provide: APP_CONFIG, useValue: { uuid: 'com.ontimize.collection-editor.test', title: 'Test', locale: 'en' } },
-          { provide: AppConfig, useFactory: appConfigFactory, deps: [Injector] }
+          { provide: AppConfig, useFactory: appConfigFactory, deps: [Injector] },
+          {
+            provide: ActivatedRoute,
+            useValue: { params: of({}), queryParams: of({}), snapshot: { params: {}, queryParams: {}, data: {} } }
+          }
         ]
       });
       await TestBed.compileComponents();
